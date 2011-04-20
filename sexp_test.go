@@ -52,6 +52,21 @@ func TestCons(t *testing.T) {
 	}
 }
 
+func TestString(t *testing.T) {
+	FormatError := func(x, y interface{}) { t.Fatalf("%v erroneously serialised as %v", x, y) }
+	sxp := SExp{ 0 }
+	if s := sxp.String(); s != "(0)" { FormatError("(0)", s) }
+
+	sxp = SExp{ 0, 1 }
+	if s := sxp.String(); s != "(0 1)" { FormatError("(0 1)", s) }
+
+	sxp = SExp{ SExp{ 0, 1 }, 1 }
+	if s := sxp.String(); s != "((0 1) 1)" { FormatError("((0 1) 1)", s) }
+
+	sxp = SExp{ SExp{ 0, 1 }, SExp{ 0, 1 } }
+	if s := sxp.String(); s != "((0 1) (0 1))" { FormatError("((0 1) (0 1))", s) }
+}
+
 func TestLen(t *testing.T) {
 	sxp := SExp{ 0 }
 	if sxp.Len() != 1 { t.Fatalf("With 1 element in an SExp the length should be 1 but is %v", sxp.Len()) }
@@ -60,7 +75,7 @@ func TestLen(t *testing.T) {
 	if sxp.Len() != 2 { t.Fatalf("With 0 nested Cons cells the length should be 2 but is %v", sxp.Len()) }
 
 	sxp = Cons(Cons(0, 1), 2)
-	if sxp.Len() != 3 { t.Fatalf("With 1 nested Cons cells the length should be 3 but is %v : %v", sxp.Len(), sxp) }
+	if sxp.Len() != 3 { t.Fatalf("With 1 nested Cons cells the length should be 3 but is %v", sxp.Len()) }
 
 	sxp = Cons(0, 1, Cons(2, Cons(3, 4, 5)), Cons(6, 7, 8, 9))
 	if sxp.Len() != 10 { t.Fatalf("With 3 nested Cons cells the length should be 10 but is %v", sxp.Len()) }
@@ -156,14 +171,27 @@ func TestReverse(t *testing.T) {
 
 func TestFlatten(t *testing.T) {
 	sxp := Cons(1, 2, Cons(3, Cons(4, 5), Cons(6, Cons(7, 8, 9), Cons(10, 11))))
-//	rxp := Cons(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+	rxp := Cons(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp.Flatten()
-//	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed: %v", sxp) }
+	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed: %v", sxp) }
+
+	fxp := Cons(1, 2, sxp, 3, 4, 5, 6, 7, 8, 9, 10, 11, sxp)
+	rxp = Cons(1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+	sxp = Cons(1, 2, sxp, Cons(3, Cons(4, 5), Cons(6, Cons(7, 8, 9), Cons(10, 11), sxp)))
+	sxp.Flatten()
+	switch {
+	case !rxp.Equal(sxp):						t.Fatalf("Flatten failed with explicit expansions: %v", sxp)
+	case !sxp.Equal(fxp.flatten(make(memo))):	t.Fatalf("Flatten failed with flattened expansions: %v", sxp)
+	}
 }
 
 func TestCar(t *testing.T) {
 	sxp := Cons(1, 2, 3)
 	if h := sxp.Car(); h != 1 { t.Fatalf("head should be 1 but is %v", h) }
+
+	c := Cons(10, 20)
+	sxp = Cons(c, 2, 3)
+	if h := sxp.Car(); !c.Equal(h) { t.Fatalf("head should be (10 20) but is %v", h) }
 }
 
 func TestCaar(t *testing.T) {
@@ -172,6 +200,9 @@ func TestCaar(t *testing.T) {
 
 	sxp = Cons(Cons(10, 20), 2, 3)
 	if h := sxp.Caar(); h != 10 { t.Fatalf("head should be 10 but is %v", h) }
+
+	sxp = Cons(Cons(Cons(10, 20), 20), 2, 3)
+	if h := sxp.Caar(); !Cons(10, 20).Equal(h) { t.Fatalf("head should be (10 20) but is %v", h) }
 }
 
 func TestCdr(t *testing.T) {

@@ -1,9 +1,9 @@
 package sexp
 
+import "fmt"
 import "reflect"
 import "unsafe"
 
-type SExp []interface{}
 
 type memo map[uintptr] interface{}
 
@@ -19,6 +19,7 @@ func (m memo) Forget(s SExp) {
 	m[s.address()] = nil	
 }
 
+
 func Cons(a, b interface{}, n... interface{}) (s SExp) {
 	length := len(n) + 2
 	s = make(SExp, length, length)
@@ -28,6 +29,20 @@ func Cons(a, b interface{}, n... interface{}) (s SExp) {
 		copy(s[2:], n)
 	}
 	return
+}
+
+
+type SExp []interface{}
+
+func (s SExp) String() (t string) {
+	for _, v := range s {
+		if len(t) == 0 {
+			t = fmt.Sprintf("%v", v)
+		} else {
+			t = fmt.Sprintf("%v %v", t, v)
+		}
+	}
+	return fmt.Sprintf("(%v)", t)
 }
 
 func (s *SExp) address() uintptr {
@@ -115,26 +130,28 @@ func (s SExp) Reverse() {
 	}
 }
 
-func (s *SExp) Flatten() {
+func (s *SExp) flatten(visited_nodes memo) (n SExp) {
 	l := s.Len()
-	n := make(SExp, l, l)
-/*	_s := s
-	for i := 0; i < len(n); i++ {
-		for _, v := range _s {
-			switch v := v.(type) {
-			case SExp:
-				j := i
-				for _, v := range v {
-					n[j] = v
-					j++
-				}
-			default:
-				n[i] = v
-			}
-			i++
+	n = make(SExp, l, l)
+	for i, j := 0, 0; i < len(n); i++ {
+		v := (*s)[j]
+		switch v := v.(type) {
+		case SExp:		if visited_nodes.Memorise(&v) {
+							r := v.flatten(visited_nodes)
+							copy(n[i:], r)
+							i += len(r) - 1
+						} else {
+							n[i] = v
+						}
+		default:		n[i] = v
 		}
+		j++
 	}
-*/	*s = n
+	return
+}
+
+func (s *SExp) Flatten() {
+	*s = s.flatten(make(memo))
 }
 
 func (s SExp) Equal(o interface{}) (r bool) {
