@@ -1,28 +1,140 @@
 package sexp
 
 import "reflect"
+import "unsafe"
 
 type SExp []interface{}
 
-func Cons(l interface{}, r... interface{}) (s SExp) {
-	length := len(r) + 1
-	if length < 2 {
-		length = 2
-	}
-	s = make(SExp, length, length)
-	s[0] = l
-	if len(r) > 0 {
-		copy(s[1:], r)
+type memo map[uintptr] interface{}
+
+func (m memo) Memorise(s *SExp) (b bool) {
+	a := s.address()
+	if b = (m[a] == nil); !b {
+		m[a] = s
 	}
 	return
+}
+
+func (m memo) Forget(s SExp) {
+	m[s.address()] = nil	
+}
+
+func Cons(a, b interface{}, n... interface{}) (s SExp) {
+	length := len(n) + 2
+	s = make(SExp, length, length)
+	s[0] = a
+	s[1] = b
+	if len(n) > 0 {
+		copy(s[2:], n)
+	}
+	return
+}
+
+func (s *SExp) address() uintptr {
+	return uintptr(unsafe.Pointer(s))
+}
+
+func (s *SExp) len(visited_nodes memo) (c int) {
+	c = len(*s)
+	if visited_nodes.Memorise(s) {
+		for _, v := range *s {
+			if v, ok := v.(SExp); ok {
+				if visited_nodes.Memorise(&v) {
+					c += v.len(visited_nodes) - 1
+				}
+			}
+		}
+	}
+	return
+}
+
+func (s SExp) Len() int {
+	return s.len(make(memo))
+}
+
+func (s *SExp) depth(visited_nodes memo) (c int) {
+	if visited_nodes.Memorise(s) {
+		for _, v := range *s {
+			if v, ok := v.(SExp); ok {
+				if c == 0 {
+					c = 1
+				}
+				if visited_nodes.Memorise(&v) {
+					r := v.depth(visited_nodes)
+					if r >= c {
+						c = r + 1
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func (s SExp) Depth() (c int) {
+	return s.depth(make(memo))
+}
+
+func (s *SExp) bounds(visited_nodes memo) (l, d int) {
+	l = len(*s)
+	if visited_nodes.Memorise(s) {
+		for _, v := range *s {
+			if v, ok := v.(SExp); ok {
+				if d == 0 {
+					d = 1
+				}
+				if visited_nodes.Memorise(&v) {
+					nl, nd := v.bounds(visited_nodes)
+					if nd >= d {
+						d = nd + 1
+					}
+					l += nl -1
+				}
+			}
+		}
+	}
+	return
+}
+
+//	Bounds calculates both the Length and Depth of the SExp in a single pass
+func (s SExp) Bounds() (l, d int) {
+	return s.bounds(make(memo))
 }
 
 func (s SExp) Reverse() {
 	end := len(s) - 1
 	for i := 0; i < end; i++ {
+		if c, ok := s[i].(SExp); ok {
+			c.Reverse()
+		}
+		if c, ok := s[end].(SExp); ok {
+			c.Reverse()
+		}
 		s[i], s[end] = s[end], s[i]
 		end--
 	}
+}
+
+func (s *SExp) Flatten() {
+	l := s.Len()
+	n := make(SExp, l, l)
+/*	_s := s
+	for i := 0; i < len(n); i++ {
+		for _, v := range _s {
+			switch v := v.(type) {
+			case SExp:
+				j := i
+				for _, v := range v {
+					n[j] = v
+					j++
+				}
+			default:
+				n[i] = v
+			}
+			i++
+		}
+	}
+*/	*s = n
 }
 
 func (s SExp) Equal(o interface{}) (r bool) {
@@ -67,7 +179,7 @@ func (s SExp) Cddr() (t SExp) {
 
 func (s *SExp) Rplaca(v interface{}) {
 	switch len(*s) {
-	case 0:		*s = Cons(v)
+	case 0:		*s = SExp{ v }
 	case 1:		(*s)[0] = v
 	default:	*s = Cons(v, (*s)[1:])
 	}
