@@ -48,28 +48,28 @@ func BenchmarkCons10x10(b *testing.B) {
 }
 
 func BenchmarkLen1(b *testing.B) {
-	v := SExp{ 0 }
+	v := SEXP{ 0 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkLen1x1(b *testing.B) {
-	v := SExp{ 0, SExp{ 0 } }
+	v := SEXP{ 0, SEXP{ 0 } }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkLen1x10(b *testing.B) {
-	v := SExp{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SEXP{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkLen10(b *testing.B) {
-	v := SExp{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
@@ -99,28 +99,28 @@ func BenchmarkLen10x10(b *testing.B) {
 }
 
 func BenchmarkDepth1(b *testing.B) {
-	v := SExp{ 0 }
+	v := SEXP{ 0 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkDepth1x1(b *testing.B) {
-	v := SExp{ 0, SExp{ 0 } }
+	v := SEXP{ 0, SEXP{ 0 } }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkDepth1x10(b *testing.B) {
-	v := SExp{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SEXP{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkDepth10(b *testing.B) {
-	v := SExp{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
@@ -150,28 +150,28 @@ func BenchmarkDepth10x10(b *testing.B) {
 }
 
 func BenchmarkBounds1(b *testing.B) {
-	v := SExp{ 0 }
+	v := SEXP{ 0 }
 	for i := 0; i < b.N; i++ {
 		_, _ = v.Bounds()
 	}
 }
 
 func BenchmarkBounds1x1(b *testing.B) {
-	v := SExp{ 0, SExp{ 0 } }
+	v := SEXP{ 0, SEXP{ 0 } }
 	for i := 0; i < b.N; i++ {
 		_, _ = v.Bounds()
 	}
 }
 
 func BenchmarkBounds1x10(b *testing.B) {
-	v := SExp{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SEXP{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		_, _ = v.Bounds()
 	}
 }
 
 func BenchmarkBounds10(b *testing.B) {
-	v := SExp{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		_, _ = v.Bounds()
 	}
@@ -227,28 +227,28 @@ func BenchmarkReverse10x10(b *testing.B) {
 	}
 }
 func BenchmarkFlatten1(b *testing.B) {
-	v := SExp{ 0 }
+	v := SEXP{ 0 }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkFlatten1x1(b *testing.B) {
-	v := SExp{ 0, SExp{ 0 } }
+	v := SEXP{ 0, SEXP{ 0 } }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkFlatten1x10(b *testing.B) {
-	v := SExp{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SEXP{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkFlatten10(b *testing.B) {
-	v := SExp{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}

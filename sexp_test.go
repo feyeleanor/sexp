@@ -33,7 +33,7 @@ func TestCons(t *testing.T) {
 	}
 
 	sxp = Cons(1, Cons(10, 20), 3)
-	rxp := SExp{ 10, 20 }
+	rxp := SEXP{ 10, 20 }
 	switch {
 	case len(sxp) != 3:			t.Fatalf("Cons(1 (10 20) 3) should allocate 3 cells, not %v cells", len(sxp))
 	case sxp[0] != 1:			t.Fatalf("Cons(1 (10 20) 3) element 0 should be 1 and not %v", sxp[0])
@@ -43,7 +43,7 @@ func TestCons(t *testing.T) {
 
 
 	sxp = Cons(1, Cons(10, Cons(-10, -30)), 3)
-	rxp = SExp{ 10, SExp{ -10, -30 } }
+	rxp = SEXP{ 10, SEXP{ -10, -30 } }
 	switch {
 	case len(sxp) != 3:			t.Fatalf("Cons(1 (10 20) 3) should allocate 3 cells, not %v cells", len(sxp))
 	case sxp[0] != 1:			t.Fatalf("Cons(1 (10 20) 3) element 0 should be 1 and not %v", sxp[0])
@@ -54,22 +54,22 @@ func TestCons(t *testing.T) {
 
 func TestString(t *testing.T) {
 	FormatError := func(x, y interface{}) { t.Fatalf("%v erroneously serialised as %v", x, y) }
-	sxp := SExp{ 0 }
+	sxp := SEXP{ 0 }
 	if s := sxp.String(); s != "(0)" { FormatError("(0)", s) }
 
-	sxp = SExp{ 0, 1 }
+	sxp = SEXP{ 0, 1 }
 	if s := sxp.String(); s != "(0 1)" { FormatError("(0 1)", s) }
 
-	sxp = SExp{ SExp{ 0, 1 }, 1 }
+	sxp = SEXP{ SEXP{ 0, 1 }, 1 }
 	if s := sxp.String(); s != "((0 1) 1)" { FormatError("((0 1) 1)", s) }
 
-	sxp = SExp{ SExp{ 0, 1 }, SExp{ 0, 1 } }
+	sxp = SEXP{ SEXP{ 0, 1 }, SEXP{ 0, 1 } }
 	if s := sxp.String(); s != "((0 1) (0 1))" { FormatError("((0 1) (0 1))", s) }
 }
 
 func TestLen(t *testing.T) {
-	sxp := SExp{ 0 }
-	if sxp.Len() != 1 { t.Fatalf("With 1 element in an SExp the length should be 1 but is %v", sxp.Len()) }
+	sxp := SEXP{ 0 }
+	if sxp.Len() != 1 { t.Fatalf("With 1 element in an SEXP the length should be 1 but is %v", sxp.Len()) }
 
 	sxp = Cons(0, 1)
 	if sxp.Len() != 2 { t.Fatalf("With 0 nested Cons cells the length should be 2 but is %v", sxp.Len()) }
@@ -83,7 +83,7 @@ func TestLen(t *testing.T) {
 	sxp = Cons(0, 1, Cons(2, Cons(3, 4, 5)), sxp, Cons(6, 7, 8, 9))
 	if sxp.Len() != 20 { t.Fatalf("With 3 nested Cons cells plus recursion the length should be 20 but is %v", sxp.Len()) }
 
-	t.Log("Need tests for circular recursive SExp")
+	t.Log("Need tests for circular recursive SEXP")
 }
 
 func TestDepth(t *testing.T) {
@@ -115,7 +115,7 @@ func TestDepth(t *testing.T) {
 	sxp = Cons(rxp, sxp)
 	if sxp.Depth() != 6 { t.Fatalf("With 6 nested Cons cells and circular references the depth should be 6 but is %v", sxp.Depth()) }
 
-	t.Log("Need tests for circular recursive SExp")
+	t.Log("Need tests for circular recursive SEXP")
 }
 
 func TestBounds(t *testing.T) {
@@ -159,7 +159,7 @@ func TestBounds(t *testing.T) {
 	case l != 31:		t.Fatalf("With 5 nested Cons cells the length should be 31 but is %v", l)
 	}
 
-	t.Log("Need tests for circular recursive SExp")
+	t.Log("Need tests for circular recursive SEXP")
 }
 
 func TestReverse(t *testing.T) {
@@ -207,13 +207,13 @@ func TestCaar(t *testing.T) {
 
 func TestCdr(t *testing.T) {
 	sxp := Cons(1, 2, 3)
-	rxp := SExp{ 2, 3 }
+	rxp := SEXP{ 2, 3 }
 	if r := sxp.Cdr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
 }
 
 func TestCddr(t *testing.T) {
 	sxp := Cons(1, 2, 3)
-	rxp := SExp{ 3 }
+	rxp := SEXP{ 3 }
 	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
 
 	sxp = Cons(1, 2, Cons(10, 20))
@@ -221,7 +221,7 @@ func TestCddr(t *testing.T) {
 	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
 
 	sxp = Cons(1, Cons(10, 20))
-	rxp = SExp{ 20 }
+	rxp = SEXP{ 20 }
 	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
 }
 
