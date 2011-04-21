@@ -277,13 +277,33 @@ func BenchmarkFlatten10x10(b *testing.B) {
 	}
 }
 
-func BenchmarkCar(b *testing.B) {}
+func BenchmarkCar(b *testing.B) {
+	v := Cons(0, 1)
+	for i := 0; i < b.N; i++ {
+		_ = v.Car()
+	}
+}
 
-func BenchmarkCaar(b *testing.B) {}
+func BenchmarkCaar(b *testing.B) {
+	v := Cons(Cons(0, 1), 2)
+	for i := 0; i < b.N; i++ {
+		_ = v.Caar()
+	}
+}
 
-func BenchmarkCdr(b *testing.B) {}
+func BenchmarkCdr(b *testing.B) {
+	v := Cons(0, 1)
+	for i := 0; i < b.N; i++ {
+		_ = v.Cdr()
+	}
+}
 
-func BenchmarkCddr(b *testing.B) {}
+func BenchmarkCddr(b *testing.B) {
+	v := Cons(0, Cons(1, 2))
+	for i := 0; i < b.N; i++ {
+		_ = v.Cddr()
+	}
+}
 
 func BenchmarkRplaca(b *testing.B) {}
 

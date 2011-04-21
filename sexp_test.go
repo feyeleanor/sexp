@@ -195,7 +195,10 @@ func TestCar(t *testing.T) {
 }
 
 func TestCaar(t *testing.T) {
-	sxp := Cons(1, 2, 3)
+	sxp := Cons(1, 2)
+	if h := sxp.Caar(); h != nil { t.Fatalf("head should be nil but is %v", h) }
+
+	sxp = Cons(1, 2, 3)
 	if h := sxp.Caar(); h != nil { t.Fatalf("head should be nil but is %v", h) }
 
 	sxp = Cons(Cons(10, 20), 2, 3)
