@@ -30,7 +30,7 @@ func (s SEXP) String() (t string) {
 	return fmt.Sprintf("(%v)", t)
 }
 
-func (s *SEXP) address() uintptr {
+func (s *SEXP) Addr() uintptr {
 	return uintptr(unsafe.Pointer(s))
 }
 
