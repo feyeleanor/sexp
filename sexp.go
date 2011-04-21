@@ -5,21 +5,6 @@ import "reflect"
 import "unsafe"
 
 
-type memo map[uintptr] interface{}
-
-func (m memo) Memorise(s *SEXP) (b bool) {
-	a := s.address()
-	if b = (m[a] == nil); !b {
-		m[a] = s
-	}
-	return
-}
-
-func (m memo) Forget(s SEXP) {
-	m[s.address()] = nil	
-}
-
-
 func Cons(a, b interface{}, n... interface{}) (s SEXP) {
 	length := len(n) + 2
 	s = make(SEXP, length, length)
