@@ -34,103 +34,47 @@ func (s *SEXP) Addr() uintptr {
 	return uintptr(unsafe.Pointer(s))
 }
 
-func (s *SEXP) len(visited_nodes memo) (c int) {
-	c = len(*s)
-	if visited_nodes.Memorise(s) {
-		for _, v := range *s {
-			if v, ok := v.(SEXP); ok {
-				if visited_nodes.Memorise(&v) {
-					c += v.len(visited_nodes) - 1
-				}
-			}
-		}
-	}
-	return
-}
-
 func (s SEXP) Len() int {
-	return s.len(make(memo))
+	return len(s)
 }
 
 func (s *SEXP) depth(visited_nodes memo) (c int) {
 	if visited_nodes.Memorise(s) {
 		for _, v := range *s {
 			if v, ok := v.(SEXP); ok {
-				if c == 0 {
-					c = 1
-				}
-				if visited_nodes.Memorise(&v) {
-					r := v.depth(visited_nodes)
-					if r >= c {
-						c = r + 1
-					}
+				if r := v.depth(visited_nodes); r > c {
+					c = r
 				}
 			}
 		}
+		visited_nodes.Forget(s)
 	}
+	c++
 	return
 }
 
 func (s SEXP) Depth() (c int) {
-	return s.depth(make(memo))
-}
-
-func (s *SEXP) bounds(visited_nodes memo) (l, d int) {
-	l = len(*s)
-	if visited_nodes.Memorise(s) {
-		for _, v := range *s {
-			if v, ok := v.(SEXP); ok {
-				if d == 0 {
-					d = 1
-				}
-				if visited_nodes.Memorise(&v) {
-					nl, nd := v.bounds(visited_nodes)
-					if nd >= d {
-						d = nd + 1
-					}
-					l += nl -1
-				}
-			}
-		}
-	}
-	return
-}
-
-//	Bounds calculates both the Length and Depth of the SEXP in a single pass
-func (s SEXP) Bounds() (l, d int) {
-	return s.bounds(make(memo))
+	return s.depth(make(memo)) - 1
 }
 
 func (s SEXP) Reverse() {
 	end := len(s) - 1
 	for i := 0; i < end; i++ {
-		if c, ok := s[i].(SEXP); ok {
-			c.Reverse()
-		}
-		if c, ok := s[end].(SEXP); ok {
-			c.Reverse()
-		}
 		s[i], s[end] = s[end], s[i]
 		end--
 	}
 }
 
 func (s *SEXP) flatten(visited_nodes memo) (n SEXP) {
-	l := s.Len()
-	n = make(SEXP, l, l)
-	for i, j := 0, 0; i < len(n); i++ {
-		v := (*s)[j]
+	for _, v := range *s {
 		switch v := v.(type) {
 		case SEXP:		if visited_nodes.Memorise(&v) {
-							r := v.flatten(visited_nodes)
-							copy(n[i:], r)
-							i += len(r) - 1
+							n = append(n, v.flatten(visited_nodes)...)
 						} else {
-							n[i] = v
+							n = append(n, v)
 						}
-		default:		n[i] = v
+		default:		n = append(n, v)
 		}
-		j++
 	}
 	return
 }

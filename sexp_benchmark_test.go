@@ -149,57 +149,6 @@ func BenchmarkDepth10x10(b *testing.B) {
 	}
 }
 
-func BenchmarkBounds1(b *testing.B) {
-	v := SEXP{ 0 }
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
-func BenchmarkBounds1x1(b *testing.B) {
-	v := SEXP{ 0, SEXP{ 0 } }
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
-func BenchmarkBounds1x10(b *testing.B) {
-	v := SEXP{ Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
-func BenchmarkBounds10(b *testing.B) {
-	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
-func BenchmarkBounds10x2(b *testing.B) {
-	v := Cons(Cons(0, 1), Cons(1, 2), Cons(2, 3), Cons(3, 4), Cons(4, 5), Cons(5, 6), Cons(6, 7), Cons(7, 8), Cons(8, 9), Cons(9, 0))
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
-func BenchmarkBounds10x10(b *testing.B) {
-	v := Cons(	Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
-	for i := 0; i < b.N; i++ {
-		_, _ = v.Bounds()
-	}
-}
-
 func BenchmarkReverse10(b *testing.B) {
 	b.StopTimer()
 		v := Cons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
