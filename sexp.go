@@ -5,7 +5,7 @@ import "reflect"
 import "unsafe"
 
 
-func Cons(a, b interface{}, n... interface{}) (s SEXP) {
+func SCons(a, b interface{}, n... interface{}) (s SEXP) {
 	length := len(n) + 2
 	s = make(SEXP, length, length)
 	s[0] = a
@@ -127,13 +127,13 @@ func (s *SEXP) Rplaca(v interface{}) {
 	switch len(*s) {
 	case 0:		*s = SEXP{ v }
 	case 1:		(*s)[0] = v
-	default:	*s = Cons(v, (*s)[1:])
+	default:	*s = SCons(v, (*s)[1:])
 	}
 }
 
 func (s *SEXP) Rplacd(v interface{}) {
 	if len(*s) == 0 {
-		*s = Cons(nil, v)
+		*s = SCons(nil, v)
 	} else {
 		(*s)[1] = v
 		*s = (*s)[:2]
