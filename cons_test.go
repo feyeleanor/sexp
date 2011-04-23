@@ -89,3 +89,28 @@ func TestConsCellList(t *testing.T) {
 	c.Tail.Head = c
 	ConfirmFormat(c, "(5 (...) 0 ...)")
 }
+
+func TestConsLen(t *testing.T) {
+	ConfirmLen := func(c *ConsCell, x int, b bool) {
+		switch i, r := c.Len(); {
+		case r != b:	t.Fatalf("'%v' recursion should be %v but is %v", c.String(), b, r)
+		case i != x:	t.Fatalf("'%v' length should be %v but is %v", c.String(), x, i)
+		}
+	}
+	ConfirmLen(List(4, 3, 2, 1), 4, false)
+	ConfirmLen(List(4, List(3), 2, 1), 4, false)
+
+	c := List(4, 3, 2, 1)
+	c.Tail.Tail.Tail.Tail = c
+	ConfirmLen(c, 4, true)
+	c.Tail.Tail.Tail = c
+	ConfirmLen(c, 3, true)
+	c.Tail.Tail = c
+	ConfirmLen(c, 2, true)
+	c.Tail = c
+	ConfirmLen(c, 1, true)
+
+	c = List(4, 3, 2, 1)
+	c.Tail.Head = c
+	ConfirmLen(c, 4, false)
+}

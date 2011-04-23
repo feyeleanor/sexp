@@ -52,7 +52,7 @@ func (c *ConsCell) Addr() uintptr {
 }
 
 func (c *ConsCell) _string(visited_nodes memo) (t string) {
-	if c.Head != nil || c.Tail != nil {
+	if !c.IsNil() {
 		for n := c; n != nil; n = n.Tail {
 			visited_nodes.Memorise(n)
 			if len(t) > 0 {
@@ -91,4 +91,19 @@ func (c *ConsCell) _string(visited_nodes memo) (t string) {
 
 func (c *ConsCell) String() (t string) {
 	return c._string(make(memo))
+}
+
+func (c *ConsCell) Len() (i int, recursive bool) {
+	if !c.IsNil() {
+		visited_nodes := make(memo)
+		for n := c; n != nil; n = n.Tail {
+			if visited_nodes.Memorise(n) {
+				i++
+			} else {
+				recursive = true
+				break
+			}
+		}
+	}
+	return
 }
