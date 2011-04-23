@@ -7,7 +7,7 @@ type Addressable interface {
 }
 
 func printAddress(a Addressable) string {
-	return fmt.Sprint(a.Addr())
+	return fmt.Sprintf("&:%v", a.Addr())
 }
 
 type memo map[uintptr] interface{}
