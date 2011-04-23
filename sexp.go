@@ -5,17 +5,9 @@ import "reflect"
 import "unsafe"
 
 
-func SCons(a, b interface{}, n... interface{}) (s SEXP) {
-	length := len(n) + 2
-	s = make(SEXP, length, length)
-	s[0] = a
-	s[1] = b
-	if len(n) > 0 {
-		copy(s[2:], n)
-	}
-	return
+func SCons(n... interface{}) (s SEXP) {
+ 	return append(make(SEXP, 0, len(n)), n...)
 }
-
 
 type SEXP []interface{}
 
@@ -53,7 +45,7 @@ func (s *SEXP) depth(visited_nodes memo) (c int) {
 	return
 }
 
-func (s SEXP) Depth() (c int) {
+func (s *SEXP) Depth() (c int) {
 	return s.depth(make(memo)) - 1
 }
 
