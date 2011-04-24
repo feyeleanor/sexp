@@ -107,3 +107,22 @@ func (c *ConsCell) Len() (i int, recursive bool) {
 	}
 	return
 }
+
+func (c *ConsCell) depth(visited_nodes memo) (d int) {
+	if visited_nodes.Memorise(c) {
+		for n := c; n != nil; n = n.Tail {
+			if v, ok := n.Head.(Nested); ok {
+				if r := v.depth(visited_nodes); r > d {
+					d = r
+				}
+			}
+		}
+		visited_nodes.Forget(c)
+	}
+	d++
+	return
+}
+
+func (c *ConsCell) Depth() int {
+	return c.depth(make(memo)) - 1
+}

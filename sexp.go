@@ -5,7 +5,7 @@ import "reflect"
 import "unsafe"
 
 
-func SCons(n... interface{}) (s SEXP) {
+func SCons(n... interface{}) SEXP {
  	return append(make(SEXP, 0, len(n)), n...)
 }
 
@@ -22,18 +22,18 @@ func (s SEXP) String() (t string) {
 	return fmt.Sprintf("(%v)", t)
 }
 
-func (s *SEXP) Addr() uintptr {
-	return uintptr(unsafe.Pointer(s))
+func (s SEXP) Addr() uintptr {
+	return uintptr(unsafe.Pointer(&s))
 }
 
 func (s SEXP) Len() int {
 	return len(s)
 }
 
-func (s *SEXP) depth(visited_nodes memo) (c int) {
+func (s SEXP) depth(visited_nodes memo) (c int) {
 	if visited_nodes.Memorise(s) {
-		for _, v := range *s {
-			if v, ok := v.(SEXP); ok {
+		for _, v := range s {
+			if v, ok := v.(Nested); ok {
 				if r := v.depth(visited_nodes); r > c {
 					c = r
 				}
@@ -45,7 +45,7 @@ func (s *SEXP) depth(visited_nodes memo) (c int) {
 	return
 }
 
-func (s *SEXP) Depth() (c int) {
+func (s SEXP) Depth() (c int) {
 	return s.depth(make(memo)) - 1
 }
 
@@ -57,8 +57,8 @@ func (s SEXP) Reverse() {
 	}
 }
 
-func (s *SEXP) flatten(visited_nodes memo) (n SEXP) {
-	for _, v := range *s {
+func (s SEXP) flatten(visited_nodes memo) (n SEXP) {
+	for _, v := range s {
 		switch v := v.(type) {
 		case SEXP:		if visited_nodes.Memorise(&v) {
 							n = append(n, v.flatten(visited_nodes)...)
@@ -76,7 +76,7 @@ func (s *SEXP) Flatten() {
 }
 
 func (s SEXP) Equal(o interface{}) (r bool) {
-	return reflect.DeepEqual(s, o.(SEXP))
+	return reflect.DeepEqual(s, o)
 }
 
 func (s SEXP) Car() (h interface{}) {

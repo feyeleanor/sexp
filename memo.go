@@ -2,6 +2,10 @@ package sexp
 
 import "fmt"
 
+type Nested interface {
+	depth(memo) int
+}
+
 type Addressable interface {
 	Addr() uintptr
 }

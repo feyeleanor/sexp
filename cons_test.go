@@ -114,3 +114,59 @@ func TestConsLen(t *testing.T) {
 	c.Tail.Head = c
 	ConfirmLen(c, 4, false)
 }
+
+func TestConsDepth(t *testing.T) {
+	ConfirmDepth := func(c *ConsCell, x int) {
+		if i := c.Depth(); i != x {
+			t.Fatalf("'%v' depth should be %v but is %v", c.String(), x, i)
+		}
+	}
+	ConfirmDepth(List(	4, 3, 2, 1), 0)
+	ConfirmDepth(List(	5,
+						List(4, 3),
+						2), 1)
+	ConfirmDepth(List(	6,
+						List(	5,
+								List(4, 3, 2)),
+						1), 2)
+	ConfirmDepth(List(	7,
+						List(	6,
+								List(	5,
+										4,
+										List(3, 2),
+										1)),
+								0), 3)
+	ConfirmDepth(List(	8,
+						List(	7,
+								List(	6,
+										5,
+										List(4, 3),
+								2)),
+								List(	1,
+										List(0, -1))), 3)
+	ConfirmDepth(List(	9,
+						List(	8,
+								List(	7,
+										List(	6, 5)),
+										List(	4,
+												3,
+												List(2, 1),
+												0))), 3)
+	ConfirmDepth(List(	'A',
+						List(	9,
+								SCons(	8,
+										SCons(7, 6)),
+								List(	5,
+										4,
+										List(3, 2),
+										1))), 3)
+	ConfirmDepth(List(	'B',
+						List(	'A',
+								SCons(	9,
+										SCons(	8,
+												SCons(7, 6))),
+								List(	5,
+										4,
+										List(3, 2),
+										1))), 4)
+}
