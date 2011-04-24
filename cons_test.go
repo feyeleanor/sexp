@@ -50,9 +50,19 @@ func TestConsCellString(t *testing.T) {
 	ConfirmFormat(r.Tail, "((0 (...) ...))")
 	ConfirmFormat(r.Tail.Head.(*ConsCell), "(0 (...) ...)")
 
-/*	c.Tail.Tail = List(c, List(-1, -2, c))
-	ConfirmFormat(c, "(0 (...) (-1 -2 ...))")
-*/
+	c.Tail = List(-1, -2, c)
+	ConfirmFormat(r, "(10 (0 -1 -2 (...)))")
+
+	c.Tail = List(3, 4, c)
+	ConfirmFormat(r, "(10 (0 3 4 (...)))")
+
+	c.Tail.Tail = List(3)
+	ConfirmFormat(r, "(10 (0 3 3))")
+
+t.Fatal()
+	c.Tail.Tail = List(c, List(-1, -2, c))
+	ConfirmFormat(c, "(0 -1 -2 (...) (-1 -2 ...))")
+
 t.Fatal()
 
 	ConfirmFormat(r, fmt.Sprintf("(10 (1 0 cons(%v) -1 -2 ...))", printAddress(c)))

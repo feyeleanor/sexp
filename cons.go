@@ -64,7 +64,7 @@ func (c *ConsCell) _string(visited_nodes memo) (t string) {
 									case h == c:
 										t += "(...)"
 									case visited_nodes.Find(h) != nil:
-										t += "cons(" + printAddress(h) + ")"
+										t += printAddress(h)
 									default:
 										if term := h._string(visited_nodes); term == "()" {
 											t += "nil"
@@ -72,14 +72,14 @@ func (c *ConsCell) _string(visited_nodes memo) (t string) {
 											t += term
 										}
 									}
-			case Addressable:		t += "blob(" + printAddress(h) + ")"
+			case Addressable:		t += printAddress(h)
 			default:				t += fmt.Sprintf("%v", h)
 			}
 			if visited_nodes.Find(n.Tail) != nil {
 				if c == n.Tail {
 					t += " ..."
 				} else {
-					t += " cons(" + printAddress(n.Tail) + ")"
+					t += printAddress(n.Tail)
 				}
 				break
 			}
