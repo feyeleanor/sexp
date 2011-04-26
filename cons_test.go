@@ -180,3 +180,112 @@ func TestConsDepth(t *testing.T) {
 										List(3, 2),
 										1))), 4)
 }
+
+func TestConsEach(t *testing.T) {
+	c := List(0, 1, 2, 3, 4, 5, 6, 7, 8 ,9)
+	count := 0
+	c.Each(func(i interface{}) {
+		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		count++
+	})
+}
+
+func TestConsReverse(t *testing.T) {
+	ConfirmReverse := func(c, r *ConsCell) {
+		c.Reverse()
+		if !c.Equal(r) {
+			t.Fatalf("%v should be %v", c, r)
+		}
+	}
+	c := List(1)
+	ConfirmReverse(c, List(1))
+	ConfirmReverse(c, List(1))
+
+	c = List(1, 2)
+	ConfirmReverse(c, List(2, 1))
+	ConfirmReverse(c, List(1, 2))
+
+	c = List(1, 2, 3)
+	ConfirmReverse(c, List(3, 2, 1))
+	ConfirmReverse(c, List(1, 2, 3))
+
+	c = List(1, 2, 3, 4)
+	ConfirmReverse(c, List(4, 3, 2, 1))
+	ConfirmReverse(c, List(1, 2, 3, 4))
+}
+
+func TestConsFlatten(t *testing.T) {
+	t.Fatal()
+}
+
+func TestConsAt(t *testing.T) {
+	t.Fatal()
+}
+
+func TestConsSet(t *testing.T) {
+	t.Fatal()
+}
+
+func TestConsLink(t *testing.T) {
+	ConfirmLink := func(c *ConsCell, to, from int, r *ConsCell) {
+		switch {
+		case !c.Link(to, from):		t.Fatalf("c.Link() failed")
+		case !c.Equal(r):			t.Fatalf("%v should be %v", c, r)
+		}
+	}
+	c := List(0)
+	c.Tail = c
+	ConfirmLink(List(0, 1, 2, 3), 0, 0, c)
+	ConfirmLink(List(0, 1, 2, 3), 1, 0, List(0, 1, 2, 3))
+	ConfirmLink(List(0, 1, 2, 3), 2, 0, List(0, 2, 3))
+	ConfirmLink(List(0, 1, 2, 3), 3, 0, List(0, 3))
+
+	c = List(0, 1)
+	c.Tail.Tail = c
+	ConfirmLink(List(0, 1, 2, 3), 0, 1, c)
+
+	c = List(0, 1, 2)
+	c.Tail.Tail.Tail = c
+	ConfirmLink(List(0, 1, 2, 3), 0, 2, c)
+
+	c = List(0, 1, 2, 3)
+	c.Tail.Tail.Tail.Tail = c
+	ConfirmLink(List(0, 1, 2, 3), 0, 3, c)
+}
+
+func TestEnd(t *testing.T) {
+	ConfirmEnd := func(c, r *ConsCell) {
+		x := c.End()
+		if !r.Equal(x) {
+			t.Fatalf("%v should be %v", x, r)
+		}
+	}
+	ConfirmEnd(List(0), List(0))
+	ConfirmEnd(List(0, 1), List(1))
+	ConfirmEnd(List(0, 1, 2), List(2))
+	ConfirmEnd(List(0, 1, 2, 3), List(3))
+
+	c := List(0, 1, 2, 3, 4, 5)
+	c.Tail = c
+	r := List(0)
+	r.Tail = r
+	ConfirmEnd(c, r)
+
+	c = List(0, 1, 2, 3, 4, 5)
+	c.Tail.Tail = c
+	r = List(0, 1)
+	r.Tail.Tail = r
+	ConfirmEnd(c, r)
+
+	c = List(0, 1, 2, 3, 4, 5)
+	c.Tail.Tail = c.Tail
+	r = List(1)
+	r.Tail = r
+	ConfirmEnd(c, r)
+
+	c = List(0, 1, 2, 3, 4, 5)
+	c.Tail.Tail.Tail = c.Tail
+	r = List(1, 2)
+	r.Tail.Tail = r
+	ConfirmEnd(c, r)
+}

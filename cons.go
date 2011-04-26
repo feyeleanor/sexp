@@ -1,6 +1,7 @@
 package sexp
 
 import "fmt"
+import "reflect"
 import "unsafe"
 
 func ConsNil() *ConsCell {
@@ -51,6 +52,16 @@ func (c *ConsCell) Addr() uintptr {
 	return uintptr(unsafe.Pointer(c))
 }
 
+func (c *ConsCell) Each(f func(interface{})) {
+	visited_nodes := make(memo)
+	for n := c; n != nil; n = n.Tail {
+		if !visited_nodes.Memorise(n) {
+			break
+		}
+		f(n.Head)
+	}
+}
+
 func (c *ConsCell) _string(visited_nodes memo) (t string) {
 	if !c.IsNil() {
 		for n := c; n != nil; n = n.Tail {
@@ -79,7 +90,7 @@ func (c *ConsCell) _string(visited_nodes memo) (t string) {
 				if c == n.Tail {
 					t += " ..."
 				} else {
-					t += printAddress(n.Tail)
+					t += " " + printAddress(n.Tail)
 				}
 				break
 			}
@@ -125,4 +136,59 @@ func (c *ConsCell) depth(visited_nodes memo) (d int) {
 
 func (c *ConsCell) Depth() int {
 	return c.depth(make(memo)) - 1
+}
+
+func (c ConsCell) Equal(o interface{}) (r bool) {
+	switch o := o.(type) {
+	case *ConsCell:			r = reflect.DeepEqual(c, *o)
+	case ConsCell:			r = reflect.DeepEqual(c, o)
+	}
+	return 
+}
+
+func (c *ConsCell) Reverse() {
+	if c.Tail != nil {
+		var n	*ConsCell
+		current := &ConsCell{ Head: c.Head, Tail: c.Tail}
+		for ; current != nil; {
+			next := current.Tail
+			current.Tail = n
+			n = current
+			current = next
+		}
+		*c = *n
+	}
+}
+
+func (c *ConsCell) Flatten() {
+	
+}
+
+func (c *ConsCell) At(i int) (n interface{}) {
+	return
+}
+
+func (c *ConsCell) Set(i int, n interface{}) {
+	
+}
+
+func (c *ConsCell) Link(to, from int) (ok bool) {
+	var target, source	*ConsCell
+
+	for n, i := c, 0; n != nil; n = n.Tail {
+		if i == to		{ target = n }
+		if i == from	{ source = n }
+		i++
+	}
+	if source != nil && target != nil {
+		source.Tail = target
+		ok = true
+	}
+	return
+}
+
+func (c *ConsCell) End() (n *ConsCell) {
+	visited_nodes := make(memo)
+	for n = c; visited_nodes.Memorise(n) && n.Tail != nil; n = n.Tail {}
+	return
 }
