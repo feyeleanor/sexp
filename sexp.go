@@ -33,7 +33,7 @@ func (s SEXP) Len() int {
 func (s SEXP) depth(visited_nodes memo) (c int) {
 	if visited_nodes.Memorise(s) {
 		for _, v := range s {
-			if v, ok := v.(Nested); ok {
+			if v, ok := v.(CyclicNested); ok {
 				if r := v.depth(visited_nodes); r > c {
 					c = r
 				}

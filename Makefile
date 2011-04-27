@@ -4,7 +4,9 @@ TARG=sexp
 
 GOFILES=\
 	memo.go\
+	node.go\
 	sexp.go\
-	cons.go
+	linear_list.go\
+	cyclic_list.go
 
 include $(GOROOT)/src/Make.pkg

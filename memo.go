@@ -9,8 +9,12 @@ type Nodal interface {
 	Rplacd(interface{})
 }
 
-type Nested interface {
+type CyclicNested interface {
 	depth(memo) int
+}
+
+type Nested interface {
+	Depth() int
 }
 
 type Addressable interface {
@@ -26,6 +30,15 @@ type memo map[uintptr] interface{}
 func (m memo) Memorise(s Addressable) (b bool) {
 	a := s.Addr()
 	if _, present := m[a]; !present {
+		m[a] = s
+		b = true
+	}
+	return
+}
+
+func (m memo) Replace(s Addressable) (b bool) {
+	a := s.Addr()
+	if _, present := m[a]; present {
 		m[a] = s
 		b = true
 	}
