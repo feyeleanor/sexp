@@ -1,1 +1,17 @@
 An S-Expression library written in Go.
+
+S-Expressions can be modelled using a variety of structures. This package provides three implementations:
+
+SEXP uses a slice as its backing store with list semantics and is suited to tasks where breadth-first search
+and speed of element access are priorities;
+
+LinearList is a standard singly-linked list without any protections to guard against cyclic links between nodes;
+
+CycList is a generalised circular list where the terminating node can link back to any previous node and many
+operations on it make use of internal hashes to track visited nodes - as such it is more expensive to manipulate
+than a LinearList.
+
+Both CycList and LinearList use a common Node structure allowing them to be interchanged as necessary.
+
+All three S-Expression data structures store interface{} objects and as such can be used to store each other in
+arbitrary numbers and to arbitrary depths.
