@@ -126,7 +126,7 @@ func BenchmarkSliceDepth10(b *testing.B) {
 	}
 }
 
-func BenchmarkDepth10x2(b *testing.B) {
+func BenchmarkSliceDepth10x2(b *testing.B) {
 	v := SList(SList(0, 1), SList(1, 2), SList(2, 3), SList(3, 4), SList(4, 5), SList(5, 6), SList(6, 7), SList(7, 8), SList(8, 9), SList(9, 0))
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
