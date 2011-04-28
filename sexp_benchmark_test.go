@@ -2,258 +2,258 @@ package sexp
 
 import "testing"
 
-func BenchmarkSCons2(b *testing.B) {
+func BenchmarkSList2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(0, 1)
+		_ = SList(0, 1)
 	}
 }
 
-func BenchmarkSCons10(b *testing.B) {
+func BenchmarkSList10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+		_ = SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	}
 }
 
-func BenchmarkSCons2x2(b *testing.B) {
+func BenchmarkSList2x2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(0, SCons(0, 1))
+		_ = SList(0, SList(0, 1))
 	}
 }
 
-func BenchmarkSCons2x10(b *testing.B) {
+func BenchmarkSList2x10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(0, SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+		_ = SList(0, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 	}
 }
 
-func BenchmarkSCons10x2(b *testing.B) {
+func BenchmarkSList10x2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(SCons(0, 1), SCons(1, 2), SCons(2, 3), SCons(3, 4), SCons(4, 5), SCons(5, 6), SCons(6, 7), SCons(7, 8), SCons(8, 9), SCons(9, 0))
+		_ = SList(SList(0, 1), SList(1, 2), SList(2, 3), SList(3, 4), SList(4, 5), SList(5, 6), SList(6, 7), SList(7, 8), SList(8, 9), SList(9, 0))
 	}
 }
 
-func BenchmarkSCons10x10(b *testing.B) {
+func BenchmarkSList10x10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = SCons(	SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+		_ = SList(	SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
 	}
 }
 
-func BenchmarkLen1(b *testing.B) {
-	v := SEXP{ 0 }
-	for i := 0; i < b.N; i++ {
-		_ = v.Len()
-	}
-}
-
-func BenchmarkLen1x1(b *testing.B) {
-	v := SEXP{ 0, SEXP{ 0 } }
+func BenchmarkSliceLen1(b *testing.B) {
+	v := Slice{ 0 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
-func BenchmarkLen1x10(b *testing.B) {
-	v := SEXP{ SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+func BenchmarkSliceLen1x1(b *testing.B) {
+	v := Slice{ 0, Slice{ 0 } }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
-func BenchmarkLen10(b *testing.B) {
-	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+func BenchmarkSliceLen1x10(b *testing.B) {
+	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
-func BenchmarkLen10x2(b *testing.B) {
-	v := SCons(SCons(0, 1), SCons(1, 2), SCons(2, 3), SCons(3, 4), SCons(4, 5), SCons(5, 6), SCons(6, 7), SCons(7, 8), SCons(8, 9), SCons(9, 0))
+func BenchmarkSliceLen10(b *testing.B) {
+	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
-func BenchmarkLen10x10(b *testing.B) {
-	v := SCons(	SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+func BenchmarkSliceLen10x2(b *testing.B) {
+	v := SList(SList(0, 1), SList(1, 2), SList(2, 3), SList(3, 4), SList(4, 5), SList(5, 6), SList(6, 7), SList(7, 8), SList(8, 9), SList(9, 0))
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
-func BenchmarkDepth1(b *testing.B) {
-	v := SEXP{ 0 }
+func BenchmarkSliceLen10x10(b *testing.B) {
+	v := SList(	SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+	for i := 0; i < b.N; i++ {
+		_ = v.Len()
+	}
+}
+
+func BenchmarkSliceDepth1(b *testing.B) {
+	v := Slice{ 0 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
-func BenchmarkDepth1x1(b *testing.B) {
-	v := SEXP{ 0, SEXP{ 0 } }
+func BenchmarkSliceDepth1x1(b *testing.B) {
+	v := Slice{ 0, Slice{ 0 } }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
-func BenchmarkDepth1x10(b *testing.B) {
-	v := SEXP{ SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+func BenchmarkSliceDepth1x10(b *testing.B) {
+	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
-func BenchmarkDepth10(b *testing.B) {
-	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+func BenchmarkSliceDepth10(b *testing.B) {
+	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkDepth10x2(b *testing.B) {
-	v := SCons(SCons(0, 1), SCons(1, 2), SCons(2, 3), SCons(3, 4), SCons(4, 5), SCons(5, 6), SCons(6, 7), SCons(7, 8), SCons(8, 9), SCons(9, 0))
+	v := SList(SList(0, 1), SList(1, 2), SList(2, 3), SList(3, 4), SList(4, 5), SList(5, 6), SList(6, 7), SList(7, 8), SList(8, 9), SList(9, 0))
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
-func BenchmarkDepth10x10(b *testing.B) {
-	v := SCons(	SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+func BenchmarkSliceDepth10x10(b *testing.B) {
+	v := SList(	SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
-func BenchmarkReverse10(b *testing.B) {
+func BenchmarkSliceReverse10(b *testing.B) {
 	b.StopTimer()
-		v := SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+		v := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		v.Reverse()
 	}
 }
 
-func BenchmarkReverse10x10(b *testing.B) {
+func BenchmarkSliceReverse10x10(b *testing.B) {
 	b.StopTimer()
-		v := SCons(	SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-					SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+		v := SList(	SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+					SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		v.Reverse()
 	}
 }
-func BenchmarkFlatten1(b *testing.B) {
-	v := SEXP{ 0 }
+func BenchmarkSliceFlatten1(b *testing.B) {
+	v := Slice{ 0 }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkFlatten1x1(b *testing.B) {
-	v := SEXP{ 0, SEXP{ 0 } }
+func BenchmarkSliceFlatten1x1(b *testing.B) {
+	v := Slice{ 0, Slice{ 0 } }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkFlatten1x10(b *testing.B) {
-	v := SEXP{ SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+func BenchmarkSliceFlatten1x10(b *testing.B) {
+	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkFlatten10(b *testing.B) {
-	v := SEXP{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+func BenchmarkSliceFlatten10(b *testing.B) {
+	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkFlatten10x2(b *testing.B) {
-	v := SCons(SCons(0, 1), SCons(1, 2), SCons(2, 3), SCons(3, 4), SCons(4, 5), SCons(5, 6), SCons(6, 7), SCons(7, 8), SCons(8, 9), SCons(9, 0))
+func BenchmarkSliceFlatten10x2(b *testing.B) {
+	v := SList(SList(0, 1), SList(1, 2), SList(2, 3), SList(3, 4), SList(4, 5), SList(5, 6), SList(6, 7), SList(7, 8), SList(8, 9), SList(9, 0))
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkFlatten10x10(b *testing.B) {
-	v := SCons(	SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-				SCons(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
+func BenchmarkSliceFlatten10x10(b *testing.B) {
+	v := SList(	SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+				SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)	)
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
-func BenchmarkCar(b *testing.B) {
-	v := SCons(0, 1)
+func BenchmarkSliceCar(b *testing.B) {
+	v := SList(0, 1)
 	for i := 0; i < b.N; i++ {
 		_ = v.Car()
 	}
 }
 
-func BenchmarkCaar(b *testing.B) {
-	v := SCons(SCons(0, 1), 2)
+func BenchmarkSliceCaar(b *testing.B) {
+	v := SList(SList(0, 1), 2)
 	for i := 0; i < b.N; i++ {
 		_ = v.Caar()
 	}
 }
 
-func BenchmarkCdr(b *testing.B) {
-	v := SCons(0, 1)
+func BenchmarkSliceCdr(b *testing.B) {
+	v := SList(0, 1)
 	for i := 0; i < b.N; i++ {
 		_ = v.Cdr()
 	}
 }
 
-func BenchmarkCddr(b *testing.B) {
-	v := SCons(0, SCons(1, 2))
+func BenchmarkSliceCddr(b *testing.B) {
+	v := SList(0, SList(1, 2))
 	for i := 0; i < b.N; i++ {
 		_ = v.Cddr()
 	}
 }
 
-func BenchmarkRplaca(b *testing.B) {}
+func BenchmarkSliceRplaca(b *testing.B) {}
 
-func BenchmarkRplacd(b *testing.B) {}
+func BenchmarkSliceRplacd(b *testing.B) {}

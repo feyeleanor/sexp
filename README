@@ -2,7 +2,7 @@ An S-Expression library written in Go.
 
 S-Expressions can be modelled using a variety of structures. This package provides three implementations:
 
-SEXP uses a slice as its backing store with list semantics and is suited to tasks where breadth-first search
+Slice uses a slice as its backing store with list semantics and is suited to tasks where breadth-first search
 and speed of element access are priorities;
 
 LinearList is a standard singly-linked list without any protections to guard against cyclic links between nodes;

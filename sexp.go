@@ -5,13 +5,13 @@ import "reflect"
 import "unsafe"
 
 
-func SCons(n... interface{}) SEXP {
- 	return append(make(SEXP, 0, len(n)), n...)
+func SList(n... interface{}) Slice {
+ 	return append(make(Slice, 0, len(n)), n...)
 }
 
-type SEXP []interface{}
+type Slice []interface{}
 
-func (s SEXP) String() (t string) {
+func (s Slice) String() (t string) {
 	for _, v := range s {
 		if len(t) == 0 {
 			t = fmt.Sprintf("%v", v)
@@ -22,15 +22,15 @@ func (s SEXP) String() (t string) {
 	return fmt.Sprintf("(%v)", t)
 }
 
-func (s SEXP) Addr() uintptr {
+func (s Slice) Addr() uintptr {
 	return uintptr(unsafe.Pointer(&s))
 }
 
-func (s SEXP) Len() int {
+func (s Slice) Len() int {
 	return len(s)
 }
 
-func (s SEXP) depth(visited_nodes memo) (c int) {
+func (s Slice) depth(visited_nodes memo) (c int) {
 	if visited_nodes.Memorise(s) {
 		for _, v := range s {
 			if v, ok := v.(CyclicNested); ok {
@@ -45,11 +45,11 @@ func (s SEXP) depth(visited_nodes memo) (c int) {
 	return
 }
 
-func (s SEXP) Depth() (c int) {
+func (s Slice) Depth() (c int) {
 	return s.depth(make(memo)) - 1
 }
 
-func (s SEXP) Reverse() {
+func (s Slice) Reverse() {
 	end := len(s) - 1
 	for i := 0; i < end; i++ {
 		s[i], s[end] = s[end], s[i]
@@ -57,10 +57,10 @@ func (s SEXP) Reverse() {
 	}
 }
 
-func (s SEXP) flatten(visited_nodes memo) (n SEXP) {
+func (s Slice) flatten(visited_nodes memo) (n Slice) {
 	for _, v := range s {
 		switch v := v.(type) {
-		case SEXP:		if visited_nodes.Memorise(&v) {
+		case Slice:		if visited_nodes.Memorise(&v) {
 							n = append(n, v.flatten(visited_nodes)...)
 						} else {
 							n = append(n, v)
@@ -71,34 +71,34 @@ func (s SEXP) flatten(visited_nodes memo) (n SEXP) {
 	return
 }
 
-func (s *SEXP) Flatten() {
+func (s *Slice) Flatten() {
 	*s = s.flatten(make(memo))
 }
 
-func (s SEXP) Equal(o interface{}) (r bool) {
+func (s Slice) Equal(o interface{}) (r bool) {
 	return reflect.DeepEqual(s, o)
 }
 
-func (s SEXP) Car() (h interface{}) {
+func (s Slice) Car() (h interface{}) {
 	if len(s) > 0 {
 		h = s[0]
 	}
 	return
 }
 
-func (s SEXP) Caar() (h interface{}) {
+func (s Slice) Caar() (h interface{}) {
 	car := s.Car()
-	if car, ok := car.(SEXP); ok {
+	if car, ok := car.(Slice); ok {
 		h = car.Car()
 	}
 	return
 }
 
-func (s SEXP) Cdr() (t SEXP) {
+func (s Slice) Cdr() (t Slice) {
 	switch len(s) {
 	case 0:		fallthrough
 	case 1:		break
-	case 2:		if v, ok := s[1].(SEXP); ok {
+	case 2:		if v, ok := s[1].(Slice); ok {
 					t = v
 				} else {
 					t = s[1:]
@@ -108,24 +108,23 @@ func (s SEXP) Cdr() (t SEXP) {
 	return
 }
 
-func (s SEXP) Cddr() (t SEXP) {
+func (s Slice) Cddr() (t Slice) {
 	if t = s.Cdr(); t != nil {
 		t = t.Cdr()
 	}
 	return
 }
 
-func (s *SEXP) Rplaca(v interface{}) {
+func (s *Slice) Rplaca(v interface{}) {
 	switch len(*s) {
-	case 0:		*s = SEXP{ v }
-	case 1:		(*s)[0] = v
-	default:	*s = SCons(v, (*s)[1:])
+	case 0:		*s = Slice{ v }
+	default:	(*s)[0] = v
 	}
 }
 
-func (s *SEXP) Rplacd(v interface{}) {
+func (s *Slice) Rplacd(v interface{}) {
 	if len(*s) == 0 {
-		*s = SCons(nil, v)
+		*s = Slice{ v }
 	} else {
 		(*s)[1] = v
 		*s = (*s)[:2]
