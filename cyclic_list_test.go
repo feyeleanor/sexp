@@ -123,6 +123,17 @@ func TestCycListEnd(t *testing.T) {
 	ConfirmEnd(Loop(0, 1, Loop(2), 3), Loop(3, 0, 1, Loop(2)))
 }
 
+func TestCycListAppend(t *testing.T) {
+	ConfirmAppend := func(c CycList, v interface{}, r CycList) {
+		c.Append(v)
+		if !c.Equal(r) {
+			t.Fatalf("%v should be %v", c, r)
+		}
+	}
+	ConfirmAppend(Loop(), 1, Loop(1))
+	ConfirmAppend(Loop(1), 2, Loop(1, 2))
+}
+
 func TestCycListString(t *testing.T) {
 	ConfirmFormat := func(c CycList, x string) {
 		if s := c.String(); s != x {
@@ -141,7 +152,7 @@ func TestCycListString(t *testing.T) {
 	r := Loop(10, Loop(0, Loop(0)))
 	ConfirmFormat(r, "(10 (0 (0 ...) ...) ...)")
 	ConfirmFormat(r.Next(), "((0 (0 ...) ...) 10 ...)")
-	ConfirmFormat(r.Next().Head.(CycList), "(0 (0 ...) ...)")
+	ConfirmFormat(r.Next().node.Head.(CycList), "(0 (0 ...) ...)")
 
 	r = Loop(r, 0, Loop(-1, -2, r))
 	ConfirmFormat(r, "((10 (0 (0 ...) ...) ...) 0 (-1 -2 (10 (0 (0 ...) ...) ...) ...) ...)")
@@ -238,41 +249,24 @@ func TestCycListReverse(t *testing.T) {
 	ConfirmReverse(Loop(2, 1), Loop(1, 2))
 
 	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
-/*	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
+	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
 
 	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
 	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
-*/
 }
 
 func TestCycListFlatten(t *testing.T) {
-	t.Log("Write Tests")
-}
-
-func TestCycListLink(t *testing.T) {
-	t.Log("Implement CycList::Link()")
-/*	ConfirmLink := func(c CycList, to, from int, r CycList) {
-		switch {
-		case !c.Link(to, from):		t.Fatalf("c.Link() failed")
-		case !c.Equal(r):			t.Fatalf("%v should be %v", c, r)
+	ConfirmFlatten := func(c, r CycList) {
+		c.Flatten()
+		if !c.Equal(r) {
+		t.Fatalf("%v should be %v", c, r)
 		}
 	}
-	c := Loop(0)
-	c.Tail = c.Node
-	ConfirmLink(Loop(0, 1, 2, 3), 0, 0, c)
-	ConfirmLink(Loop(0, 1, 2, 3), 1, 0, Loop(0, 1, 2, 3))
-	ConfirmLink(Loop(0, 1, 2, 3), 2, 0, Loop(0, 2, 3))
-	ConfirmLink(Loop(0, 1, 2, 3), 3, 0, Loop(0, 3))
+	ConfirmFlatten(Loop(), Loop())
+	ConfirmFlatten(Loop(1), Loop(1))
+	ConfirmFlatten(Loop(1, Loop(2)), Loop(1, Loop(2)))
+	ConfirmFlatten(Loop(1, Loop(2, Loop(3))), Loop(1, Loop(2, Loop(3))))
 
-	c = Loop(0, 1)
-	c.Tail.Tail = c.Node
-	ConfirmLink(Loop(0, 1, 2, 3), 0, 1, c)
-
-	c = Loop(0, 1, 2)
-	c.Tail.Tail.Tail = c.Node
-	ConfirmLink(Loop(0, 1, 2, 3), 0, 2, c)
-
-	c = Loop(0, 1, 2, 3)
-	c.Tail.Tail.Tail.Tail = c.Node
-	ConfirmLink(Loop(0, 1, 2, 3), 0, 3, c)
-*/}
+	ConfirmFlatten(Loop(0, List(1)), Loop(0, 1))
+	ConfirmFlatten(Loop(0, List(1, List(2, 3), 4, List(5, List(6, 7)))), Loop(0, 1, 2, 3, 4, 5, 6, 7))
+}

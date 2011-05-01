@@ -13,11 +13,10 @@ type Slice []interface{}
 
 func (s Slice) String() (t string) {
 	for _, v := range s {
-		if len(t) == 0 {
-			t = fmt.Sprintf("%v", v)
-		} else {
-			t = fmt.Sprintf("%v %v", t, v)
+		if len(t) > 0 {
+			t += " "
 		}
+		t += fmt.Sprintf("%v", v)
 	}
 	return fmt.Sprintf("(%v)", t)
 }

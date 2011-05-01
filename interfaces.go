@@ -10,6 +10,10 @@ type Nested interface {
 	Depth() int
 }
 
+type Flattenable interface {
+	Flatten()
+}
+
 type Addressable interface {
 	Addr() uintptr
 }
