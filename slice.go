@@ -29,23 +29,15 @@ func (s Slice) Len() int {
 	return len(s)
 }
 
-func (s Slice) depth(visited_nodes memo) (c int) {
-	if visited_nodes.Memorise(s) {
-		for _, v := range s {
-			if v, ok := v.(CyclicNested); ok {
-				if r := v.depth(visited_nodes); r > c {
-					c = r
-				}
+func (s Slice) Depth() (c int) {
+	for _, v := range s {
+		if v, ok := v.(Nested); ok {
+			if r := v.Depth() + 1; r > c {
+				c = r
 			}
 		}
-		visited_nodes.Forget(s)
 	}
-	c++
 	return
-}
-
-func (s Slice) Depth() (c int) {
-	return s.depth(make(memo)) - 1
 }
 
 func (s Slice) Reverse() {

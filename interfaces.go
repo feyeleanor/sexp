@@ -2,10 +2,6 @@ package sexp
 
 import "fmt"
 
-type CyclicNested interface {
-	depth(memo) int
-}
-
 type Nested interface {
 	Depth() int
 }
