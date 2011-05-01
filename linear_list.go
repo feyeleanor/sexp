@@ -25,6 +25,12 @@ type LinearList struct {
 	*Node
 }
 
+func (l LinearList) Each(f func(interface{})) {
+	for n := l.Node; n != nil; n = n.Tail {
+		f(n.Head)
+	}
+}
+
 func (l *LinearList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case *LinearList:	r = reflect.DeepEqual(l, o)
@@ -32,12 +38,6 @@ func (l *LinearList) Equal(o interface{}) (r bool) {
 	default:			r = l.Node.Equal(o)
 	}
 	return 
-}
-
-func (l LinearList) Each(f func(interface{})) {
-	for n := l.Node; n != nil; n = n.Tail {
-		f(n.Head)
-	}
 }
 
 func (l *LinearList) String() (t string) {
@@ -98,8 +98,16 @@ func (l *LinearList) Reverse() {
 	}
 }
 
-func (l LinearList) Flatten() {
-	
+func (l *LinearList) Flatten() {
+	for n := l.Node; n != nil; n = n.Tail {
+		if h, ok := n.Head.(*LinearList); ok {
+			h.Flatten()
+			n.Head = h.Head
+			t := h.End()
+			t.Tail = n.Tail
+			n.Tail = h.Tail
+		}
+	}
 }
 
 func (l LinearList) At(i int) (n interface{}) {
@@ -137,10 +145,5 @@ func (l LinearList) Cut(from, to int) (ok bool) {
 			ok = true
 		}
 	}
-	return
-}
-
-func (l LinearList) End() (n *Node) {
-	for n = l.Node; n.Tail != nil; n = n.Tail {}
 	return
 }

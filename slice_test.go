@@ -149,52 +149,79 @@ func TestSliceFlatten(t *testing.T) {
 }
 
 func TestSliceCar(t *testing.T) {
-	sxp := SList(1, 2, 3)
-	if h := sxp.Car(); h != 1 { t.Fatalf("head should be 1 but is %v", h) }
-
-	c := SList(10, 20)
-	sxp = SList(c, 2, 3)
-	if h := sxp.Car(); !c.Equal(h) { t.Fatalf("head should be (10 20) but is %v", h) }
+	ConfirmCar := func(s Slice, r interface{}) {
+		var ok bool
+		n := s.Car()
+		switch n := n.(type) {
+		case Slice:			ok = n.Equal(r)
+		default:			ok = n == r
+		}
+		if !ok {
+			t.Fatalf("head should be '%v' but is '%v'", r, n)
+		}
+	}
+	ConfirmCar(SList(1, 2, 3), 1)
+	ConfirmCar(SList(SList(10, 20), 2, 3), SList(10, 20))
 }
 
 func TestSliceCaar(t *testing.T) {
-	sxp := SList(1, 2)
-	if h := sxp.Caar(); h != nil { t.Fatalf("head should be nil but is %v", h) }
-
-	sxp = SList(1, 2, 3)
-	if h := sxp.Caar(); h != nil { t.Fatalf("head should be nil but is %v", h) }
-
-	sxp = SList(SList(10, 20), 2, 3)
-	if h := sxp.Caar(); h != 10 { t.Fatalf("head should be 10 but is %v", h) }
-
-	sxp = SList(SList(SList(10, 20), 20), 2, 3)
-	if h := sxp.Caar(); !SList(10, 20).Equal(h) { t.Fatalf("head should be (10 20) but is %v", h) }
+	ConfirmCaar := func(s Slice, r interface{}) {
+		var ok bool
+		n := s.Caar()
+		switch n := n.(type) {
+		case Slice:			ok = n.Equal(r)
+		default:			ok = n == r
+		}
+		if !ok {
+			t.Fatalf("head should be '%v' but is '%v'", r, n)
+		}
+	}
+	ConfirmCaar(SList(1, 2), nil)
+	ConfirmCaar(SList(1, 2, 3), nil)
+	ConfirmCaar(SList(SList(10, 20), 2, 3), 10)
+	ConfirmCaar(SList(SList(SList(10, 20), 20), 2, 3), SList(10, 20))
 }
 
 func TestSliceCdr(t *testing.T) {
-	sxp := SList(1, 2, 3)
-	rxp := Slice{ 2, 3 }
-	if r := sxp.Cdr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
+	ConfirmCdr := func(s, r Slice) {
+		if n := s.Cdr(); !n.Equal(r) {
+			t.Fatalf("tail should be '%v' but is '%v'", r, n)
+		}
+	}
+	ConfirmCdr(SList(1, 2, 3), Slice{ 2, 3 })
 }
 
 func TestSliceCddr(t *testing.T) {
-	sxp := SList(1, 2, 3)
-	rxp := Slice{ 3 }
-	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
-
-	sxp = SList(1, 2, SList(10, 20))
-	rxp = SList(10, 20)
-	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
-
-	sxp = SList(1, SList(10, 20))
-	rxp = Slice{ 20 }
-	if r := sxp.Cddr(); !r.Equal(rxp) { t.Fatalf("tail should be %v but is %v", rxp, r) }
+	ConfirmCddr := func(s, r Slice) {
+		if n := s.Cddr(); !n.Equal(r) {
+			t.Fatalf("tail should be '%v' but is '%v'", r, n)
+		}
+	}
+	ConfirmCddr(SList(1, 2, 3), Slice{ 3 })
+	ConfirmCddr(SList(1, 2, SList(10, 20)), SList(10, 20))
+	ConfirmCddr(SList(1, SList(10, 20)), Slice{ 20 })
 }
 
 func TestSliceRplaca(t *testing.T) {
-	t.Log("Write Tests")
+	ConfirmRplaca := func(s Slice, v interface{}, r Slice) {
+		s.Rplaca(v)
+		if !s.Equal(r) {
+			t.Fatalf("slice should be '%v' but is '%v'", r, s)
+		}
+	}
+	ConfirmRplaca(SList(1, 2, 3, 4, 5), 0, SList(0, 2, 3, 4, 5))
+	ConfirmRplaca(SList(1, 2, 3, 4, 5), SList(1, 2, 3), SList(SList(1, 2, 3), 2, 3, 4, 5))
 }
 
 func TestSliceRplacd(t *testing.T) {
-	t.Log("Write Tests")
+	ConfirmRplacd := func(s Slice, v interface{}, r Slice) {
+		s.Rplacd(v)
+		if !s.Equal(r) {
+			t.Fatalf("slice should be '%v' but is '%v'", r, s)
+		}
+	}
+	ConfirmRplacd(SList(1, 2, 3, 4, 5), nil, SList(1))
+	ConfirmRplacd(SList(1, 2, 3, 4, 5), 10, SList(1, 10))
+	ConfirmRplacd(SList(1, 2, 3, 4, 5), SList(5, 4, 3, 2), SList(1, 5, 4, 3, 2))
+	ConfirmRplacd(SList(1, 2, 3, 4, 5), SList(2, 4, 8, 16, 32), SList(1, 2, 4, 8, 16, 32))
 }

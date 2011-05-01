@@ -3,6 +3,7 @@ include $(GOROOT)/src/Make.inc
 TARG=sexp
 
 GOFILES=\
+	interfaces.go\
 	memo.go\
 	node.go\
 	slice.go\

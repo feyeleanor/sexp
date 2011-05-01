@@ -9,6 +9,11 @@ type Node struct {
 	Tail		*Node
 }
 
+func (n *Node) End() (r *Node) {
+	for r = n; r.Tail != nil; r = r.Tail {}
+	return
+}
+
 func (n *Node) Append(x interface{}) {
 	n.Tail = &Node{ Head: x }
 }
@@ -40,4 +45,20 @@ func (n *Node) String() (t string) {
 	 	t = fmt.Sprint(n.Head)
 	}
 	return
+}
+
+func (n *Node) Car() interface{} {
+	return n.Head
+}
+
+func (n *Node) Cdr() *Node {
+	return n.Tail
+}
+
+func (n *Node) Rplaca(i interface{}) {
+	n.Head = i
+}
+
+func (n *Node) Rplacd(next *Node) {
+	n.Tail = next
 }

@@ -126,7 +126,18 @@ func (s *Slice) Rplacd(v interface{}) {
 	if len(*s) == 0 {
 		*s = Slice{ v }
 	} else {
-		(*s)[1] = v
-		*s = (*s)[:2]
+		switch v := v.(type) {
+		case Slice:			if len(v) >= cap(*s) {
+								n := make(Slice, len(v) + 1, len(v) + 1)
+								n[0] = (*s)[0]
+								copy(n[1:], v)
+								*s = n
+							} else {
+								copy((*s)[1:], v)
+							}
+		case nil:			*s = (*s)[:1]
+		default:			(*s)[1] = v
+							*s = (*s)[:2]
+		}
 	}
 }

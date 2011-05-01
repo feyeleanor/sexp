@@ -2,17 +2,6 @@ package sexp
 
 import "testing"
 
-func TestLinearListIsNil(t *testing.T) {
-	l := List()
-	if !l.IsNil() { t.Fatalf("%v.IsNil() should be true", l) }
-
-	l = List(0)
-	if l.IsNil() { t.Fatalf("%v.IsNil() should be false", l) }
-
-	l = List(&Node{})
-	if l.IsNil() { t.Fatalf("%v.IsNil() should be false", l) }
-}
-
 func TestLinearListString(t *testing.T) {
 	ConfirmFormat := func(l *LinearList, x string) {
 		if s := l.String(); s != x {
@@ -152,7 +141,17 @@ func TestLinearListReverse(t *testing.T) {
 }
 
 func TestLinearListFlatten(t *testing.T) {
-	t.Fatal()
+	ConfirmFlatten := func(l, r *LinearList) {
+		l.Flatten()
+		if !r.Equal(l) {
+			t.Fatalf("'%v' should be '%v'", l, r)
+		}
+	}
+	ConfirmFlatten(List(1), List(1))
+	ConfirmFlatten(List(1, List(2)), List(1, 2))
+	ConfirmFlatten(List(1, List(2, 3, List(4, List(5)))), List(1, 2, 3, 4, 5))
+	ConfirmFlatten(List(1, List(List(2, 3), List(4, List(5)))), List(1, 2, 3, 4, 5))
+	t.Log("Write Tests")
 }
 
 func TestLinearListAt(t *testing.T) {

@@ -2,21 +2,28 @@ package sexp
 
 import "fmt"
 import "reflect"
+import "strings"
 
-func CList(items... interface{}) (c *CycList) {
-	n := &Node{}
-	c = &CycList{ n }
-	tails := len(items) - 1
-	for i, v := range items {
-		if v == nil {
-			n.Head = &Node{}
-		} else {
-			n.Head = v
+/*
+	A CycList is a circular list structure.
+	Each node in the list may point to exactly one other node in the list.
+	No node may be pointed to by more than one other node in the list.
+	There are no nil links between nodes in the list.
+*/
+
+
+func Loop(items... interface{}) (c CycList) {
+	c = CycList{}
+	if len(items) > 0 {
+		c.Node = &Node{}
+		n := &Node{ Tail: c.Node }
+		for i := len(items); i > 0; {
+			i--
+			n.Head = items[i]
+			n = &Node{ Tail: n }
 		}
-		if i < tails {
-			n.Tail = &Node{}
-		}
-		n = n.Tail
+		c.Head = items[0]
+		c.Tail = n.Tail.Tail
 	}
 	return
 }
@@ -25,161 +32,158 @@ type CycList struct {
 	*Node
 }
 
-func (c *CycList) Equal(o interface{}) (r bool) {
+//	The empty list is represented by a CycList containing an nil pointer to a Node
+func (c CycList) IsNil() bool {
+	return c.Node == nil
+}
+
+//	Return the number of chained elements in the list
+func (c CycList) Len() (i int) {
+	if !c.IsNil() {
+		for n := c.Node; n.Tail != c.Node; n = n.Tail {
+			i++
+		}
+		i++
+	}
+	return
+}
+
+//	Iterate over all elements of the list until an exception is raised in the applied function
+func (c CycList) Each(f func(interface{})) {
+	if !c.IsNil() {
+		for n := c.Node; ; n = n.Tail {
+			f(n.Head)
+		}
+	}
+}
+
+// Return the value stored at the given offset from the start of the list
+func (c CycList) At(i int) (r interface{}, ok bool) {
+	if !c.IsNil() {
+		var n		*Node
+		for n = c.Node; i > 0 && n.Tail != c.Node; i-- {
+			n = n.Tail
+		}
+		if i == 0 && n != nil {
+			r, ok = n.Head, true
+		}
+	}
+	return
+}
+
+// Set the value stored at the given offset from the start of the list
+func (c CycList) Set(i int, v interface{}) {
+	if !c.IsNil() {
+		var n	*Node
+		for n = c.Node; i > 0 && n.Tail != c.Node; i-- {
+			n = n.Tail
+		}
+		if i == 0 && n != nil {
+			n.Head = v
+		}
+	}
+}
+
+func (c CycList) Next() (n CycList) {
+	if !c.IsNil() {
+		n.Node = c.Tail
+	}
+	return
+}
+
+// Return a Cyclist with the last item of the current list as its start
+func (c CycList) End() (n CycList) {
+	if !c.IsNil() {
+		for n.Node = c.Node; n.Tail != c.Node; n.Node = n.Tail {}
+	}
+	return
+}
+
+func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *CycList:		r = reflect.DeepEqual(c, o)
-	case CycList:		r = reflect.DeepEqual(*c, o)
+	case *CycList:		r = c.Equal(*o)
+	case CycList:		r = reflect.DeepEqual(c, o)
 	default:			r = c.Node.Equal(o)
 	}
 	return 
 }
 
-func (c *CycList) Each(f func(interface{})) {
-	visited_nodes := make(memo)
-	for n := c.Node; n != nil; n = n.Tail {
-		if !visited_nodes.Memorise(n) {
-			break
-		}
-		f(n.Head)
-	}
-}
-
-func (c *CycList) _string(visited_nodes memo) (t string) {
+func (c CycList) String() (t string) {
 	if !c.IsNil() {
-		for n := c.Node; n != nil; n = n.Tail {
-			visited_nodes.Memorise(n)
-			if len(t) > 0 {
-				t += " "
-			}
-			switch h := n.Head.(type) {
-			case nil:				t += "nil"
-			case *CycList:			switch {
-									case h.Node == c.Node:
-										t += "(...)"
-									case visited_nodes.Find(h.Node) != nil:
-										t += printAddress(h.Node)
-									default:
-										if term := h._string(visited_nodes); term == "()" {
-											t += "nil"
-										} else {
-											t += term
-										}
-									}
-			case *Node:				if term := (&CycList{ h })._string(visited_nodes); term == "()" {
-										t += "nil"
-									} else {
-										t += term
-									}
-			case Addressable:		t += printAddress(h)
-			default:				t += fmt.Sprintf("%v", h)
-			}
-			if visited_nodes.Find(n.Tail) != nil {
-				if c.Node == n.Tail {
-					t += " ..."
-				} else {
-					t += " " + printAddress(n.Tail) + " head = " + printAddress(c.Node)
-				}
-				break
-			}
+		terms := []string{ fmt.Sprintf("%v", c.Head) }
+		for n := c.Node.Tail; n != c.Node; n = n.Tail {
+			terms = append(terms, fmt.Sprintf("%v", n.Head))
 		}
-		visited_nodes.Forget(c)
+		terms = append(terms, "...")
+		t = strings.Join(terms, " ")
+		t = strings.Replace(t, "()", "nil", -1)
+		t = strings.Replace(t, "<nil>", "nil", -1)
 	}
 	return "(" + t + ")"
 }
 
-func (c *CycList) String() (t string) {
-	return c._string(make(memo))
-}
-
-func (c *CycList) Len() (i int) {
+func (c CycList) Depth() (d int) {
 	if !c.IsNil() {
-		visited_nodes := make(memo)
-		for n := c.Node; n != nil; n = n.Tail {
-			if visited_nodes.Memorise(n) {
-				i++
-			} else {
-				panic(i)
+		if v, ok := c.Head.(Nested); ok {
+			if r := v.Depth() + 1; r > d {
+				d = r
 			}
 		}
-	}
-	return
-}
-
-func (c *CycList) depth(visited_nodes memo) (d int) {
-	if visited_nodes.Memorise(c) {
-		for n := c.Node; n != nil; n = n.Tail {
-			if v, ok := n.Head.(CyclicNested); ok {
-				if r := v.depth(visited_nodes); r > d {
+		for n := c.Tail; n != c.Node; n = n.Tail {
+			if v, ok := n.Head.(Nested); ok {
+				if r := v.Depth() + 1; r > d {
 					d = r
 				}
 			}
 		}
-		visited_nodes.Forget(c)
 	}
-	d++
 	return
-}
-
-func (c *CycList) Depth() int {
-	return c.depth(make(memo)) - 1
 }
 
 func (c *CycList) Reverse() {
-	if c.Tail != nil {
-		var n	*Node
-		current := &Node{ Head: c.Head, Tail: c.Tail}
-		for ; current != nil; {
-			next := current.Tail
-			current.Tail = n
-			n = current
-			current = next				
+	if !c.IsNil() {
+		list_head := &Node{ Tail: c.Node }
+		reverse_list := CycList{ list_head }
+		for n := c.Tail; n != c.Node; n = n.Tail {
+			list_head.Head = n.Head
+			list_head = &Node{ Tail: list_head }
 		}
-		*c = CycList{ n }
+		list_head.Head = c.Head
+		reverse_list.Tail = list_head
+		*c = reverse_list
 	}
+}
+
+
+
+
+
+func (c *CycList) flatten(visited_nodes memo) (r CycList) {
+	var n	*Node
+
+	for n = c.Node; n != nil; n = n.Tail {
+		//	iterate nodes and whenever a list node is met expand it
+		switch v := n.Head.(type) {
+		case LinearList:	v.Flatten()
+							n.Head = v.Head
+							t := v.End()
+							t.Tail = n.Tail
+							n.Tail = v.Tail
+		case CycList:		v.flatten(visited_nodes)
+
+
+
+
+//							n = append(n, v.flatten(visited_nodes)...)
+//					} else {
+//						n = append(n, v)
+//					}
+//		default:		n = append(n, v)
+		}
+	}
+	return r
 }
 
 func (c *CycList) Flatten() {
-	
-}
-
-func (c *CycList) At(i int) (r interface{}) {
-	var n	*Node
-	for n = c.Node; i > 0 && n.Tail != nil; i-- {
-		n = n.Tail
-	}
-	if i == 0 {
-		r = n.Head
-	}
-	return
-}
-
-func (c *CycList) Set(i int, v interface{}) {
-	var n	*Node
-	for n = c.Node; i > 0 && n.Tail != nil; i-- {
-		n = n.Tail
-	}
-	if n != nil {
-		n.Head = v
-	}
-}
-
-func (c *CycList) Link(to, from int) (ok bool) {
-	var target, source	*Node
-
-	for n, i := c.Node, 0; n != nil; n = n.Tail {
-		if i == to		{ target = n }
-		if i == from	{ source = n }
-		i++
-	}
-	if source != nil && target != nil {
-		source.Tail = target
-		ok = true
-	}
-	return
-}
-
-func (c *CycList) End() (n *Node) {
-	visited_nodes := make(memo)
-	for n = c.Node; visited_nodes.Memorise(n) && n.Tail != nil; n = n.Tail {}
-	return
+	*c = c.flatten(make(memo))
 }
