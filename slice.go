@@ -1,18 +1,34 @@
 package sexp
 
 import "fmt"
-import "reflect"
 import "unsafe"
 
 
 func SList(n... interface{}) Slice {
- 	return append(make(Slice, 0, len(n)), n...)
+	return Slice{ &n }
 }
 
-type Slice []interface{}
+type Slice struct {
+	nodes	*[]interface{}
+}
+
+func (s Slice) IsNil() (r bool) {
+	if s.nodes != nil {
+		r = s.Len() > 0
+	}
+	return
+}
+
+func (s Slice) At(i int) interface{} {
+	return (*s.nodes)[i]
+}
+
+func (s Slice) Set(i int, v interface{}) {
+	(*s.nodes)[i] = v
+}
 
 func (s Slice) String() (t string) {
-	for _, v := range s {
+	for _, v := range *s.nodes {
 		if len(t) > 0 {
 			t += " "
 		}
@@ -26,11 +42,11 @@ func (s Slice) Addr() uintptr {
 }
 
 func (s Slice) Len() int {
-	return len(s)
+	return len(*s.nodes)
 }
 
 func (s Slice) Depth() (c int) {
-	for _, v := range s {
+	for _, v := range *s.nodes {
 		if v, ok := v.(Nested); ok {
 			if r := v.Depth() + 1; r > c {
 				c = r
@@ -41,38 +57,60 @@ func (s Slice) Depth() (c int) {
 }
 
 func (s Slice) Reverse() {
-	end := len(s) - 1
+	end := len(*s.nodes) - 1
 	for i := 0; i < end; i++ {
-		s[i], s[end] = s[end], s[i]
+		(*s.nodes)[i], (*s.nodes)[end] = (*s.nodes)[end], (*s.nodes)[i]
 		end--
 	}
 }
 
-func (s Slice) flatten(visited_nodes memo) (n Slice) {
-	for _, v := range s {
-		switch v := v.(type) {
-		case Slice:		if visited_nodes.Memorise(&v) {
-							n = append(n, v.flatten(visited_nodes)...)
-						} else {
-							n = append(n, v)
-						}
-		default:		n = append(n, v)
+func (s Slice) Flatten() {
+	if s.nodes != nil {
+		n := make([]interface{}, 0, cap((*s.nodes)))
+		for _, v := range *s.nodes {
+			switch v := v.(type) {
+			case Slice:			v.Flatten()
+								n = append(n, (*v.nodes)...)
+			case Flattenable:	v.Flatten()
+								n = append(n, v)
+			default:			n = append(n, v)
+			}
+		}
+		(*s.nodes) = n
+	}
+}
+
+func (s Slice) equal(o Slice) (r bool) {
+	switch {
+	case s.IsNil():
+		r = o.IsNil()
+	case s.Len() == o.Len():
+		r = true
+		for i := 0; r && i < s.Len(); i++ {
+			n := (*s.nodes)[i]
+			x := (*o.nodes)[i]
+			fmt.Printf("Slice::equal() n = '%v', x = '%v'\n", n, x)
+			if n, ok := n.(Equatable); ok {
+				r = n.Equal(x)
+			} else {
+				r = n == x
+			}
 		}
 	}
 	return
 }
 
-func (s *Slice) Flatten() {
-	*s = s.flatten(make(memo))
-}
-
 func (s Slice) Equal(o interface{}) (r bool) {
-	return reflect.DeepEqual(s, o)
+	switch o := o.(type) {
+	case *Slice:		r = s.equal(*o)
+	case Slice:			r = s.equal(o)
+	}
+	return
 }
 
 func (s Slice) Car() (h interface{}) {
-	if len(s) > 0 {
-		h = s[0]
+	if len(*s.nodes) > 0 {
+		h = (*s.nodes)[0]
 	}
 	return
 }
@@ -86,49 +124,51 @@ func (s Slice) Caar() (h interface{}) {
 }
 
 func (s Slice) Cdr() (t Slice) {
-	switch len(s) {
+	switch len(*s.nodes) {
 	case 0:		fallthrough
 	case 1:		break
-	case 2:		if v, ok := s[1].(Slice); ok {
+	case 2:		if v, ok := (*s.nodes)[1].(Slice); ok {
 					t = v
 				} else {
-					t = s[1:]
+					x := (*s.nodes)[1:]
+					t.nodes = &x
 				}
-	default:	t = s[1:]
+	default:	x := (*s.nodes)[1:]
+				t.nodes = &x
 	}
 	return
 }
 
 func (s Slice) Cddr() (t Slice) {
-	if t = s.Cdr(); t != nil {
+	if t = s.Cdr(); t.nodes != nil {
 		t = t.Cdr()
 	}
 	return
 }
 
 func (s *Slice) Rplaca(v interface{}) {
-	switch len(*s) {
-	case 0:		*s = Slice{ v }
-	default:	(*s)[0] = v
+	switch len(*s.nodes) {
+	case 0:		*s = SList(v)
+	default:	(*s.nodes)[0] = v
 	}
 }
 
 func (s *Slice) Rplacd(v interface{}) {
-	if len(*s) == 0 {
-		*s = Slice{ v }
+	if len(*s.nodes) == 0 {
+		*s = SList(v)
 	} else {
 		switch v := v.(type) {
-		case Slice:			if len(v) >= cap(*s) {
-								n := make(Slice, len(v) + 1, len(v) + 1)
-								n[0] = (*s)[0]
-								copy(n[1:], v)
-								*s = n
+		case Slice:			if v.Len() >= cap(*s.nodes) {
+								n := make([]interface{}, v.Len() + 1, v.Len() + 1)
+								n[0] = (*s.nodes)[0]
+								copy(n[1:], *v.nodes)
+								*s.nodes = n
 							} else {
-								copy((*s)[1:], v)
+								copy((*s.nodes)[1:], *v.nodes)
 							}
-		case nil:			*s = (*s)[:1]
-		default:			(*s)[1] = v
-							*s = (*s)[:2]
+		case nil:			(*s.nodes) = (*s.nodes)[:1]
+		default:			(*s.nodes)[1] = v
+							(*s.nodes) = (*s.nodes)[:2]
 		}
 	}
 }

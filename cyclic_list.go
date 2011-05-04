@@ -1,7 +1,7 @@
 package sexp
 
 import "fmt"
-import "reflect"
+//import "reflect"
 import "strings"
 
 /*
@@ -13,8 +13,8 @@ import "strings"
 
 //	A declarative method for building CycLists
 func Loop(items... interface{}) (c CycList) {
-	c = CycList{}
-	if len(items) > 0 {
+	c = CycList{ length: len(items) }
+	if c.length > 0 {
 		c.node = &Node{}
 		n := &Node{ Tail: c.node }
 		for i := len(items); i > 0; {
@@ -29,23 +29,18 @@ func Loop(items... interface{}) (c CycList) {
 }
 
 type CycList struct {
-	node *Node
+	node 	*Node
+	length	int
 }
 
 //	The empty list is represented by a CycList containing a nil pointer to a Node
 func (c CycList) IsNil() bool {
-	return c.node == nil
+	return c.node == nil || c.length == 0
 }
 
 //	Return the number of chained elements in the list
 func (c CycList) Len() (i int) {
-	if !c.IsNil() {
-		for n := c.node; n.Tail != c.node; n = n.Tail {
-			i++
-		}
-		i++
-	}
-	return
+	return c.length
 }
 
 //	Iterate over all elements of the list
@@ -89,6 +84,7 @@ func (c CycList) Set(i int, v interface{}) {
 func (c CycList) Next() (n CycList) {
 	if !c.IsNil() {
 		n.node = c.node.Tail
+		n.length = c.length
 	}
 	return
 }
@@ -97,6 +93,7 @@ func (c CycList) Next() (n CycList) {
 func (c CycList) End() (n CycList) {
 	if !c.IsNil() {
 		for n.node = c.node; n.node.Tail != c.node; n.node = n.node.Tail {}
+		n.length = c.length
 	}
 	return
 }
@@ -106,18 +103,39 @@ func (c *CycList) Append(v interface{}) {
 	if c.IsNil() {
 		c.node = &Node{ Head: v }
 		c.node.Tail = c.node
+		c.length = 1
 	} else {
 		var n	*Node
 		for n = c.node; n.Tail != c.node; n = n.Tail {}
 		n.Tail = &Node{ Head: v, Tail: c.node }
+		c.length++
 	}
 }
 
+func (c CycList) equal(o CycList) (r bool) {
+	switch {
+	case c.IsNil():
+		r = o.IsNil()
+	case c.Len() == o.Len():
+		r = true
+		n := c.node
+		x := o.node
+		for i := 0; r && i < c.Len(); i++ {
+			if r = n.Equal(x); r {
+				n = n.Tail
+				x = x.Tail
+			}
+		}
+	}
+	return
+}
+
 //	Determines if another object is identical to the CycList
+//	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *CycList:		r = c.Equal(*o)
-	case CycList:		r = reflect.DeepEqual(c, o)
+	case *CycList:		r = c.equal(*o)
+	case CycList:		r = c.equal(o)
 	default:			r = c.node.Equal(o)
 	}
 	return 
@@ -160,18 +178,34 @@ func (c CycList) Depth() (d int) {
 //	Reverses the order in which elements of a CycList are traversed
 func (c *CycList) Reverse() {
 	if !c.IsNil() {
-		var n	*Node
-		current := &Node{ Head: c.node.Head, Tail: c.node.Tail}
+println("CycList::Reverse()")
+		var n, next		*Node
+		current := &Node{ Head: c.node.Head, Tail: c.node.Tail }
 		start := current
 		for ; current != c.node; {
-			next := current.Tail
+println("CycList::Reverse() 1.", current.String())
+			next = current.Tail
 			current.Tail = n
+println("CycList::Reverse() 2.", current.String())
 			n = current
 			current = next
 		}
+println("CycList::Reverse() current =", current.String())
 		start.Tail = n
-		*c = CycList{ node: n }
-	}
+		c.node = n
+println("CycList::Reverse() c =", c.String())
+
+/*
+		var n, next		*Node
+		current := &Node{ Head: l.node.Head, Tail: l.node.Tail }
+		for ; current != nil; {
+			next = current.Tail
+			current.Tail = n
+			n = current
+			current = next				
+		}
+		(*l.node) = *n
+*/	}
 }
 
 //	Flatten reduces all Flattenable items in the CycList to their flattest form.
@@ -181,11 +215,12 @@ func (c *CycList) Flatten() {
 		n := &Node{ Head: c.node.Head, Tail: c.node.Tail }
 		for ; n != c.node; n = n.Tail {
 			switch v := n.Head.(type) {
-			case *LinearList:			v.Flatten()
-										e := v.End()
+			case LinearList:			v.Flatten()
+										e := v.node.End()
 										e.Tail = n.Tail
-										n.Head = v.Head
-										n.Tail = v.Tail
+										n.Head = v.node.Head
+										n.Tail = v.node.Tail
+										c.length += v.length - 1
 			case Flattenable:			v.Flatten()
 			}
 		}

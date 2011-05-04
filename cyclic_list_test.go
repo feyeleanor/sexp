@@ -235,10 +235,14 @@ func TestCycListDepth(t *testing.T) {
 
 func TestCycListReverse(t *testing.T) {
 	ConfirmReverse := func(c, r CycList) {
+		t.Logf("1. c = %v", c)
+		t.Logf("1. r = %v", r)
 		c.Reverse()
+		t.Logf("2. c = %v", c)
 		if !c.Equal(r) {
 			t.Fatalf("%v should be %v", c, r)
 		}
+//		t.Logf("3. c = %v", c)
 	}
 
 	c := Loop(1)
@@ -248,18 +252,26 @@ func TestCycListReverse(t *testing.T) {
 	ConfirmReverse(Loop(1, 2), Loop(2, 1))
 	ConfirmReverse(Loop(2, 1), Loop(1, 2))
 
-	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
-	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
+	c = Loop(1, 2)
+/*	ConfirmReverse(c, Loop(2, 1))
+//t.Logf("Test:: c = %v", c)
+	ConfirmReverse(c, Loop(1, 2))
 
-	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
-	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
+//	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
+//	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
+
+//	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
+//	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
+*/
 }
 
 func TestCycListFlatten(t *testing.T) {
 	ConfirmFlatten := func(c, r CycList) {
 		c.Flatten()
 		if !c.Equal(r) {
-		t.Fatalf("%v should be %v", c, r)
+t.Logf("c = '%v', c.length = '%v'", c, c.length)
+t.Logf("r = '%v', r.length = '%v'", r, r.length)
+			t.Fatalf("%v should be %v", c, r)
 		}
 	}
 	ConfirmFlatten(Loop(), Loop())
@@ -268,5 +280,6 @@ func TestCycListFlatten(t *testing.T) {
 	ConfirmFlatten(Loop(1, Loop(2, Loop(3))), Loop(1, Loop(2, Loop(3))))
 
 	ConfirmFlatten(Loop(0, List(1)), Loop(0, 1))
+	ConfirmFlatten(Loop(0, List(1, 2), 3), Loop(0, 1, 2, 3))
 	ConfirmFlatten(Loop(0, List(1, List(2, 3), 4, List(5, List(6, 7)))), Loop(0, 1, 2, 3, 4, 5, 6, 7))
 }

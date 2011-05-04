@@ -10,6 +10,10 @@ type Flattenable interface {
 	Flatten()
 }
 
+type Equatable interface {
+	Equal(interface{}) bool
+}
+
 type Addressable interface {
 	Addr() uintptr
 }

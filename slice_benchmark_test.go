@@ -48,28 +48,28 @@ func BenchmarkSList10x10(b *testing.B) {
 }
 
 func BenchmarkSliceLen1(b *testing.B) {
-	v := Slice{ 0 }
+	v := SList(0)
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkSliceLen1x1(b *testing.B) {
-	v := Slice{ 0, Slice{ 0 } }
+	v := SList(0, SList(0))
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkSliceLen1x10(b *testing.B) {
-	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SList(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
 }
 
 func BenchmarkSliceLen10(b *testing.B) {
-	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		_ = v.Len()
 	}
@@ -99,28 +99,28 @@ func BenchmarkSliceLen10x10(b *testing.B) {
 }
 
 func BenchmarkSliceDepth1(b *testing.B) {
-	v := Slice{ 0 }
+	v := SList(0)
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkSliceDepth1x1(b *testing.B) {
-	v := Slice{ 0, Slice{ 0 } }
+	v := SList(0, SList(0))
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkSliceDepth1x10(b *testing.B) {
-	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SList(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
 }
 
 func BenchmarkSliceDepth10(b *testing.B) {
-	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		_ = v.Depth()
 	}
@@ -176,28 +176,28 @@ func BenchmarkSliceReverse10x10(b *testing.B) {
 	}
 }
 func BenchmarkSliceFlatten1(b *testing.B) {
-	v := Slice{ 0 }
+	v := SList(0)
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkSliceFlatten1x1(b *testing.B) {
-	v := Slice{ 0, Slice{ 0 } }
+	v := SList(0, SList(0))
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkSliceFlatten1x10(b *testing.B) {
-	v := Slice{ SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9) }
+	v := SList(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}
 }
 
 func BenchmarkSliceFlatten10(b *testing.B) {
-	v := Slice{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+	v := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		v.Flatten()
 	}

@@ -5,76 +5,76 @@ import "testing"
 func TestSList(t *testing.T) {
 	sxp := SList(nil, nil)
 	switch {
-	case len(sxp) != 2:		t.Fatalf("SList(nil nil) should allocate 2 cells, not %v cells", len(sxp))
-	case sxp[0] != nil:		t.Fatalf("SList(nil nil) element 0 should be nil and not %v", sxp[0])
-	case sxp[1] != nil:		t.Fatalf("SList(nil nil) element 1 should be nil and not %v", sxp[1])
+	case sxp.Len() != 2:			t.Fatalf("SList(nil nil) should allocate 2 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != nil:			t.Fatalf("SList(nil nil) element 0 should be nil and not %v", sxp.At(0))
+	case sxp.At(1) != nil:			t.Fatalf("SList(nil nil) element 1 should be nil and not %v", sxp.At(1))
 	}
 
 	sxp = SList(1, nil)
 	switch {
-	case len(sxp) != 2:		t.Fatalf("SList(1 nil) should allocate 2 cells, not %v cells", len(sxp))
-	case sxp[0] != 1:		t.Fatalf("SList(1 nil) element 0 should be 1 and not %v", sxp[0])
-	case sxp[1] != nil:		t.Fatalf("SList(1 nil) element 1 should be nil and not %v", sxp[1])
+	case sxp.Len() != 2:			t.Fatalf("SList(1 nil) should allocate 2 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != 1:			t.Fatalf("SList(1 nil) element 0 should be 1 and not %v", sxp.At(0))
+	case sxp.At(1) != nil:			t.Fatalf("SList(1 nil) element 1 should be nil and not %v", sxp.At(1))
 	}
 
 	sxp = SList(1, 2)
 	switch {
-	case len(sxp) != 2:		t.Fatalf("SList(1 2) should allocate 2 cells, not %v cells", len(sxp))
-	case sxp[0] != 1:		t.Fatalf("SList(1 2) element 0 should be 1 and not %v", sxp[0])
-	case sxp[1] != 2:		t.Fatalf("SList(1 2) element 1 should be 2 and not %v", sxp[1])
+	case sxp.Len() != 2:			t.Fatalf("SList(1 2) should allocate 2 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != 1:			t.Fatalf("SList(1 2) element 0 should be 1 and not %v", sxp.At(0))
+	case sxp.At(1) != 2:			t.Fatalf("SList(1 2) element 1 should be 2 and not %v", sxp.At(1))
 	}
 
 	sxp = SList(1, 2, 3)
 	switch {
-	case len(sxp) != 3:		t.Fatalf("SList(1 2 3) should allocate 3 cells, not %v cells", len(sxp))
-	case sxp[0] != 1:		t.Fatalf("SList(1 2 3) element 0 should be 1 and not %v", sxp[0])
-	case sxp[1] != 2:		t.Fatalf("SList(1 2 3) element 1 should be 2 and not %v", sxp[1])
-	case sxp[2] != 3:		t.Fatalf("SList(1 2 3) element 2 should be 3 and not %v", sxp[2])
+	case sxp.Len() != 3:			t.Fatalf("SList(1 2 3) should allocate 3 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != 1:			t.Fatalf("SList(1 2 3) element 0 should be 1 and not %v", sxp.At(0))
+	case sxp.At(1) != 2:			t.Fatalf("SList(1 2 3) element 1 should be 2 and not %v", sxp.At(1))
+	case sxp.At(2) != 3:			t.Fatalf("SList(1 2 3) element 2 should be 3 and not %v", sxp.At(2))
 	}
 
 	sxp = SList(1, SList(10, 20), 3)
-	rxp := Slice{ 10, 20 }
+	rxp := SList(10, 20)
 	switch {
-	case len(sxp) != 3:			t.Fatalf("SList(1 (10 20) 3) should allocate 3 cells, not %v cells", len(sxp))
-	case sxp[0] != 1:			t.Fatalf("SList(1 (10 20) 3) element 0 should be 1 and not %v", sxp[0])
-	case !rxp.Equal(sxp[1]):	t.Fatalf("SList(1 (10 20) 3) element 1 should be (10 20) and not %v", sxp[1])
-	case sxp[2] != 3:			t.Fatalf("SList(1 (10 20) 3) element 2 should be 3 and not %v", sxp[2])
+	case sxp.Len() != 3:			t.Fatalf("SList(1 (10 20) 3) should allocate 3 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != 1:			t.Fatalf("SList(1 (10 20) 3) element 0 should be 1 and not %v", sxp.At(0))
+	case !rxp.Equal(sxp.At(1)):		t.Fatalf("SList(1 (10 20) 3) element 1 should be (10 20) and not %v", sxp.At(1))
+	case sxp.At(2) != 3:			t.Fatalf("SList(1 (10 20) 3) element 2 should be 3 and not %v", sxp.At(2))
 	}
 
 
 	sxp = SList(1, SList(10, SList(-10, -30)), 3)
-	rxp = Slice{ 10, Slice{ -10, -30 } }
+	rxp = SList(10, SList(-10, -30))
 	switch {
-	case len(sxp) != 3:			t.Fatalf("SList(1 (10 20) 3) should allocate 3 cells, not %v cells", len(sxp))
-	case sxp[0] != 1:			t.Fatalf("SList(1 (10 20) 3) element 0 should be 1 and not %v", sxp[0])
-	case !rxp.Equal(sxp[1]):	t.Fatalf("SList(1 (10 20) 3) element 1 should be (10 20) and not %v", sxp[1])
-	case sxp[2] != 3:			t.Fatalf("SList(1 (10 20) 3) element 2 should be 3 and not %v", sxp[2])
+	case sxp.Len() != 3:			t.Fatalf("SList(1 (10 20) 3) should allocate 3 cells, not %v cells", sxp.Len())
+	case sxp.At(0) != 1:			t.Fatalf("SList(1 (10 20) 3) element 0 should be 1 and not %v", sxp.At(0))
+	case !rxp.Equal(sxp.At(1)):		t.Fatalf("SList(1 (10 20) 3) element 1 should be (10 20) and not %v", sxp.At(1))
+	case sxp.At(2) != 3:			t.Fatalf("SList(1 (10 20) 3) element 2 should be 3 and not %v", sxp.At(2))
 	}
 }
 
 func TestSliceString(t *testing.T) {
 	FormatError := func(x, y interface{}) { t.Fatalf("%v erroneously serialised as %v", x, y) }
-	sxp := Slice{ 0 }
+	sxp := SList(0)
 	if s := sxp.String(); s != "(0)" { FormatError("(0)", s) }
 
-	sxp = Slice{ 0, 1 }
+	sxp = SList(0, 1)
 	if s := sxp.String(); s != "(0 1)" { FormatError("(0 1)", s) }
 
-	sxp = Slice{ Slice{ 0, 1 }, 1 }
+	sxp = SList(SList(0, 1), 1)
 	if s := sxp.String(); s != "((0 1) 1)" { FormatError("((0 1) 1)", s) }
 
-	sxp = Slice{ Slice{ 0, 1 }, Slice{ 0, 1 } }
+	sxp = SList(SList(0, 1), SList(0, 1))
 	if s := sxp.String(); s != "((0 1) (0 1))" { FormatError("((0 1) (0 1))", s) }
 }
 
 func TestSliceLen(t *testing.T) {
-	sxp := Slice{ 0 }
+	sxp := SList(0)
 	if sxp.Len() != 1 { t.Fatalf("With 1 element in an Slice the length should be 1 but is %v", sxp.Len()) }
 
-	sxp = Slice{ 0, 1 }
+	sxp = SList(0, 1)
 	if sxp.Len() != 2 { t.Fatalf("With 2 element in an Slice the length should be 2 but is %v", sxp.Len()) }
 
-	sxp = Slice{ Slice{ 0, 1 }, 2 }
+	sxp = SList(SList(0, 1), 2)
 	if sxp.Len() != 2 { t.Fatalf("With 1 nested Slice the length should be 2 but is %v", sxp.Len()) }
 
 	sxp = SList(0, 1)
@@ -91,10 +91,10 @@ func TestSliceLen(t *testing.T) {
 }
 
 func TestSliceDepth(t *testing.T) {
-	sxp := Slice{ 0, 1 }
+	sxp := SList(0, 1)
 	if sxp.Depth() != 0 { t.Fatalf("With 0 nested Slice cells the depth should be 0 but is %v", sxp.Depth()) }
 
-	sxp = Slice{ Slice{ 0, 1 }, 2 }
+	sxp = SList(SList(0, 1), 2)
 	if sxp.Depth() != 1 { t.Fatalf("With 1 nested Slice cells the depth should be 1 but is %v", sxp.Depth()) }
 
 	sxp = SList(0, SList(1, 2))
@@ -133,7 +133,24 @@ func TestSliceReverse(t *testing.T) {
 }
 
 func TestSliceFlatten(t *testing.T) {
-	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
+	ConfirmFlatten := func(s, r Slice) {
+		s.Flatten()
+		if !s.Equal(r) {
+			t.Fatalf("%v should be %v", s, r)
+		}
+	}
+	ConfirmFlatten(SList(), SList())
+	ConfirmFlatten(SList(1), SList(1))
+	ConfirmFlatten(SList(1, SList(2)), SList(1, 2))
+	ConfirmFlatten(SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11)))), SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
+
+	ConfirmFlatten(SList(0, List(1, 2, SList(3, 4))), SList(0, List(1, 2, SList(3, 4))))
+	ConfirmFlatten(SList(0, List(1, 2, List(3, 4))), SList(0, List(1, 2, 3, 4)))
+	ConfirmFlatten(SList(0, List(1, 2, Loop(3, 4))), SList(0, List(1, 2, Loop(3, 4))))
+	ConfirmFlatten(SList(3, 4, SList(5, 6, 7)), SList(3, 4, 5, 6, 7))
+	ConfirmFlatten(SList(0, Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, Loop(1, 2, SList(3, 4, 5, 6, 7))))
+
+/*	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
 	rxp := SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp.Flatten()
 	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed: %v", sxp) }
@@ -146,7 +163,7 @@ func TestSliceFlatten(t *testing.T) {
 	case !rxp.Equal(sxp):						t.Fatalf("Flatten failed with explicit expansions: %v", sxp)
 	case !sxp.Equal(fxp.flatten(make(memo))):	t.Fatalf("Flatten failed with flattened expansions: %v", sxp)
 	}
-}
+*/}
 
 func TestSliceCar(t *testing.T) {
 	ConfirmCar := func(s Slice, r interface{}) {
@@ -188,7 +205,7 @@ func TestSliceCdr(t *testing.T) {
 			t.Fatalf("tail should be '%v' but is '%v'", r, n)
 		}
 	}
-	ConfirmCdr(SList(1, 2, 3), Slice{ 2, 3 })
+	ConfirmCdr(SList(1, 2, 3), SList(2, 3))
 }
 
 func TestSliceCddr(t *testing.T) {
@@ -197,9 +214,9 @@ func TestSliceCddr(t *testing.T) {
 			t.Fatalf("tail should be '%v' but is '%v'", r, n)
 		}
 	}
-	ConfirmCddr(SList(1, 2, 3), Slice{ 3 })
+	ConfirmCddr(SList(1, 2, 3), SList(3))
 	ConfirmCddr(SList(1, 2, SList(10, 20)), SList(10, 20))
-	ConfirmCddr(SList(1, SList(10, 20)), Slice{ 20 })
+	ConfirmCddr(SList(1, SList(10, 20)), SList(20))
 }
 
 func TestSliceRplaca(t *testing.T) {

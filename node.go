@@ -1,7 +1,6 @@
 package sexp
 
 import "fmt"
-import "reflect"
 import "unsafe"
 
 type Node struct {
@@ -30,12 +29,22 @@ func (n *Node) Addr() uintptr {
 	return uintptr(unsafe.Pointer(n))
 }
 
+func (n Node) equal(o Node) (r bool) {
+	if v, ok := n.Head.(Equatable); ok {
+		r = v.Equal(o.Head)
+	} else {
+		r = n.Head == o.Head
+	}
+	return
+}
+
 func (n *Node) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *Node:			r = reflect.DeepEqual(n, o)
-	case Node:			r = reflect.DeepEqual(*n, o)
+	case *Node:			r = n.equal(*o)
+	case Node:			r = n.equal(o)
+	default:			r = n.equal(Node{ Head: o })
 	}
-	return 
+	return
 }
 
 func (n *Node) String() (t string) {
