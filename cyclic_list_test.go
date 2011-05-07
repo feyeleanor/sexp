@@ -8,7 +8,7 @@ func TestCycListIsNil(t *testing.T) {
 }
 
 func TestCycListLen(t *testing.T) {
-	ConfirmLen := func(c CycList, x int) {
+	ConfirmLen := func(c *CycList, x int) {
 		if i := c.Len(); i != x {
 			t.Fatalf("'%v' length should be %v but is %v", c.String(), x, i)
 		}
@@ -40,12 +40,12 @@ func TestCycListEach(t *testing.T) {
 }
 
 func TestCycListAt(t *testing.T) {
-	ConfirmAt := func(c CycList, i int, v interface{}) {
+	ConfirmAt := func(c *CycList, i int, v interface{}) {
 		if x, _ := c.At(i); x != v {
 			t.Fatalf("List[%v] should be %v but is %v", i, v, x)
 		}
 	}
-	RefuteAt := func(c CycList, i int) {
+	RefuteAt := func(c *CycList, i int) {
 		if v, ok := c.At(i); ok {
 			t.Fatalf("List[%v] erroneously returned %v", i, v)
 		}
@@ -62,17 +62,19 @@ func TestCycListAt(t *testing.T) {
 	ConfirmAt(c, 7, 17)
 	ConfirmAt(c, 8, 18)
 	ConfirmAt(c, 9, 19)
-	RefuteAt(c, 10)
+	ConfirmAt(c, 10, 10)
+	ConfirmAt(c, 21, 11)
+	ConfirmAt(c, 32, 12)
 }
 
 func TestCycListSet(t *testing.T) {
-	ConfirmSet := func(c CycList, i int, v interface{}) {
+	ConfirmSet := func(c *CycList, i int, v interface{}) {
 		c.Set(i, v)
 		if x, _ := c.At(i); x != v {
 			t.Fatalf("List[%v] should be %v but is %v", i, v, x)
 		}
 	}
-	RefuteSet := func(c CycList, i int, v interface{}) {
+	RefuteSet := func(c *CycList, i int, v interface{}) {
 		c.Set(i, v)
 		if x, ok := c.At(i); ok {
 			t.Fatalf("List[%v] erroneously returned %v", i, x)
@@ -90,11 +92,13 @@ func TestCycListSet(t *testing.T) {
 	ConfirmSet(c, 7, 10)
 	ConfirmSet(c, 8, 10)
 	ConfirmSet(c, 9, 10)
-	RefuteSet(c, 10, 10)
+	ConfirmSet(c, 11, 11)
+	ConfirmSet(c, 22, 12)
+	ConfirmSet(c, 33, 13)
 }
 
 func TestCycListNext(t *testing.T) {
-	ConfirmNext := func(c, r CycList) {
+	ConfirmNext := func(c, r *CycList) {
 		x := c.Next()
 		if !x.Equal(r) {
 			t.Fatalf("%v should be %v", x, r)
@@ -109,7 +113,7 @@ func TestCycListNext(t *testing.T) {
 }
 
 func TestCycListEnd(t *testing.T) {
-	ConfirmEnd := func(c, r CycList) {
+	ConfirmEnd := func(c, r *CycList) {
 		x := c.End()
 		if !x.Equal(r) {
 			t.Fatalf("%v should be %v", x, r)
@@ -124,7 +128,7 @@ func TestCycListEnd(t *testing.T) {
 }
 
 func TestCycListAppend(t *testing.T) {
-	ConfirmAppend := func(c CycList, v interface{}, r CycList) {
+	ConfirmAppend := func(c *CycList, v interface{}, r *CycList) {
 		c.Append(v)
 		if !c.Equal(r) {
 			t.Fatalf("%v should be %v", c, r)
@@ -134,8 +138,19 @@ func TestCycListAppend(t *testing.T) {
 	ConfirmAppend(Loop(1), 2, Loop(1, 2))
 }
 
+func TestCycListAppendSlice(t *testing.T) {
+	ConfirmAppendSlice := func(c *CycList, s []interface{}, r *CycList) {
+		c.AppendSlice(s)
+		if !c.Equal(r) {
+			t.Fatalf("%v should be %v", c, r)
+		}
+	}
+	ConfirmAppendSlice(Loop(), []interface{}{ 1 }, Loop(1))
+	ConfirmAppendSlice(Loop(1), []interface{}{ 2, 3 }, Loop(1, 2, 3))
+}
+
 func TestCycListString(t *testing.T) {
-	ConfirmFormat := func(c CycList, x string) {
+	ConfirmFormat := func(c *CycList, x string) {
 		if s := c.String(); s != x {
 			t.Fatalf("'%v' erroneously serialised as '%v'", x, s)
 		}
@@ -151,15 +166,17 @@ func TestCycListString(t *testing.T) {
 
 	r := Loop(10, Loop(0, Loop(0)))
 	ConfirmFormat(r, "(10 (0 (0 ...) ...) ...)")
-	ConfirmFormat(r.Next(), "((0 (0 ...) ...) 10 ...)")
-	ConfirmFormat(r.Next().node.Head.(CycList), "(0 (0 ...) ...)")
+	x := r.Next()
+	ConfirmFormat(&x, "((0 (0 ...) ...) 10 ...)")
+	x = *(r.Next().start.Head.(*CycList))
+	ConfirmFormat(&x, "(0 (0 ...) ...)")
 
 	r = Loop(r, 0, Loop(-1, -2, r))
 	ConfirmFormat(r, "((10 (0 (0 ...) ...) ...) 0 (-1 -2 (10 (0 (0 ...) ...) ...) ...) ...)")
 }
 
 func TestLoop(t *testing.T) {
-	ConfirmFormat := func(c CycList, x string) {
+	ConfirmFormat := func(c *CycList, x string) {
 		if s := c.String(); s != x {
 			t.Fatalf("'%v' erroneously serialised as '%v'", x, s)
 		}
@@ -178,7 +195,7 @@ func TestLoop(t *testing.T) {
 }
 
 func TestCycListDepth(t *testing.T) {
-	ConfirmDepth := func(c CycList, x int) {
+	ConfirmDepth := func(c *CycList, x int) {
 		if i := c.Depth(); i != x {
 			t.Fatalf("'%v' depth should be %v but is %v", c.String(), x, i)
 		}
@@ -234,7 +251,7 @@ func TestCycListDepth(t *testing.T) {
 }
 
 func TestCycListReverse(t *testing.T) {
-	ConfirmReverse := func(c, r CycList) {
+	ConfirmReverse := func(c, r *CycList) {
 		t.Logf("1. c = %v", c)
 		t.Logf("1. r = %v", r)
 		c.Reverse()
@@ -253,8 +270,7 @@ func TestCycListReverse(t *testing.T) {
 	ConfirmReverse(Loop(2, 1), Loop(1, 2))
 
 	c = Loop(1, 2)
-/*	ConfirmReverse(c, Loop(2, 1))
-//t.Logf("Test:: c = %v", c)
+	ConfirmReverse(c, Loop(2, 1))
 	ConfirmReverse(c, Loop(1, 2))
 
 //	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
@@ -262,11 +278,10 @@ func TestCycListReverse(t *testing.T) {
 
 //	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
 //	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
-*/
 }
 
 func TestCycListFlatten(t *testing.T) {
-	ConfirmFlatten := func(c, r CycList) {
+	ConfirmFlatten := func(c, r *CycList) {
 		c.Flatten()
 		if !c.Equal(r) {
 t.Logf("c = '%v', c.length = '%v'", c, c.length)

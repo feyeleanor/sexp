@@ -12,30 +12,21 @@ import "strings"
 */
 
 //	A declarative method for building CycLists
-func Loop(items... interface{}) (c CycList) {
-	c = CycList{ length: len(items) }
-	if c.length > 0 {
-		c.node = &Node{}
-		n := &Node{ Tail: c.node }
-		for i := len(items); i > 0; {
-			i--
-			n.Head = items[i]
-			n = &Node{ Tail: n }
-		}
-		c.node.Head = items[0]
-		c.node.Tail = n.Tail.Tail
-	}
+func Loop(items... interface{}) (c *CycList) {
+	c = new(CycList)
+	c.AppendSlice(items)
 	return
 }
 
 type CycList struct {
-	node 	*Node
+	start 	*Node
+	end		*Node
 	length	int
 }
 
 //	The empty list is represented by a CycList containing a nil pointer to a Node
 func (c CycList) IsNil() bool {
-	return c.node == nil || c.length == 0
+	return c.start == nil || c.length == 0
 }
 
 //	Return the number of chained elements in the list
@@ -47,7 +38,7 @@ func (c CycList) Len() (i int) {
 //	The only way to terminate iteration is by raising a panic() in the applied function
 func (c CycList) Each(f func(interface{})) {
 	if !c.IsNil() {
-		for n := c.node; ; n = n.Tail {
+		for n := c.start; ; n = n.Tail {
 			f(n.Head)
 		}
 	}
@@ -57,7 +48,8 @@ func (c CycList) Each(f func(interface{})) {
 func (c CycList) At(i int) (r interface{}, ok bool) {
 	if !c.IsNil() {
 		var n		*Node
-		for n = c.node; i > 0 && n.Tail != c.node; i-- {
+		i = i % c.length
+		for n = c.start; i > 0 && n != c.end; i-- {
 			n = n.Tail
 		}
 		if i == 0 && n != nil {
@@ -71,7 +63,8 @@ func (c CycList) At(i int) (r interface{}, ok bool) {
 func (c CycList) Set(i int, v interface{}) {
 	if !c.IsNil() {
 		var n	*Node
-		for n = c.node; i > 0 && n.Tail != c.node; i-- {
+		i = i % c.length
+		for n = c.start; i > 0 && n.Tail != c.start; i-- {
 			n = n.Tail
 		}
 		if i == 0 && n != nil {
@@ -83,7 +76,8 @@ func (c CycList) Set(i int, v interface{}) {
 //	Return a Cyclist with the next item in the current list as its start
 func (c CycList) Next() (n CycList) {
 	if !c.IsNil() {
-		n.node = c.node.Tail
+		n.start = c.start.Tail
+		n.end = c.end.Tail
 		n.length = c.length
 	}
 	return
@@ -92,7 +86,8 @@ func (c CycList) Next() (n CycList) {
 // Return a Cyclist with the last concrete item of the current list as its start
 func (c CycList) End() (n CycList) {
 	if !c.IsNil() {
-		for n.node = c.node; n.node.Tail != c.node; n.node = n.node.Tail {}
+		n.start = c.end
+		n.end = c.start
 		n.length = c.length
 	}
 	return
@@ -101,14 +96,28 @@ func (c CycList) End() (n CycList) {
 //	
 func (c *CycList) Append(v interface{}) {
 	if c.IsNil() {
-		c.node = &Node{ Head: v }
-		c.node.Tail = c.node
+		c.start = &Node{ Head: v }
+		c.start.Tail = c.start
+		c.end = c.start
 		c.length = 1
 	} else {
-		var n	*Node
-		for n = c.node; n.Tail != c.node; n = n.Tail {}
-		n.Tail = &Node{ Head: v, Tail: c.node }
+		c.end.Tail = &Node{ Head: v, Tail: c.start }
+		c.end = c.end.Tail
 		c.length++
+	}
+}
+
+func (c *CycList) AppendSlice(s []interface{}) {
+	if len(s) > 0 {
+		if c.IsNil() {
+			c.Append(s[0])
+			s = s[1:]
+		}
+		for _, v := range s {
+			c.end.Tail = &Node{ Head: v, Tail: c.start }
+			c.end = c.end.Tail
+		}
+		c.length += len(s)
 	}
 }
 
@@ -118,8 +127,8 @@ func (c CycList) equal(o CycList) (r bool) {
 		r = o.IsNil()
 	case c.Len() == o.Len():
 		r = true
-		n := c.node
-		x := o.node
+		n := c.start
+		x := o.start
 		for i := 0; r && i < c.Len(); i++ {
 			if r = n.Equal(x); r {
 				n = n.Tail
@@ -136,7 +145,7 @@ func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case *CycList:		r = c.equal(*o)
 	case CycList:		r = c.equal(o)
-	default:			r = c.node.Equal(o)
+	default:			r = c.start.Equal(o)
 	}
 	return 
 }
@@ -144,8 +153,8 @@ func (c CycList) Equal(o interface{}) (r bool) {
 //	Produces a human-readable representation for the CycList
 func (c CycList) String() (t string) {
 	if !c.IsNil() {
-		terms := []string{ fmt.Sprintf("%v", c.node.Head) }
-		for n := c.node.Tail; n != c.node; n = n.Tail {
+		terms := []string{ fmt.Sprintf("%v", c.start.Head) }
+		for n := c.start.Tail; n != c.start; n = n.Tail {
 			terms = append(terms, fmt.Sprintf("%v", n.Head))
 		}
 		terms = append(terms, "...")
@@ -159,12 +168,12 @@ func (c CycList) String() (t string) {
 //	Calculates the nesting of elements within the CycList
 func (c CycList) Depth() (d int) {
 	if !c.IsNil() {
-		if v, ok := c.node.Head.(Nested); ok {
+		if v, ok := c.start.Head.(Nested); ok {
 			if r := v.Depth() + 1; r > d {
 				d = r
 			}
 		}
-		for n := c.node.Tail; n != c.node; n = n.Tail {
+		for n := c.start.Tail; n != c.start; n = n.Tail {
 			if v, ok := n.Head.(Nested); ok {
 				if r := v.Depth() + 1; r > d {
 					d = r
@@ -178,42 +187,32 @@ func (c CycList) Depth() (d int) {
 //	Reverses the order in which elements of a CycList are traversed
 func (c *CycList) Reverse() {
 	if !c.IsNil() {
-println("CycList::Reverse()")
-		var n, next		*Node
-		current := &Node{ Head: c.node.Head, Tail: c.node.Tail }
-		start := current
-		for ; current != c.node; {
-println("CycList::Reverse() 1.", current.String())
-			next = current.Tail
-			current.Tail = n
-println("CycList::Reverse() 2.", current.String())
-			n = current
-			current = next
-		}
-println("CycList::Reverse() current =", current.String())
-		start.Tail = n
-		c.node = n
-println("CycList::Reverse() c =", c.String())
+		var result	*Node
 
-/*
-		var n, next		*Node
-		current := &Node{ Head: l.node.Head, Tail: l.node.Tail }
+		current := c.start
+		c.end = current
+
 		for ; current != nil; {
-			next = current.Tail
-			current.Tail = n
-			n = current
-			current = next				
+			next := current.Tail
+			current.Tail = result
+			result = current
+			current = next
+			if current == c.start {
+				break
+			}
 		}
-		(*l.node) = *n
-*/	}
+		c.start.Tail = result
+		c.start = result
+		c.end.Tail = c.start
+	}
 }
 
 //	Flatten reduces all Flattenable items in the CycList to their flattest form.
 //	In the case of LinearList items these will be spliced inline into the CycList.
 func (c *CycList) Flatten() {
 	if !c.IsNil() {
-		n := &Node{ Head: c.node.Head, Tail: c.node.Tail }
-		for ; n != c.node; n = n.Tail {
+		n := &Node{ Head: c.start.Head, Tail: c.start.Tail }
+		for ; n != c.start; n = n.Tail {
 			switch v := n.Head.(type) {
 			case LinearList:			v.Flatten()
 										e := v.node.End()
