@@ -74,11 +74,12 @@ func (c CycList) Set(i int, v interface{}) {
 }
 
 //	Return a Cyclist with the next item in the current list as its start
-func (c CycList) Next() (n CycList) {
+func (c *CycList) Next() {
 	if !c.IsNil() {
-		n.start = c.start.Tail
-		n.end = c.end.Tail
-		n.length = c.length
+		start := c.start.Tail
+		end := c.end.Tail
+		c.start = start
+		c.end = end
 	}
 	return
 }

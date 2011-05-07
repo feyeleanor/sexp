@@ -99,9 +99,9 @@ func TestCycListSet(t *testing.T) {
 
 func TestCycListNext(t *testing.T) {
 	ConfirmNext := func(c, r *CycList) {
-		x := c.Next()
-		if !x.Equal(r) {
-			t.Fatalf("%v should be %v", x, r)
+		c.Next()
+		if !c.Equal(r) {
+			t.Fatalf("%v should be %v", c, r)
 		}
 	}
 	ConfirmNext(Loop(), Loop())
@@ -151,13 +151,12 @@ func TestCycListString(t *testing.T) {
 
 	r := Loop(10, Loop(0, Loop(0)))
 	ConfirmFormat(r, "(10 (0 (0 ...) ...) ...)")
-	x := r.Next()
-	ConfirmFormat(&x, "((0 (0 ...) ...) 10 ...)")
-	x = *(r.Next().start.Head.(*CycList))
-	ConfirmFormat(&x, "(0 (0 ...) ...)")
+	r.Next()
+	ConfirmFormat(r, "((0 (0 ...) ...) 10 ...)")
+	ConfirmFormat(r.start.Head.(*CycList), "(0 (0 ...) ...)")
 
 	r = Loop(r, 0, Loop(-1, -2, r))
-	ConfirmFormat(r, "((10 (0 (0 ...) ...) ...) 0 (-1 -2 (10 (0 (0 ...) ...) ...) ...) ...)")
+	ConfirmFormat(r, "(((0 (0 ...) ...) 10 ...) 0 (-1 -2 ((0 (0 ...) ...) 10 ...) ...) ...)")
 }
 
 func TestLoop(t *testing.T) {
@@ -237,14 +236,10 @@ func TestCycListDepth(t *testing.T) {
 
 func TestCycListReverse(t *testing.T) {
 	ConfirmReverse := func(c, r *CycList) {
-		t.Logf("1. c = %v", c)
-		t.Logf("1. r = %v", r)
 		c.Reverse()
-		t.Logf("2. c = %v", c)
 		if !c.Equal(r) {
 			t.Fatalf("%v should be %v", c, r)
 		}
-//		t.Logf("3. c = %v", c)
 	}
 
 	c := Loop(1)
@@ -258,19 +253,21 @@ func TestCycListReverse(t *testing.T) {
 	ConfirmReverse(c, Loop(2, 1))
 	ConfirmReverse(c, Loop(1, 2))
 
-//	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
-//	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
+	ConfirmReverse(Loop(1, 2, 3), Loop(3, 2, 1))
+	ConfirmReverse(Loop(3, 2, 1), Loop(1, 2, 3))
 
-//	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
-//	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
+	c = Loop(1, 2, 3)
+	ConfirmReverse(c, Loop(3, 2, 1))
+	ConfirmReverse(c, Loop(1, 2, 3))
+
+	ConfirmReverse(Loop(1, 2, 3, 4), Loop(4, 3, 2, 1))
+	ConfirmReverse(Loop(4, 3, 2, 1), Loop(1, 2, 3, 4))
 }
 
 func TestCycListFlatten(t *testing.T) {
 	ConfirmFlatten := func(c, r *CycList) {
 		c.Flatten()
 		if !c.Equal(r) {
-t.Logf("c = '%v', c.length = '%v'", c, c.length)
-t.Logf("r = '%v', r.length = '%v'", r, r.length)
 			t.Fatalf("%v should be %v", c, r)
 		}
 	}
