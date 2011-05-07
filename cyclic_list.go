@@ -34,9 +34,19 @@ func (c CycList) Len() (i int) {
 	return c.length
 }
 
-//	Iterate over all elements of the list
-//	The only way to terminate iteration is by raising a panic() in the applied function
+//	Iterate over all elements of the list once
 func (c CycList) Each(f func(interface{})) {
+	if !c.IsNil() {
+		f(c.start.Head)
+		for n := c.start.Tail; n != c.start; n = n.Tail {
+			f(n.Head)
+		}
+	}
+}
+
+//	Iterate over all elements of the list indefinitely
+//	The only way to terminate iteration is by raising a panic() in the applied function
+func (c CycList) Cycle(f func(interface{})) {
 	if !c.IsNil() {
 		for n := c.start; ; n = n.Tail {
 			f(n.Head)

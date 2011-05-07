@@ -22,13 +22,25 @@ func TestCycListLen(t *testing.T) {
 func TestCycListEach(t *testing.T) {
 	c := Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
+	c.Each(func(i interface{}) {
+		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		count++
+	})
+	if count != c.length {
+		t.Fatalf("loop ith length %v erroneously reported iterations as %v", c.length, count)
+	}
+}
+
+func TestCycListCycle(t *testing.T) {
+	c := Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	count := 0
 	func() {
 		defer func() {
 			if x := recover(); x == nil {
 				t.Fatalf("Each terminated without raising an exception")
 			}
 		}()
-		c.Each(func(i interface{}) {
+		c.Cycle(func(i interface{}) {
 			if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
 			count++
 			if count == c.Len() {
@@ -36,7 +48,6 @@ func TestCycListEach(t *testing.T) {
 			}
 		})
 	}()
-
 }
 
 func TestCycListAt(t *testing.T) {
