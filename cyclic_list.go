@@ -83,16 +83,6 @@ func (c CycList) Next() (n CycList) {
 	return
 }
 
-// Return a Cyclist with the last concrete item of the current list as its start
-func (c CycList) End() (n CycList) {
-	if !c.IsNil() {
-		n.start = c.end
-		n.end = c.start
-		n.length = c.length
-	}
-	return
-}
-
 //	
 func (c *CycList) Append(v interface{}) {
 	if c.IsNil() {

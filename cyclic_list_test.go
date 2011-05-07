@@ -112,21 +112,6 @@ func TestCycListNext(t *testing.T) {
 	ConfirmNext(Loop(0, 1, Loop(2), 3), Loop(1, Loop(2), 3, 0))
 }
 
-func TestCycListEnd(t *testing.T) {
-	ConfirmEnd := func(c, r *CycList) {
-		x := c.End()
-		if !x.Equal(r) {
-			t.Fatalf("%v should be %v", x, r)
-		}
-	}
-	ConfirmEnd(Loop(), Loop())
-	ConfirmEnd(Loop(0), Loop(0))
-	ConfirmEnd(Loop(0, 1), Loop(1, 0))
-	ConfirmEnd(Loop(0, 1, 2), Loop(2, 0, 1))
-	ConfirmEnd(Loop(0, 1, 2, 3), Loop(3, 0, 1, 2))
-	ConfirmEnd(Loop(0, 1, Loop(2), 3), Loop(3, 0, 1, Loop(2)))
-}
-
 func TestCycListAppend(t *testing.T) {
 	ConfirmAppend := func(c *CycList, v interface{}, r *CycList) {
 		c.Append(v)
