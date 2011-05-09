@@ -1,7 +1,5 @@
 package sexp
 
-import "fmt"
-
 type Nested interface {
 	Depth() int
 }

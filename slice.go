@@ -1,8 +1,6 @@
 package sexp
 
 import "fmt"
-import "unsafe"
-
 
 func SList(n... interface{}) Slice {
 	return Slice{ &n }
@@ -12,11 +10,12 @@ type Slice struct {
 	nodes	*[]interface{}
 }
 
-func (s Slice) IsNil() (r bool) {
-	if s.nodes != nil {
-		r = s.Len() > 0
-	}
-	return
+func (s Slice) IsNil() bool {
+	return s.nodes == nil || s.Len() > 0
+}
+
+func (s Slice) NotNil() bool {
+	return s.nodes != nil && s.Len() > 0
 }
 
 func (s Slice) At(i int) interface{} {
@@ -28,11 +27,13 @@ func (s Slice) Set(i int, v interface{}) {
 }
 
 func (s Slice) String() (t string) {
-	for _, v := range *s.nodes {
-		if len(t) > 0 {
-			t += " "
+	if s.NotNil() {
+		for _, v := range *s.nodes {
+			if len(t) > 0 {
+				t += " "
+			}
+			t += fmt.Sprintf("%v", v)
 		}
-		t += fmt.Sprintf("%v", v)
 	}
 	return fmt.Sprintf("(%v)", t)
 }
@@ -42,10 +43,12 @@ func (s Slice) Len() int {
 }
 
 func (s Slice) Depth() (c int) {
-	for _, v := range *s.nodes {
-		if v, ok := v.(Nested); ok {
-			if r := v.Depth() + 1; r > c {
-				c = r
+	if s.NotNil() {
+		for _, v := range *s.nodes {
+			if v, ok := v.(Nested); ok {
+				if r := v.Depth() + 1; r > c {
+					c = r
+				}
 			}
 		}
 	}
@@ -53,15 +56,17 @@ func (s Slice) Depth() (c int) {
 }
 
 func (s Slice) Reverse() {
-	end := len(*s.nodes) - 1
-	for i := 0; i < end; i++ {
-		(*s.nodes)[i], (*s.nodes)[end] = (*s.nodes)[end], (*s.nodes)[i]
-		end--
+	if s.NotNil() {
+		end := len(*s.nodes) - 1
+		for i := 0; i < end; i++ {
+			(*s.nodes)[i], (*s.nodes)[end] = (*s.nodes)[end], (*s.nodes)[i]
+			end--
+		}
 	}
 }
 
 func (s Slice) Flatten() {
-	if s.nodes != nil {
+	if s.NotNil() {
 		n := make([]interface{}, 0, cap((*s.nodes)))
 		for _, v := range *s.nodes {
 			switch v := v.(type) {
@@ -105,7 +110,7 @@ func (s Slice) Equal(o interface{}) (r bool) {
 }
 
 func (s Slice) Car() (h interface{}) {
-	if len(*s.nodes) > 0 {
+	if s.NotNil() {
 		h = (*s.nodes)[0]
 	}
 	return
@@ -120,37 +125,39 @@ func (s Slice) Caar() (h interface{}) {
 }
 
 func (s Slice) Cdr() (t Slice) {
-	switch len(*s.nodes) {
-	case 0:		fallthrough
-	case 1:		break
-	case 2:		if v, ok := (*s.nodes)[1].(Slice); ok {
-					t = v
-				} else {
-					x := (*s.nodes)[1:]
+	if s.NotNil() {
+		switch len(*s.nodes) {
+		case 1:		break
+		case 2:		if v, ok := (*s.nodes)[1].(Slice); ok {
+						t = v
+					} else {
+						x := (*s.nodes)[1:]
+						t.nodes = &x
+					}
+		default:	x := (*s.nodes)[1:]
 					t.nodes = &x
-				}
-	default:	x := (*s.nodes)[1:]
-				t.nodes = &x
+		}
 	}
 	return
 }
 
 func (s Slice) Cddr() (t Slice) {
-	if t = s.Cdr(); t.nodes != nil {
+	if t = s.Cdr(); t.NotNil() {
 		t = t.Cdr()
 	}
 	return
 }
 
 func (s *Slice) Rplaca(v interface{}) {
-	switch len(*s.nodes) {
-	case 0:		*s = SList(v)
-	default:	(*s.nodes)[0] = v
+	if s.IsNil() {
+		*s = SList(v)
+	} else {
+		(*s.nodes)[0] = v
 	}
 }
 
 func (s *Slice) Rplacd(v interface{}) {
-	if len(*s.nodes) == 0 {
+	if s.IsNil() {
 		*s = SList(v)
 	} else {
 		switch v := v.(type) {

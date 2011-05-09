@@ -1,7 +1,6 @@
 package sexp
 
 import "fmt"
-import "unsafe"
 
 type Node struct {
 	Head		interface{}
