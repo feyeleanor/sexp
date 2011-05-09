@@ -90,6 +90,15 @@ func TestSliceLen(t *testing.T) {
 	if sxp.Len() != 5 { t.Fatalf("With 2 nested SList cells plus recursion the length should be 5 but is %v", sxp.Len()) }
 }
 
+func TestSliceEach(t *testing.T) {
+	c := SList(0, 1, 2, 3, 4, 5, 6, 7, 8 ,9)
+	count := 0
+	c.Each(func(i interface{}) {
+		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		count++
+	})
+}
+
 func TestSliceDepth(t *testing.T) {
 	sxp := SList(0, 1)
 	if sxp.Depth() != 0 { t.Fatalf("With 0 nested Slice cells the depth should be 0 but is %v", sxp.Depth()) }

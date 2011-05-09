@@ -26,6 +26,12 @@ func (s Slice) Set(i int, v interface{}) {
 	(*s.nodes)[i] = v
 }
 
+func (s Slice) Each(f func(interface{})) {
+	for _, v := range *(s.nodes) {
+		f(v)
+	}
+}
+
 func (s Slice) String() (t string) {
 	if s.NotNil() {
 		for _, v := range *s.nodes {
