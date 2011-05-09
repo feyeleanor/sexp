@@ -37,10 +37,6 @@ func (s Slice) String() (t string) {
 	return fmt.Sprintf("(%v)", t)
 }
 
-func (s Slice) Addr() uintptr {
-	return uintptr(unsafe.Pointer(&s))
-}
-
 func (s Slice) Len() int {
 	return len(*s.nodes)
 }

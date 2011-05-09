@@ -4,7 +4,6 @@ TARG=sexp
 
 GOFILES=\
 	interfaces.go\
-	memo.go\
 	node.go\
 	slice.go\
 	linear_list.go\

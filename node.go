@@ -25,10 +25,6 @@ func (n Node) IsNil() bool {
 	return (n.Head == nil) && (n.Tail == nil)
 }
 
-func (n *Node) Addr() uintptr {
-	return uintptr(unsafe.Pointer(n))
-}
-
 func (n Node) equal(o Node) (r bool) {
 	if v, ok := n.Head.(Equatable); ok {
 		r = v.Equal(o.Head)

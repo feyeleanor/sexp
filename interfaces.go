@@ -13,11 +13,3 @@ type Flattenable interface {
 type Equatable interface {
 	Equal(interface{}) bool
 }
-
-type Addressable interface {
-	Addr() uintptr
-}
-
-func printAddress(a Addressable) string {
-	return fmt.Sprintf("[%v]", a.Addr())
-}
