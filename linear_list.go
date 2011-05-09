@@ -3,41 +3,93 @@ package sexp
 import "fmt"
 import "strings"
 
-func List(items... interface{}) (l LinearList) {
-	n := &Node{}
-	l.node = n
-	tails := len(items) - 1
-	for i, v := range items {
-		if v == nil {
-			n.Head = &Node{}
-		} else {
-			n.Head = v
-		}
-		if i < tails {
-			n.Tail = &Node{}
-		}
-		n = n.Tail
-	}
-	l.length = len(items)
+/*
+	A LinearList is a finitely-terminated list structure.
+	Each node in the list may point to exactly one other node in the list.
+	The terminating node does not point to any other node.
+	No node may be pointed to by more than one other node in the list.
+	There are no nil links between nodes in the list.
+*/
+
+func List(items... interface{}) (l *LinearList) {
+	l = new(LinearList)
+	l.AppendSlice(items)
 	return
 }
 
 type LinearList struct {
-	node	*Node
+	start	*Node
+	end		*Node
 	length	int
 }
 
 func (l LinearList) IsNil() bool {
-	return l.node == nil || l.length == 0
+	return l.start == nil || l.end == nil || l.length == 0
 }
 
-func (l LinearList) Len() int {
-	return l.length
+func (l LinearList) NotNil() bool {
+	return l.start != nil && l.end != nil && l.length != 0
+}
+
+func (l LinearList) Len() (c int) {
+	if l.NotNil() {
+		c = l.length
+	}
+	return
 }
 
 func (l LinearList) Each(f func(interface{})) {
-	for n := l.node; n != nil; n = n.Tail {
-		f(n.Head)
+	if l.NotNil() {
+		for n := l.start; n != nil; n = n.Tail {
+			f(n.Head)
+		}
+	}
+}
+
+func (l LinearList) At(i int) (r interface{}) {
+	if l.NotNil() {
+		var n	*Node
+		for n = l.start; i > 0; i-- {
+			n = n.Tail
+		}
+		r = n.Head
+	}
+	return
+}
+
+func (l LinearList) Set(i int, v interface{}) {
+	if l.NotNil() {
+		var n	*Node
+		for n = l.start; i > 0; i-- {
+			n = n.Tail
+		}
+		n.Head = v
+	}
+}
+
+func (l *LinearList) Append(v interface{}) {
+	if l.IsNil() {
+		l.start = &Node{ Head: v }
+		l.end = l.start
+		l.length = 1
+	} else {
+		l.end.Tail = &Node{ Head: v }
+		l.end = l.end.Tail
+		l.length++
+	}
+}
+
+func (l *LinearList) AppendSlice(s []interface{}) {
+	if len(s) > 0 {
+		if l.IsNil() {
+			l.Append(s[0])
+			s = s[1:]
+		}
+		for _, v := range s {
+			l.end.Tail = &Node{ Head: v }
+			l.end = l.end.Tail
+		}
+		l.length += len(s)
 	}
 }
 
@@ -47,8 +99,8 @@ func (l LinearList) equal(o LinearList) (r bool) {
 		r = o.IsNil()
 	case l.Len() == o.Len():
 		r = true
-		n := l.node
-		x := o.node
+		n := l.start
+		x := o.start
 		for i := 0; r && i < l.Len(); i++ {
 			if r = n.Equal(x); r {
 				n = n.Tail
@@ -59,11 +111,13 @@ func (l LinearList) equal(o LinearList) (r bool) {
 	return
 }
 
+//	Determines if another object is equivalent to the LinearList
+//	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (l LinearList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case *LinearList:	r = l.equal(*o)
 	case LinearList:	r = l.equal(o)
-	default:			r = l.node.Equal(o)
+	default:			r = l.start.Equal(o)
 	}
 	return 
 }
@@ -71,7 +125,7 @@ func (l LinearList) Equal(o interface{}) (r bool) {
 func (l LinearList) String() (t string) {
 	if l.length > 0 {
 		terms := []string{}
-		for n := l.node; n != nil; n = n.Tail {
+		for n := l.start; n != nil; n = n.Tail {
 			terms = append(terms, fmt.Sprintf("%v", n.Head))
 		}
 		t = strings.Join(terms, " ")
@@ -82,7 +136,7 @@ func (l LinearList) String() (t string) {
 }
 
 func (l LinearList) Depth() (d int) {
-	for n := l.node; n != nil; n = n.Tail {
+	for n := l.start; n != nil; n = n.Tail {
 		if v, ok := n.Head.(Nested); ok {
 			if r := v.Depth() + 1; r > d {
 				d = r
@@ -92,87 +146,64 @@ func (l LinearList) Depth() (d int) {
 	return
 }
 
-func (l LinearList) Reverse() {
-	if !l.IsNil() {
-		var n, next		*Node
-		current := &Node{ Head: l.node.Head, Tail: l.node.Tail }
+//	Reverses the order in which elements of a CycList are traversed
+func (l *LinearList) Reverse() {
+	if l.NotNil() {
+		var next, result		*Node
+//		current := &Node{ Head: l.start.Head, Tail: l.start.Tail }
+		current := l.start
+		l.end = current
+
 		for ; current != nil; {
 			next = current.Tail
-			current.Tail = n
-			n = current
+			current.Tail = result
+			result = current
 			current = next				
 		}
-		(*l.node) = *n
+		l.start = result
 	}
 }
 
 func (l *LinearList) Flatten() {
-	if l.length > 0 {
-		for n := l.node; n != nil; n = n.Tail {
+	if l.NotNil() {
+		for n := l.start; n != nil; n = n.Tail {
 			switch h := n.Head.(type) {
-			case LinearList:	h.Flatten()
-								n.Head = h.node.Head
-								t := h.node.End()
-								t.Tail = n.Tail
-								n.Tail = h.node.Tail
-								l.length += h.length - 1
-			case Flattenable:	h.Flatten()
+			case *LinearList:		switch {
+									case h.IsNil():			n.Head = nil
+									case h.length == 1:		n.Head = h.start.Head
+									case n == l.end:		h.Flatten()
+															l.end = h.end
+															n.Head = h.start.Head
+															n.Tail = h.start.Tail
+															l.length += h.length - 1
+									default:				h.Flatten()
+															h.end.Tail = n.Tail
+															n.Head = h.start.Head
+															n.Tail = h.start.Tail
+															l.length += h.length - 1
+									}
+			case Flattenable:		h.Flatten()
 			}
 		}
 	}
 }
 
-func (l LinearList) At(i int) (n interface{}) {
-	if i < l.length {
-		var c	*Node
-		for c = l.node; i > 0 && c.Tail != nil; i-- {
-			c = c.Tail
-		}
-		if i == 0 {
-			n = c.Head
-		}
-	}
-	return
-}
-
-func (l LinearList) Set(i int, v interface{}) {
-	if i < l.length {
-		var c	*Node
-		for c = l.node; i > 0 && c.Tail != nil; i-- {
-			c = c.Tail
-		}
-		if c != nil {
-			c.Head = v
-		}
-	}
-}
-
-func (l *LinearList) Append(v interface{}) {
-	if l.IsNil() {
-		l.node = &Node{ Head: v }
-	} else {
-		e := l.node.End()
-		e.Append(v)
-	}
-	l.length++
-}
-
 func (l *LinearList) Delete(from, to int) {
-	if from >= 0 && from <= to && to < l.length {
+	if l.NotNil() && from >= 0 && from <= to && to < l.length {
 		var r				LinearList
 		var tail_l, tail_r	*Node
 
-		r.node = l.node
+		r.start = l.start
 		for r.length = 0; r.length < from; r.length++ {
-			tail_l = r.node
-			r.node = r.node.Tail
+			tail_l = r.start
+			r.start = r.start.Tail
 		}
 
-		for tail_r = r.node; r.length < to; r.length++ {
+		for tail_r = r.start; r.length < to; r.length++ {
 			tail_r = tail_r.Tail
 		}
 		if from == 0 {
-			l.node = tail_r.Tail
+			l.start = tail_r.Tail
 		} else {
 			tail_l.Tail = tail_r.Tail
 		}
@@ -184,7 +215,8 @@ func (l *LinearList) Delete(from, to int) {
 func (l *LinearList) Cut(from, to int) (r LinearList) {
 	defer func() {
 		if recover() != nil {
-			r.node = nil
+			r.start = nil
+			r.end = nil
 			r.length = 0
 		}
 	}()
@@ -195,60 +227,83 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 
 	var tail_l, tail_r	*Node
 
-	r.node = l.node
+	r.start = l.start
 	for r.length = 0; r.length < from; r.length++ {
-		tail_l = r.node
-		r.node = r.node.Tail
+		tail_l = r.start
+		r.start = r.start.Tail
 	}
 
-	for tail_r = r.node; r.length < to; r.length++ {
+	for tail_r = r.start; r.length < to; r.length++ {
 		tail_r = tail_r.Tail
 	}
 	if from == 0 {
-		l.node = tail_r.Tail
+		l.start = tail_r.Tail
 	} else {
 		tail_l.Tail = tail_r.Tail
 	}
 	r.length = to - from + 1
 	l.length -= r.length
 	tail_r.Tail = nil
+	r.end = tail_r
 	return
 }
 
-func (l LinearList) Insert(i int, n LinearList) {
-	
+func (l *LinearList) Insert(i int, o *LinearList) {
+	if l.NotNil() {
+		var n	*Node
+		for n = l.start; i > 0; i-- {
+			n = n.Tail
+		}
+		switch {
+		case n == nil:
+			l.start = o.start
+			l.end = o.end
+			l.length = o.length
+		case n.Tail == nil:
+			n.Head = o.start.Head
+			n.Tail = o.start.Tail
+			l.end = o.end
+			l.length += o.length
+		default:
+			n.Head = o.start.Head
+			n.Tail = o.start.Tail
+			l.length += o.length
+		}
+	}
 }
 
 func (l LinearList) Car() (r interface{}) {
-	if l.node != nil {
-		r = l.node.Head
+	if l.NotNil() {
+		r = l.start.Head
 	}
 	return
 }
 
 func (l LinearList) Cdr() (r LinearList) {
-	if l.length > 0 {
-		r.node = l.node.Tail
+	if l.NotNil() {
+		r.start = l.start.Tail
+		r.end = l.end
 		r.length = l.length - 1
 	}
 	return
 }
 
 func (l *LinearList) Rplaca(i interface{}) {
-	if l.length == 0 {
-		l.node = &Node{ Head: i }
-		l.length = 1
+	if l.IsNil() {
+		*l = *(List(i))
 	} else {
-		l.node.Head = i
+		l.start.Head = i
 	}
 }
 
-func (l *LinearList) Rplacd(tail LinearList) {
-	if l.length > 0 {
-		l.node.Tail = tail.node
-		l.length = tail.length + 1
-	} else {
-		l.node = tail.node
+func (l *LinearList) Rplacd(tail *LinearList) {
+	if l.IsNil() {
+		l.start = tail.start
+		l.end = tail.end
 		l.length = tail.length
+	} else {
+		l.start.Tail = tail.start
+		l.end = tail.end
+		l.length = tail.length + 1
 	}
 }

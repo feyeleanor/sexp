@@ -3,13 +3,13 @@ package sexp
 import "testing"
 
 func TestLinearListString(t *testing.T) {
-	ConfirmFormat := func(l LinearList, x string) {
+	ConfirmFormat := func(l *LinearList, x string) {
 		if s := l.String(); s != x {
 			t.Fatalf("'%v' erroneously serialised as '%v'", x, s)
 		}
 	}
 
-	ConfirmFormat(LinearList{ node: nil, length: 0 }, "()")
+	ConfirmFormat(&LinearList{ start: nil, length: 0 }, "()")
 	ConfirmFormat(List(0), "(0)")
 	ConfirmFormat(List(0, nil), "(0 nil)")
 	ConfirmFormat(List(1, List(0, nil)), "(1 (0 nil))")
@@ -19,11 +19,11 @@ func TestLinearListString(t *testing.T) {
 
 	c := List(10, List(0, 1, 2, 3))
 	ConfirmFormat(c, "(10 (0 1 2 3))")
-	ConfirmFormat(c.node.Tail.Head.(LinearList), "(0 1 2 3)")
+	ConfirmFormat(c.start.Tail.Head.(*LinearList), "(0 1 2 3)")
 }
 
 func TestLinearListList(t *testing.T) {
-	ConfirmFormat := func(l LinearList, x string) {
+	ConfirmFormat := func(l *LinearList, x string) {
 		if s := l.String(); s != x {
 			t.Fatalf("'%v' erroneously serialised as '%v'", x, s)
 		}
@@ -42,7 +42,7 @@ func TestLinearListList(t *testing.T) {
 }
 
 func TestLinearListLen(t *testing.T) {
-	ConfirmLen := func(l LinearList, x int) {
+	ConfirmLen := func(l *LinearList, x int) {
 		if i := l.Len(); i != x {
 			t.Fatalf("'%v' length should be %v but is %v", l.String(), x, i)
 		}
@@ -52,7 +52,7 @@ func TestLinearListLen(t *testing.T) {
 }
 
 func TestLinearListDepth(t *testing.T) {
-	ConfirmDepth := func(l LinearList, x int) {
+	ConfirmDepth := func(l *LinearList, x int) {
 		if i := l.Depth(); i != x {
 			t.Fatalf("'%v' depth should be %v but is %v", l.String(), x, i)
 		}
@@ -117,7 +117,7 @@ func TestLinearListEach(t *testing.T) {
 }
 
 func TestLinearListReverse(t *testing.T) {
-	ConfirmReverse := func(l, r LinearList) {
+	ConfirmReverse := func(l, r *LinearList) {
 		l.Reverse()
 		if !r.Equal(l) {
 			t.Fatalf("'%v' should be '%v'", l, r)
@@ -145,22 +145,23 @@ func TestLinearListReverse(t *testing.T) {
 }
 
 func TestLinearListFlatten(t *testing.T) {
-	ConfirmFlatten := func(l, r LinearList) {
+	ConfirmFlatten := func(l, r *LinearList) {
 		l.Flatten()
 		if !l.Equal(r) {
+			t.Logf("%v.Len() = %v, %v.Len() = %v", l, l.Len(), r, r.Len())
 			t.Fatalf("'%v' should be '%v'", l, r)
 		}
 	}
-	ConfirmFlatten(List(1), List(1))
-	ConfirmFlatten(List(1, List(2)), List(1, 2))
-	ConfirmFlatten(List(1, List(2, 3)), List(1, 2, 3))
-	ConfirmFlatten(List(1, List(2, List(3))), List(1, 2, 3))
+//	ConfirmFlatten(List(1), List(1))
+//	ConfirmFlatten(List(1, List(2)), List(1, 2))
+//	ConfirmFlatten(List(1, List(2, 3)), List(1, 2, 3))
+//	ConfirmFlatten(List(1, List(2, List(3))), List(1, 2, 3))
 	ConfirmFlatten(List(1, List(2, 3, List(4, List(5)))), List(1, 2, 3, 4, 5))
 	ConfirmFlatten(List(1, List(List(2, 3), List(4, List(5)))), List(1, 2, 3, 4, 5))
 }
 
 func TestLinearListAt(t *testing.T) {
-	ConfirmAt := func(l LinearList, i int, v interface{}) {
+	ConfirmAt := func(l *LinearList, i int, v interface{}) {
 		if l.At(i) != v {
 			t.Fatalf("List[%v] should be %v but is %v", i, v, l.At(i))
 		}
@@ -177,7 +178,7 @@ func TestLinearListAt(t *testing.T) {
 }
 
 func TestLinearListSet(t *testing.T) {
-	ConfirmSet := func(l LinearList, i int, v interface{}) {
+	ConfirmSet := func(l *LinearList, i int, v interface{}) {
 		l.Set(i, v)
 		if l.At(i) != v {
 			t.Fatalf("List[%v] should be %v but is %v", i, v, l.At(i))
@@ -195,7 +196,7 @@ func TestLinearListSet(t *testing.T) {
 }
 
 func TestLinearListAppend(t *testing.T) {
-	ConfirmAppend := func(l LinearList, v interface{}, r LinearList) {
+	ConfirmAppend := func(l *LinearList, v interface{}, r *LinearList) {
 		l.Append(v)
 		if !l.Equal(r) {
 			t.Fatalf("%v should be %v", l, r)
@@ -207,8 +208,19 @@ func TestLinearListAppend(t *testing.T) {
 	ConfirmAppend(List(0, 1, 2), 3, List(0, 1, 2, 3))
 }
 
+func TestLinearListAppendSlice(t *testing.T) {
+	ConfirmAppendSlice := func(l *LinearList, s []interface{}, r *LinearList) {
+		l.AppendSlice(s)
+		if !l.Equal(r) {
+			t.Fatalf("%v should be %v", l, r)
+		}
+	}
+	ConfirmAppendSlice(List(), []interface{}{ 1 }, List(1))
+	ConfirmAppendSlice(List(1), []interface{}{ 2, 3 }, List(1, 2, 3))
+}
+
 func TestLinearListDelete(t *testing.T) {
-	ConfirmDelete := func(l LinearList, from, to int, r LinearList) {
+	ConfirmDelete := func(l *LinearList, from, to int, r *LinearList) {
 		l.Delete(from, to)
 		if !l.Equal(r) {
 			t.Fatalf("Delete(%v, %v) should be '%v' and not '%v'", from, to, r, l)
@@ -230,10 +242,11 @@ func TestLinearListDelete(t *testing.T) {
 	ConfirmDelete(List(0, 1, 2, 3), 1, 1, List(0, 2, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 1, 2, List(0, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 2, 2, List(0, 1, 3))
+	t.Fatal("LinearList::Delete() should also handle the end node pointer correctly")
 }
 
 func TestLinearListCut(t *testing.T) {
-	ConfirmCut := func(l LinearList, from, to int, r1, r2 LinearList) {
+	ConfirmCut := func(l *LinearList, from, to int, r1, r2 *LinearList) {
 		x := l.Cut(from, to)
 		switch {
 		case !x.Equal(r1):	t.Fatalf("Cut(%v, %v) cut should be '%v' and not '%v'", from, to, r1, x)
@@ -263,7 +276,7 @@ func TestLinearListInsert(t *testing.T) {
 }
 
 func TestLinearListCar(t *testing.T) {
-	ConfirmCar := func(l LinearList, r interface{}) {
+	ConfirmCar := func(l *LinearList, r interface{}) {
 		if x := l.Car(); x != r {
 			t.Fatalf("Car '%v' should be '%v' but is '%v'", l, r, x)
 		}
@@ -273,7 +286,7 @@ func TestLinearListCar(t *testing.T) {
 }
 
 func TestLinearListCdr(t *testing.T) {
-	ConfirmCdr := func(l, r LinearList) {
+	ConfirmCdr := func(l, r *LinearList) {
 		if x := l.Cdr(); !x.Equal(r) {
 			t.Fatalf("Cdr '%v' should be '%v' but is '%v'", l, r, x)
 		}
@@ -285,7 +298,7 @@ func TestLinearListCdr(t *testing.T) {
 }
 
 func TestLinearListRplaca(t *testing.T) {
-	ConfirmRplaca := func(l LinearList, v interface{}, r interface{}) {
+	ConfirmRplaca := func(l *LinearList, v interface{}, r interface{}) {
 		l.Rplaca(v)
 		if !l.Equal(r) {
 			t.Fatalf("Rplaca should be '%v' but is '%v'", r, l)
@@ -297,7 +310,7 @@ func TestLinearListRplaca(t *testing.T) {
 }
 
 func TestLinearListRplacd(t *testing.T) {
-	ConfirmRplacd := func(l, n, r LinearList) {
+	ConfirmRplacd := func(l, n, r *LinearList) {
 		l.Rplacd(n)
 		if !l.Equal(r) {
 			t.Fatalf("Rplacd should be '%v' but is '%v'", r, l)

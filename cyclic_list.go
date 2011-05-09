@@ -1,7 +1,6 @@
 package sexp
 
 import "fmt"
-//import "reflect"
 import "strings"
 
 /*
@@ -100,12 +99,11 @@ func (c *CycList) Append(v interface{}) {
 		c.start = &Node{ Head: v }
 		c.start.Tail = c.start
 		c.end = c.start
-		c.length = 1
 	} else {
 		c.end.Tail = &Node{ Head: v, Tail: c.start }
 		c.end = c.end.Tail
-		c.length++
 	}
+	c.length++
 }
 
 func (c *CycList) AppendSlice(s []interface{}) {
@@ -140,7 +138,7 @@ func (c CycList) equal(o CycList) (r bool) {
 	return
 }
 
-//	Determines if another object is identical to the CycList
+//	Determines if another object is equivalent to the CycList
 //	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
@@ -215,11 +213,11 @@ func (c *CycList) Flatten() {
 		n := &Node{ Head: c.start.Head, Tail: c.start.Tail }
 		for ; n != c.start; n = n.Tail {
 			switch v := n.Head.(type) {
-			case LinearList:			v.Flatten()
-										e := v.node.End()
+			case *LinearList:			v.Flatten()
+										e := v.start.End()
 										e.Tail = n.Tail
-										n.Head = v.node.Head
-										n.Tail = v.node.Tail
+										n.Head = v.start.Head
+										n.Tail = v.start.Tail
 										c.length += v.length - 1
 			case Flattenable:			v.Flatten()
 			}
