@@ -53,92 +53,78 @@ func TestSList(t *testing.T) {
 }
 
 func TestSliceString(t *testing.T) {
-	FormatError := func(x, y interface{}) { t.Fatalf("%v erroneously serialised as %v", x, y) }
-	sxp := SList(0)
-	if s := sxp.String(); s != "(0)" { FormatError("(0)", s) }
+	ConfirmString := func(s Slice, r string) {
+		if x := s.String(); x != r {
+			t.Fatalf("%v erroneously serialised as '%v'", r, x)
+		}
+	}
 
-	sxp = SList(0, 1)
-	if s := sxp.String(); s != "(0 1)" { FormatError("(0 1)", s) }
-
-	sxp = SList(SList(0, 1), 1)
-	if s := sxp.String(); s != "((0 1) 1)" { FormatError("((0 1) 1)", s) }
-
-	sxp = SList(SList(0, 1), SList(0, 1))
-	if s := sxp.String(); s != "((0 1) (0 1))" { FormatError("((0 1) (0 1))", s) }
+	ConfirmString(SList(), "()")
+	ConfirmString(SList(0), "(0)")
+	ConfirmString(SList(0, 1), "(0 1)")
+	ConfirmString(SList(SList(0, 1), 1), "((0 1) 1)")
+	ConfirmString(SList(SList(0, 1), SList(0, 1)), "((0 1) (0 1))")
 }
 
 func TestSliceLen(t *testing.T) {
-	sxp := SList(0)
-	if sxp.Len() != 1 { t.Fatalf("With 1 element in an Slice the length should be 1 but is %v", sxp.Len()) }
+	ConfirmLength := func(s Slice, i int) {
+		if x := s.Len(); x != i {
+			t.Fatalf("%v.Len() should be %v but is %v", s, i, x)
+		}
+	}
+	
+	ConfirmLength(SList(0), 1)
+	ConfirmLength(SList(0, 1), 2)
+	ConfirmLength(SList(SList(0, 1), 2), 2)
+	ConfirmLength(SList(0, 1), 2)
+	ConfirmLength(SList(SList(0, 1), 2), 2)
 
-	sxp = SList(0, 1)
-	if sxp.Len() != 2 { t.Fatalf("With 2 element in an Slice the length should be 2 but is %v", sxp.Len()) }
-
-	sxp = SList(SList(0, 1), 2)
-	if sxp.Len() != 2 { t.Fatalf("With 1 nested Slice the length should be 2 but is %v", sxp.Len()) }
-
-	sxp = SList(0, 1)
-	if sxp.Len() != 2 { t.Fatalf("With 0 nested SList cells the length should be 2 but is %v", sxp.Len()) }
-
-	sxp = SList(SList(0, 1), 2)
-	if sxp.Len() != 2 { t.Fatalf("With 1 nested SList cells the length should be 2 but is %v", sxp.Len()) }
-
-	sxp = SList(0, 1, SList(2, SList(3, 4, 5)), SList(6, 7, 8, 9))
-	if sxp.Len() != 4 { t.Fatalf("With 2 nested SList cells the length should be 3 but is %v", sxp.Len()) }
-
-	sxp = SList(0, 1, SList(2, SList(3, 4, 5)), sxp, SList(6, 7, 8, 9))
-	if sxp.Len() != 5 { t.Fatalf("With 2 nested SList cells plus recursion the length should be 5 but is %v", sxp.Len()) }
+	sxp := SList(0, 1, SList(2, SList(3, 4, 5)), SList(6, 7, 8, 9))
+	ConfirmLength(sxp, 4)
+	ConfirmLength(SList(0, 1, SList(2, SList(3, 4, 5)), sxp, SList(6, 7, 8, 9)), 5)
 }
 
 func TestSliceEach(t *testing.T) {
 	c := SList(0, 1, 2, 3, 4, 5, 6, 7, 8 ,9)
 	count := 0
 	c.Each(func(i interface{}) {
-		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
 		count++
 	})
 }
 
 func TestSliceDepth(t *testing.T) {
-	sxp := SList(0, 1)
-	if sxp.Depth() != 0 { t.Fatalf("With 0 nested Slice cells the depth should be 0 but is %v", sxp.Depth()) }
+	ConfirmDepth := func(s Slice, i int) {
+		if x := s.Depth(); x != i {
+			t.Fatalf("%v.Depth() should be %v but is %v", s, i, x)
+		}
+	}
+	ConfirmDepth(SList(0, 1), 0)
+	ConfirmDepth(SList(SList(0, 1), 2), 1)
+	ConfirmDepth(SList(0, SList(1, 2)), 1)
+	ConfirmDepth(SList(0, 1, SList(2, SList(3, 4, 5))), 2)
 
-	sxp = SList(SList(0, 1), 2)
-	if sxp.Depth() != 1 { t.Fatalf("With 1 nested Slice cells the depth should be 1 but is %v", sxp.Depth()) }
-
-	sxp = SList(0, SList(1, 2))
-	if sxp.Depth() != 1 { t.Fatalf("With 1 nested SList cells the depth should be 1 but is %v", sxp.Depth()) }
-
-	sxp = SList(0, 1,
-				SList(	2,
-						SList(3, 4, 5)	))
-	if sxp.Depth() != 2 { t.Fatalf("With 2 nested SList cells the depth should be 2 but is %v", sxp.Depth()) }
-
-	sxp = SList(0, 1,
-				SList(	2,
-						SList(3, 4, 5)	),
-				SList(	6,
-						SList(	7,
-								SList(	8,
-										SList(9, 0)	))),
-				SList(	2,
-						SList(3, 4, 5)	))
-	if sxp.Depth() != 4 { t.Fatalf("With 4 nested SList cells the depth should be 4 but is %v", sxp.Depth()) }
+	sxp := SList(0, 1,
+				SList(2, SList(3, 4, 5)),
+				SList(6, SList(7, SList(8, SList(9, 0)))),
+				SList(2, SList(3, 4, 5)))
+	ConfirmDepth(sxp, 4)
 
 	rxp := SList(0, sxp, sxp)
-	if rxp.Depth() != 5 { t.Fatalf("With 5 nested SList cells the depth should be 5 but is %v", rxp.Depth()) }
-
-	sxp = SList(rxp, sxp)
-	if sxp.Depth() != 6 { t.Fatalf("With 6 nested SList cells and circular references the depth should be 6 but is %v", sxp.Depth()) }
-
-	t.Log("Need tests for circular recursive Slice")
+	ConfirmDepth(rxp, 5)
+	ConfirmDepth(SList(rxp, sxp), 6)
+	t.Log("Need tests for circular recursive Slice?")
 }
 
 func TestSliceReverse(t *testing.T) {
 	sxp := SList(1, 2, 3, 4, 5)
 	rxp := SList(5, 4, 3, 2, 1)
 	sxp.Reverse()
-	if !rxp.Equal(sxp) { t.Fatalf("Reversal failed: %v", sxp) }
+	if !rxp.Equal(sxp) {
+		t.Fatalf("Reversal failed: %v", sxp)
+	}
 }
 
 func TestSliceFlatten(t *testing.T) {
@@ -162,12 +148,16 @@ func TestSliceFlatten(t *testing.T) {
 	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
 	rxp := SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp.Flatten()
-	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed: %v", sxp) }
+	if !rxp.Equal(sxp) {
+		t.Fatalf("Flatten failed: %v", sxp)
+	}
 
 	rxp = SList(1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp = SList(1, 2, sxp, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11), sxp)))
 	sxp.Flatten()
-	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed with explicit expansions: %v", sxp) }
+	if !rxp.Equal(sxp) {
+		t.Fatalf("Flatten failed with explicit expansions: %v", sxp)
+	}
 }
 
 func TestSliceCar(t *testing.T) {

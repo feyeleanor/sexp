@@ -123,8 +123,7 @@ func (s Slice) Car() (h interface{}) {
 }
 
 func (s Slice) Caar() (h interface{}) {
-	car := s.Car()
-	if car, ok := car.(Slice); ok {
+	if car, ok := s.Car().(Slice); ok {
 		h = car.Car()
 	}
 	return
@@ -148,10 +147,7 @@ func (s Slice) Cdr() (t Slice) {
 }
 
 func (s Slice) Cddr() (t Slice) {
-	if t = s.Cdr(); t.NotNil() {
-		t = t.Cdr()
-	}
-	return
+	return s.Cdr().Cdr()
 }
 
 func (s *Slice) Rplaca(v interface{}) {

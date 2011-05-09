@@ -21,7 +21,11 @@ func (n *Node) Prepend(x interface{}) {
 }
 
 func (n Node) IsNil() bool {
-	return (n.Head == nil) && (n.Tail == nil)
+	return n.Head == nil && n.Tail == nil
+}
+
+func (n Node) NotNil() bool {
+	return n.Head != nil || n.Tail != nil
 }
 
 func (n Node) equal(o Node) (r bool) {

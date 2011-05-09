@@ -111,7 +111,9 @@ func TestLinearListEach(t *testing.T) {
 	c := List(0, 1, 2, 3, 4, 5, 6, 7, 8 ,9)
 	count := 0
 	c.Each(func(i interface{}) {
-		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
 		count++
 	})
 }
@@ -152,10 +154,10 @@ func TestLinearListFlatten(t *testing.T) {
 			t.Fatalf("'%v' should be '%v'", l, r)
 		}
 	}
-//	ConfirmFlatten(List(1), List(1))
-//	ConfirmFlatten(List(1, List(2)), List(1, 2))
-//	ConfirmFlatten(List(1, List(2, 3)), List(1, 2, 3))
-//	ConfirmFlatten(List(1, List(2, List(3))), List(1, 2, 3))
+	ConfirmFlatten(List(1), List(1))
+	ConfirmFlatten(List(1, List(2)), List(1, 2))
+	ConfirmFlatten(List(1, List(2, 3)), List(1, 2, 3))
+	ConfirmFlatten(List(1, List(2, List(3))), List(1, 2, 3))
 	ConfirmFlatten(List(1, List(2, 3, List(4, List(5)))), List(1, 2, 3, 4, 5))
 	ConfirmFlatten(List(1, List(List(2, 3), List(4, List(5)))), List(1, 2, 3, 4, 5))
 }

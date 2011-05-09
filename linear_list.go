@@ -215,9 +215,7 @@ func (l *LinearList) Delete(from, to int) {
 func (l *LinearList) Cut(from, to int) (r LinearList) {
 	defer func() {
 		if recover() != nil {
-			r.start = nil
-			r.end = nil
-			r.length = 0
+			r = LinearList{}
 		}
 	}()
 

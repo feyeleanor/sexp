@@ -23,7 +23,9 @@ func TestCycListEach(t *testing.T) {
 	c := Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
 	c.Each(func(i interface{}) {
-		if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
 		count++
 	})
 	if count != c.length {
@@ -41,7 +43,9 @@ func TestCycListCycle(t *testing.T) {
 			}
 		}()
 		c.Cycle(func(i interface{}) {
-			if i != count { t.Fatalf("element %v erroneously reported as %v", count, i) }
+			if i != count {
+				t.Fatalf("element %v erroneously reported as %v", count, i)
+			}
 			count++
 			if count == c.Len() {
 				panic(count)
