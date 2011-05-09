@@ -150,20 +150,16 @@ func TestSliceFlatten(t *testing.T) {
 	ConfirmFlatten(SList(3, 4, SList(5, 6, 7)), SList(3, 4, 5, 6, 7))
 	ConfirmFlatten(SList(0, Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, Loop(1, 2, SList(3, 4, 5, 6, 7))))
 
-/*	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
+	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
 	rxp := SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp.Flatten()
 	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed: %v", sxp) }
 
-	fxp := SList(1, 2, sxp, 3, 4, 5, 6, 7, 8, 9, 10, 11, sxp)
 	rxp = SList(1, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 3, 4, 5, 6, 7, 8, 9, 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 	sxp = SList(1, 2, sxp, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11), sxp)))
 	sxp.Flatten()
-	switch {
-	case !rxp.Equal(sxp):						t.Fatalf("Flatten failed with explicit expansions: %v", sxp)
-	case !sxp.Equal(fxp.flatten(make(memo))):	t.Fatalf("Flatten failed with flattened expansions: %v", sxp)
-	}
-*/}
+	if !rxp.Equal(sxp) { t.Fatalf("Flatten failed with explicit expansions: %v", sxp) }
+}
 
 func TestSliceCar(t *testing.T) {
 	ConfirmCar := func(s Slice, r interface{}) {
