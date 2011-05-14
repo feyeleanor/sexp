@@ -189,26 +189,48 @@ func (l *LinearList) Flatten() {
 }
 
 func (l *LinearList) Delete(from, to int) {
-	if l.NotNil() && from >= 0 && from <= to && to < l.length {
-		var r				LinearList
-		var tail_l, tail_r	*Node
+	if l.NotNil() && from >= 0 && to < l.length && from <= to {
+		last_element_index := l.length - 1
+		switch {
+		case from == 0:
+			switch {
+			case to == 0:
+				l.start = l.start.Tail
+				l.length -= 1
+			case to == last_element_index:
+				l.start = nil
+				l.end = nil
+				l.length = 0
+			default:
+				l.start = l.start.Traverse(to + 1)
+				l.length -= to + 1
+			}
 
-		r.start = l.start
-		for r.length = 0; r.length < from; r.length++ {
-			tail_l = r.start
-			r.start = r.start.Tail
-		}
+		case from == to:
+			s := l.start.Traverse(from - 1)
+			e := s.Traverse(1)
+			s.Tail = e.Tail
+			l.length -= 1
 
-		for tail_r = r.start; r.length < to; r.length++ {
-			tail_r = tail_r.Tail
+		case from == last_element_index:
+			l.end = l.start.Traverse(from - 1)
+			l.end.Tail = nil
+			l.length -= 1
+
+		case to == last_element_index:
+			l.end = l.start.Traverse(from - 1)
+			l.end.Tail = nil
+			l.length = from
+
+		case from < 0:					fallthrough
+		case to > last_element_index:	fallthrough
+		case from > to:					//	do nothing
+
+		default:
+			e := l.start.Traverse(from - 1)
+			e.Tail = e.Traverse(to - from + 2)
+			l.length -= to - from + 1
 		}
-		if from == 0 {
-			l.start = tail_r.Tail
-		} else {
-			tail_l.Tail = tail_r.Tail
-		}
-		l.length -= to - from + 1
-		tail_r.Tail = nil
 	}
 }
 

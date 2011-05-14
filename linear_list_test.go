@@ -229,8 +229,9 @@ func TestLinearListDelete(t *testing.T) {
 		}
 	}
 	ConfirmDelete(List(0, 1, 2, 3), -1, 0, List(0, 1, 2, 3))
-	ConfirmDelete(List(0, 1, 2, 3), 1, 0, List(0, 1, 2, 3))
+	ConfirmDelete(List(0, 1, 2, 3), 0, -1, List(0, 1, 2, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 0, 4, List(0, 1, 2, 3))
+	ConfirmDelete(List(0, 1, 2, 3), 4, 0, List(0, 1, 2, 3))
 
 	ConfirmDelete(List(0, 1, 2, 3), 0, 0, List(1, 2, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 0, 1, List(2, 3))
@@ -244,7 +245,6 @@ func TestLinearListDelete(t *testing.T) {
 	ConfirmDelete(List(0, 1, 2, 3), 1, 1, List(0, 2, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 1, 2, List(0, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 2, 2, List(0, 1, 3))
-	t.Fatal("LinearList::Delete() should also handle the end node pointer correctly")
 }
 
 func TestLinearListCut(t *testing.T) {

@@ -49,10 +49,12 @@ func (n Node) equal(o Node) (r bool) {
 }
 
 func (n *Node) Equal(o interface{}) (r bool) {
-	switch o := o.(type) {
-	case *Node:			r = n.equal(*o)
-	case Node:			r = n.equal(o)
-	default:			r = n.equal(Node{ Head: o })
+	if n != nil {
+		switch o := o.(type) {
+		case *Node:			r = n.equal(*o)
+		case Node:			r = n.equal(o)
+		default:			r = n.equal(Node{ Head: o })
+		}
 	}
 	return
 }
