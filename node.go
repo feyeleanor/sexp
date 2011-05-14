@@ -8,7 +8,18 @@ type Node struct {
 }
 
 func (n *Node) End() (r *Node) {
-	for r = n; r.Tail != nil; r = r.Tail {}
+	if n.NotNil() {
+		for r = n; r.Tail != nil; r = r.Tail {}
+	}
+	return
+}
+
+func (n *Node) Traverse(i int) (r *Node) {
+	if i >= 0 {
+		for r = n; i > 0 && r != nil; i-- {
+			r = r.Tail
+		}
+	}
 	return
 }
 
