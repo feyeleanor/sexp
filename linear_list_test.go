@@ -224,8 +224,9 @@ func TestLinearListAppendSlice(t *testing.T) {
 func TestLinearListDelete(t *testing.T) {
 	ConfirmDelete := func(l *LinearList, from, to int, r *LinearList) {
 		l.Delete(from, to)
-		if !l.Equal(r) {
-			t.Fatalf("Delete(%v, %v) should be '%v' and not '%v'", from, to, r, l)
+		switch {
+		case !l.Equal(r):			t.Fatalf("Delete(%v, %v) should be '%v' and not '%v'", from, to, r, l)
+		case l.Len() != r.Len():	t.Fatalf("Delete(%v, %v) length be '%v' and not '%v'", from, to, r.Len(), l.Len())
 		}
 	}
 	ConfirmDelete(List(0, 1, 2, 3), -1, 0, List(0, 1, 2, 3))
@@ -251,8 +252,10 @@ func TestLinearListCut(t *testing.T) {
 	ConfirmCut := func(l *LinearList, from, to int, r1, r2 *LinearList) {
 		x := l.Cut(from, to)
 		switch {
-		case !x.Equal(r1):	t.Fatalf("Cut(%v, %v) cut should be '%v' and not '%v'", from, to, r1, x)
-		case !l.Equal(r2):	t.Fatalf("Cut(%v, %v) remainder should be '%v' and not '%v'", from, to, r2, l)
+		case !x.Equal(r1):			t.Fatalf("Cut(%v, %v) cut should be '%v' and not '%v'", from, to, r1, x)
+		case !l.Equal(r2):			t.Fatalf("Cut(%v, %v) remainder should be '%v' and not '%v'", from, to, r2, l)
+		case x.Len() != r1.Len():	t.Fatalf("Cut(%v, %v) cut length should be '%v' and not '%v'", from, to, r1.Len(), x.Len())
+		case l.Len() != r2.Len():	t.Fatalf("Cut(%v, %v) remainder length should be '%v' and not '%v'", from, to, r2.Len(), l.Len())
 		}
 	}
 	ConfirmCut(List(0, 1, 2, 3), -1, 0, List(), List(0, 1, 2, 3))
@@ -274,7 +277,11 @@ func TestLinearListCut(t *testing.T) {
 }
 
 func TestLinearListInsert(t *testing.T) {
-	t.Logf("Write Tests")
+	t.Fatal("Write Tests")
+}
+
+func TestLinearListInsertList(t *testing.T) {
+	t.Fatal("Write Tests")
 }
 
 func TestLinearListCar(t *testing.T) {

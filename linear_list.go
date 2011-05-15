@@ -150,7 +150,6 @@ func (l LinearList) Depth() (d int) {
 func (l *LinearList) Reverse() {
 	if l.NotNil() {
 		var next, result		*Node
-//		current := &Node{ Head: l.start.Head, Tail: l.start.Tail }
 		current := l.start
 		l.end = current
 
@@ -222,10 +221,6 @@ func (l *LinearList) Delete(from, to int) {
 			l.end.Tail = nil
 			l.length = from
 
-		case from < 0:					fallthrough
-		case to > last_element_index:	fallthrough
-		case from > to:					//	do nothing
-
 		default:
 			e := l.start.Traverse(from - 1)
 			e.Tail = e.Traverse(to - from + 2)
@@ -235,40 +230,78 @@ func (l *LinearList) Delete(from, to int) {
 }
 
 func (l *LinearList) Cut(from, to int) (r LinearList) {
-	defer func() {
-		if recover() != nil {
-			r = LinearList{}
+	if l.NotNil() && from >= 0 && to < l.length && from <= to {
+		last_element_index := l.length - 1
+		switch {
+		case from == 0:
+			switch {
+			case to == 0:
+				r.start = l.start
+				r.end = r.start
+				r.length = 1
+
+				l.start = l.start.Tail
+				l.length -= 1
+			case to == last_element_index:
+				r.start = l.start
+				r.end = l.end
+				r.length = l.length
+
+				l.start = nil
+				l.end = nil
+				l.length = 0
+			default:
+				r.start = l.start
+				r.end = r.start.Traverse(to)
+				l.start = r.end.Tail
+				r.end.Tail = nil
+				r.length = to + 1
+				l.length -= r.length
+			}
+
+		case from == to:
+			s := l.start.Traverse(from - 1)
+			r.start = s.Tail
+			r.end = r.start
+			r.length = 1
+			s.Tail = r.end.Tail
+			r.end.Tail = nil
+			l.length -= 1
+
+		case from == last_element_index:
+			l.end = l.start.Traverse(from - 1)
+			l.end.Tail = nil
+			l.length -= 1
+
+		case to == last_element_index:
+			l.end = l.start.Traverse(from - 1)
+			r.start = l.end.Tail
+			r.end = r.start
+			l.end.Tail = nil
+			r.length = to - from + 1
+			l.length = from
+
+		default:
+			e := l.start.Traverse(from - 1)
+			r.start = e.Tail
+			r.end = r.start.Traverse(to - from)
+			if r.end != nil {
+				e.Tail = r.end.Tail
+			} else {
+				e.Tail = nil
+			}
+			r.length = to - from + 1
+			l.length -= r.length
 		}
-	}()
-
-	if to < from {
-		panic(to)
 	}
-
-	var tail_l, tail_r	*Node
-
-	r.start = l.start
-	for r.length = 0; r.length < from; r.length++ {
-		tail_l = r.start
-		r.start = r.start.Tail
-	}
-
-	for tail_r = r.start; r.length < to; r.length++ {
-		tail_r = tail_r.Tail
-	}
-	if from == 0 {
-		l.start = tail_r.Tail
-	} else {
-		tail_l.Tail = tail_r.Tail
-	}
-	r.length = to - from + 1
-	l.length -= r.length
-	tail_r.Tail = nil
-	r.end = tail_r
 	return
 }
 
-func (l *LinearList) Insert(i int, o *LinearList) {
+func (l *LinearList) Insert(i int, o interface{}) {
+	
+}
+
+func (l *LinearList) InsertList(i int, o *LinearList) {
 	if l.NotNil() {
 		var n	*Node
 		for n = l.start; i > 0; i-- {
