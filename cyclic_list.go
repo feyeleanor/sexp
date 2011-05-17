@@ -18,23 +18,7 @@ func Loop(items... interface{}) (c *CycList) {
 }
 
 type CycList struct {
-	start 	*Node
-	end		*Node
-	length	int
-}
-
-//	The empty list is represented by a CycList containing a nil pointer to a Node
-func (c CycList) IsNil() bool {
-	return c.start == nil || c.end == nil || c.length == 0
-}
-
-func (c CycList) NotNil() bool {
-	return c.start != nil && c.end != nil && c.length != 0
-}
-
-//	Return the number of chained elements in the list
-func (c CycList) Len() (i int) {
-	return c.length
+	ListHeader
 }
 
 //	Iterate over all elements of the list once

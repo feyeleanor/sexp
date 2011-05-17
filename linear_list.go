@@ -18,30 +18,7 @@ func List(items... interface{}) (l *LinearList) {
 }
 
 type LinearList struct {
-	start	*Node
-	end		*Node
-	length	int
-}
-
-func (l *LinearList) Clear() {
-	l.start = nil
-	l.end = nil
-	l.length = 0
-}
-
-func (l LinearList) IsNil() bool {
-	return l.start == nil || l.end == nil || l.length == 0
-}
-
-func (l LinearList) NotNil() bool {
-	return l.start != nil && l.end != nil && l.length != 0
-}
-
-func (l LinearList) Len() (c int) {
-	if l.NotNil() {
-		c = l.length
-	}
-	return
+	ListHeader
 }
 
 func (l LinearList) Each(f func(interface{})) {

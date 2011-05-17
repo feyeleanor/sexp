@@ -9,7 +9,7 @@ func TestLinearListString(t *testing.T) {
 		}
 	}
 
-	ConfirmFormat(&LinearList{ start: nil, length: 0 }, "()")
+	ConfirmFormat(&LinearList{}, "()")
 	ConfirmFormat(List(0), "(0)")
 	ConfirmFormat(List(0, nil), "(0 nil)")
 	ConfirmFormat(List(1, List(0, nil)), "(1 (0 nil))")

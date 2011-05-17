@@ -6,6 +6,7 @@ GOFILES=\
 	interfaces.go\
 	node.go\
 	slice.go\
+	list_header.go\
 	linear_list.go\
 	cyclic_list.go
 
