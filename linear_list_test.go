@@ -197,6 +197,19 @@ func TestLinearListSet(t *testing.T) {
 	ConfirmSet(l, 7, 27)
 }
 
+func TestLinearListClone(t *testing.T) {
+	ConfirmClone := func(l, r *LinearList) {
+		x := l.Clone()
+		if !x.Equal(r) {
+			t.Fatalf("%v should be %v", x, r)
+		}
+	}
+	ConfirmClone(List(), List())
+	ConfirmClone(List(0), List(0))
+	ConfirmClone(List(0, 1), List(0, 1))
+	ConfirmClone(List(0, List(0, 1)), List(0, List(0, 1)))
+}
+
 func TestLinearListAppend(t *testing.T) {
 	ConfirmAppend := func(l *LinearList, v interface{}, r *LinearList) {
 		l.Append(v)
@@ -280,8 +293,29 @@ func TestLinearListInsert(t *testing.T) {
 	t.Fatal("Write Tests")
 }
 
-func TestLinearListInsertList(t *testing.T) {
-	t.Fatal("Write Tests")
+func TestLinearListAbsorb(t *testing.T) {
+	ConfirmAbsorb := func(l *LinearList, i int, s, r *LinearList) {
+		switch ok := l.Absorb(i, s); {
+		case !ok:				t.Fatalf("Absorb(%v, ...) should return true", i)
+		case s.NotNil():		t.Fatalf("Absorb(%v, ...) source should be nil and not %v", i, s)
+		case !l.Equal(r):		t.Fatalf("Absorb(%v, ...) result should be '%v' and not %v", i, r, l)
+		}
+	}
+	RefuteAbsorb := func(l *LinearList, i int, s, r *LinearList) {
+		source := s.Clone()
+		switch ok := l.Absorb(i, s); {
+		case ok:				t.Fatalf("Absorb(%v, ...) should return false", i)
+		case !s.Equal(source):	t.Fatalf("Absorb(%v, ...) source should be %v and not %v", i, source, s)
+		case !l.Equal(r):		t.Fatalf("Absorb(%v, ...) result should be '%v' and not '%v'", i, r, l)
+		}
+	}
+
+	RefuteAbsorb(List(0, 1, 2, 3), -1, List(-3, -2, -1), List(0, 1, 2, 3))
+	ConfirmAbsorb(List(0, 1, 2, 3), 0, List(-3, -2, -1), List(-3, -2, -1, 0, 1, 2, 3))
+	ConfirmAbsorb(List(0, 1, 2, 3), 1, List(-3, -2, -1), List(0, -3, -2, -1, 1, 2, 3))
+	ConfirmAbsorb(List(0, 1, 2, 3), 2, List(-3, -2, -1), List(0, 1, -3, -2, -1, 2, 3))
+	ConfirmAbsorb(List(0, 1, 2, 3), 3, List(-3, -2, -1), List(0, 1, 2, -3, -2, -1, 3))
+	RefuteAbsorb(List(0, 1, 2, 3), 4, List(-3, -2, -1), List(0, 1, 2, 3))
 }
 
 func TestLinearListCar(t *testing.T) {

@@ -23,6 +23,12 @@ type LinearList struct {
 	length	int
 }
 
+func (l *LinearList) Clear() {
+	l.start = nil
+	l.end = nil
+	l.length = 0
+}
+
 func (l LinearList) IsNil() bool {
 	return l.start == nil || l.end == nil || l.length == 0
 }
@@ -65,6 +71,12 @@ func (l LinearList) Set(i int, v interface{}) {
 		}
 		n.Head = v
 	}
+}
+
+func (l LinearList) Clone() (r *LinearList) {
+	r = &LinearList{}
+	l.Each(func(v interface{}) { r.Append(v) })
+	return
 }
 
 func (l *LinearList) Append(v interface{}) {
@@ -163,6 +175,8 @@ func (l *LinearList) Reverse() {
 	}
 }
 
+//	Iterates through the list reducing the nesting of each element which can be flattened.
+//	Elements which are themselves LinearLists will be inlined as part of the containing list and their contained list destroyed.
 func (l *LinearList) Flatten() {
 	if l.NotNil() {
 		for n := l.start; n != nil; n = n.Tail {
@@ -181,12 +195,14 @@ func (l *LinearList) Flatten() {
 															n.Tail = h.start.Tail
 															l.length += h.length - 1
 									}
+									h.Clear()
 			case Flattenable:		h.Flatten()
 			}
 		}
 	}
 }
 
+//	Removes all elements in the range from the list.
 func (l *LinearList) Delete(from, to int) {
 	if l.NotNil() && from >= 0 && to < l.length && from <= to {
 		last_element_index := l.length - 1
@@ -229,6 +245,7 @@ func (l *LinearList) Delete(from, to int) {
 	}
 }
 
+//	Removes the elements in the range from the current list and returns a new list containing them.
 func (l *LinearList) Cut(from, to int) (r LinearList) {
 	if l.NotNil() && from >= 0 && to < l.length && from <= to {
 		last_element_index := l.length - 1
@@ -297,32 +314,14 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 	return
 }
 
+//	Insert an item into the list at the given location.
 func (l *LinearList) Insert(i int, o interface{}) {
 	
 }
 
-func (l *LinearList) InsertList(i int, o *LinearList) {
-	if l.NotNil() {
-		var n	*Node
-		for n = l.start; i > 0; i-- {
-			n = n.Tail
-		}
-		switch {
-		case n == nil:
-			l.start = o.start
-			l.end = o.end
-			l.length = o.length
-		case n.Tail == nil:
-			n.Head = o.start.Head
-			n.Tail = o.start.Tail
-			l.end = o.end
-			l.length += o.length
-		default:
-			n.Head = o.start.Head
-			n.Tail = o.start.Tail
-			l.length += o.length
-		}
-	}
+//	Take all the elements from another list and insert them into this list, destroying the other list if successful.
+func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
+	return
 }
 
 func (l LinearList) Car() (r interface{}) {
