@@ -26,3 +26,28 @@ func (l ListHeader) Len() (c int) {
 	}
 	return
 }
+
+func (l ListHeader) Each(f func(interface{})) {
+	if l.NotNil() {
+		for n := l.start; n != nil; n = n.Tail {
+			f(n.Head)
+		}
+	}
+}
+
+func (l ListHeader) At(i int) (r interface{}) {
+	if l.NotNil() {
+		if n := l.start.MoveTo(i); n != nil {
+			r = n.Head
+		}
+	}
+	return
+}
+
+func (l ListHeader) Set(i int, v interface{}) {
+	if l.NotNil() {
+		if n := l.start.MoveTo(i); n != nil {
+			n.Head = v
+		}
+	}
+}

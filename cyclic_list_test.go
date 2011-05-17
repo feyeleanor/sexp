@@ -56,14 +56,17 @@ func TestCycListCycle(t *testing.T) {
 
 func TestCycListAt(t *testing.T) {
 	ConfirmAt := func(c *CycList, i int, v interface{}) {
-		if x, _ := c.At(i); x != v {
-			t.Fatalf("List[%v] should be %v but is %v", i, v, x)
+		if x := c.At(i); x != v {
+			t.Fatalf("%v.At(%v) should be %v but is %v", c, i, v, x)
 		}
 	}
 	RefuteAt := func(c *CycList, i int) {
-		if v, ok := c.At(i); ok {
-			t.Fatalf("List[%v] erroneously returned %v", i, v)
-		}
+		defer func() {
+			if x := recover(); x == nil {
+				t.Fatalf("%v.At(%v) succeeded when it shouldn't", c, i)
+			}
+		}()
+		c.At(i)
 	}
 	c := Loop(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
 	RefuteAt(c, -1)
@@ -85,15 +88,17 @@ func TestCycListAt(t *testing.T) {
 func TestCycListSet(t *testing.T) {
 	ConfirmSet := func(c *CycList, i int, v interface{}) {
 		c.Set(i, v)
-		if x, _ := c.At(i); x != v {
-			t.Fatalf("List[%v] should be %v but is %v", i, v, x)
+		if x := c.At(i); x != v {
+			t.Fatalf("%v.Set(%v) should be %v but is %v", c, i, v, x)
 		}
 	}
 	RefuteSet := func(c *CycList, i int, v interface{}) {
+		defer func() {
+			if x := recover(); x == nil {
+				t.Fatalf("%v.Set(%v) succeeded when it shouldn't", c, i)
+			}
+		}()
 		c.Set(i, v)
-		if x, ok := c.At(i); ok {
-			t.Fatalf("List[%v] erroneously returned %v", i, x)
-		}
 	}
 	c := Loop(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
 	RefuteSet(c, -1, 10)
@@ -112,19 +117,39 @@ func TestCycListSet(t *testing.T) {
 	ConfirmSet(c, 33, 13)
 }
 
-func TestCycListNext(t *testing.T) {
-	ConfirmNext := func(c, r *CycList) {
-		c.Next()
+func TestCycListAdvance(t *testing.T) {
+	ConfirmAdvance := func(c, r *CycList) {
+		c.Advance()
 		if !c.Equal(r) {
 			t.Fatalf("%v should be %v", c, r)
 		}
 	}
-	ConfirmNext(Loop(), Loop())
-	ConfirmNext(Loop(0), Loop(0))
-	ConfirmNext(Loop(0, 1), Loop(1, 0))
-	ConfirmNext(Loop(0, 1, 2), Loop(1, 2, 0))
-	ConfirmNext(Loop(0, 1, 2, 3), Loop(1, 2, 3, 0))
-	ConfirmNext(Loop(0, 1, Loop(2), 3), Loop(1, Loop(2), 3, 0))
+	ConfirmAdvance(Loop(), Loop())
+	ConfirmAdvance(Loop(0), Loop(0))
+	ConfirmAdvance(Loop(0, 1), Loop(1, 0))
+	ConfirmAdvance(Loop(0, 1, 2), Loop(1, 2, 0))
+	ConfirmAdvance(Loop(0, 1, 2, 3), Loop(1, 2, 3, 0))
+	ConfirmAdvance(Loop(0, 1, Loop(2), 3), Loop(1, Loop(2), 3, 0))
+}
+
+func TestCycListRotate(t *testing.T) {
+	ConfirmRotate := func(c *CycList, i int, r *CycList) {
+		c.Rotate(i)
+		if !c.Equal(r) {
+			t.Fatalf("%v should be %v", c, r)
+		}
+	}
+	ConfirmRotate(Loop(), 0, Loop())
+	ConfirmRotate(Loop(), 1, Loop())
+	ConfirmRotate(Loop(), 2, Loop())
+	ConfirmRotate(Loop(0), 0, Loop(0))
+	ConfirmRotate(Loop(0), 1, Loop(0))
+	ConfirmRotate(Loop(0), 2, Loop(0))
+	ConfirmRotate(Loop(0, 1, 2, 3), 0, Loop(0, 1, 2, 3))
+	ConfirmRotate(Loop(0, 1, 2, 3), 1, Loop(1, 2, 3, 0))
+	ConfirmRotate(Loop(0, 1, 2, 3), 2, Loop(2, 3, 0, 1))
+	ConfirmRotate(Loop(0, 1, 2, 3), 3, Loop(3, 0, 1, 2))
+	ConfirmRotate(Loop(0, 1, 2, 3), 4, Loop(0, 1, 2, 3))
 }
 
 func TestCycListAppend(t *testing.T) {
@@ -166,7 +191,7 @@ func TestCycListString(t *testing.T) {
 
 	r := Loop(10, Loop(0, Loop(0)))
 	ConfirmFormat(r, "(10 (0 (0 ...) ...) ...)")
-	r.Next()
+	r.Advance()
 	ConfirmFormat(r, "((0 (0 ...) ...) 10 ...)")
 	ConfirmFormat(r.start.Head.(*CycList), "(0 (0 ...) ...)")
 

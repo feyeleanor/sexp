@@ -49,23 +49,26 @@ func TestEnd(t *testing.T) {
 	ConfirmEnd(List(0, 1, 2).start.End(), 2)
 }
 
-func TestTraverse(t *testing.T) {
-	ConfirmTraverse := func(n *Node, i int, r interface{}) {
-		if x := n.Traverse(i); x.Head != r {
-			t.Fatalf("%v.Traverse(%v) should be '%v' but is '%v'", n, i, r, x.Head)
+func TestMoveTo(t *testing.T) {
+	ConfirmMoveTo := func(n *Node, i int, r interface{}) {
+		switch x := n.MoveTo(i); {
+		case x.Head != r:	t.Fatalf("%v.MoveTo(%v) should be '%v' but is '%v'", n, i, r, x.Head)
 		}
 	}
-	RefuteTraverse := func(n *Node, i int) {
-		if x := n.Traverse(i); x != nil {
-			t.Fatalf("%v.Traverse(%v) should be nil but is '%v'", n, i, x.Head)
-		}
+	RefuteMoveTo := func(n *Node, i int) {
+		defer func() {
+			if x := recover(); x == nil {
+				t.Fatalf("%v.MoveTo(%v) should not succeed", n, i)
+			}
+		}()
+		n.MoveTo(i)
 	}
 	l := List(1, 2, 3, 4, 5)
-	ConfirmTraverse(l.start, 0, 1)
-	ConfirmTraverse(l.start, 1, 2)
-	ConfirmTraverse(l.start, 2, 3)
-	ConfirmTraverse(l.start, 3, 4)
-	ConfirmTraverse(l.start, 4, 5)
-	RefuteTraverse(l.start, -1)
-	RefuteTraverse(l.start, 5)
+	ConfirmMoveTo(l.start, 0, 1)
+	ConfirmMoveTo(l.start, 1, 2)
+	ConfirmMoveTo(l.start, 2, 3)
+	ConfirmMoveTo(l.start, 3, 4)
+	ConfirmMoveTo(l.start, 4, 5)
+	RefuteMoveTo(l.start, -1)
+	RefuteMoveTo(l.start, 5)
 }

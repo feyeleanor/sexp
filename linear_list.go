@@ -21,35 +21,6 @@ type LinearList struct {
 	ListHeader
 }
 
-func (l LinearList) Each(f func(interface{})) {
-	if l.NotNil() {
-		for n := l.start; n != nil; n = n.Tail {
-			f(n.Head)
-		}
-	}
-}
-
-func (l LinearList) At(i int) (r interface{}) {
-	if l.NotNil() {
-		var n	*Node
-		for n = l.start; i > 0; i-- {
-			n = n.Tail
-		}
-		r = n.Head
-	}
-	return
-}
-
-func (l LinearList) Set(i int, v interface{}) {
-	if l.NotNil() {
-		var n	*Node
-		for n = l.start; i > 0; i-- {
-			n = n.Tail
-		}
-		n.Head = v
-	}
-}
-
 func (l LinearList) Clone() (r *LinearList) {
 	r = &LinearList{}
 	l.Each(func(v interface{}) { r.Append(v) })
@@ -194,29 +165,29 @@ func (l *LinearList) Delete(from, to int) {
 				l.end = nil
 				l.length = 0
 			default:
-				l.start = l.start.Traverse(to + 1)
+				l.start = l.start.MoveTo(to + 1)
 				l.length -= to + 1
 			}
 
 		case from == to:
-			s := l.start.Traverse(from - 1)
-			e := s.Traverse(1)
+			s := l.start.MoveTo(from - 1)
+			e := s.MoveTo(1)
 			s.Tail = e.Tail
 			l.length -= 1
 
 		case from == last_element_index:
-			l.end = l.start.Traverse(from - 1)
+			l.end = l.start.MoveTo(from - 1)
 			l.end.Tail = nil
 			l.length -= 1
 
 		case to == last_element_index:
-			l.end = l.start.Traverse(from - 1)
+			l.end = l.start.MoveTo(from - 1)
 			l.end.Tail = nil
 			l.length = from
 
 		default:
-			e := l.start.Traverse(from - 1)
-			e.Tail = e.Traverse(to - from + 2)
+			e := l.start.MoveTo(from - 1)
+			e.Tail = e.MoveTo(to - from + 2)
 			l.length -= to - from + 1
 		}
 	}
@@ -246,7 +217,7 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 				l.length = 0
 			default:
 				r.start = l.start
-				r.end = r.start.Traverse(to)
+				r.end = r.start.MoveTo(to)
 				l.start = r.end.Tail
 				r.end.Tail = nil
 				r.length = to + 1
@@ -254,7 +225,7 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 			}
 
 		case from == to:
-			s := l.start.Traverse(from - 1)
+			s := l.start.MoveTo(from - 1)
 			r.start = s.Tail
 			r.end = r.start
 			r.length = 1
@@ -263,12 +234,12 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 			l.length -= 1
 
 		case from == last_element_index:
-			l.end = l.start.Traverse(from - 1)
+			l.end = l.start.MoveTo(from - 1)
 			l.end.Tail = nil
 			l.length -= 1
 
 		case to == last_element_index:
-			l.end = l.start.Traverse(from - 1)
+			l.end = l.start.MoveTo(from - 1)
 			r.start = l.end.Tail
 			r.end = r.start
 			l.end.Tail = nil
@@ -276,9 +247,9 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 			l.length = from
 
 		default:
-			e := l.start.Traverse(from - 1)
+			e := l.start.MoveTo(from - 1)
 			r.start = e.Tail
-			r.end = r.start.Traverse(to - from)
+			r.end = r.start.MoveTo(to - from)
 			if r.end != nil {
 				e.Tail = r.end.Tail
 			} else {
@@ -313,7 +284,7 @@ func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
 	case i == l.length:				l.end.Tail = o.start
 									l.end = o.end
 
-	default:						n := l.start.Traverse(i - 1)
+	default:						n := l.start.MoveTo(i - 1)
 									o.end.Tail = n.Tail
 									n.Tail = o.start
 	}

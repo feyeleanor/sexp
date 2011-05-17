@@ -42,36 +42,16 @@ func (c CycList) Cycle(f func(interface{})) {
 }
 
 // Return the value stored at the given offset from the start of the list
-func (c CycList) At(i int) (r interface{}, ok bool) {
-	if c.NotNil() {
-		var n		*Node
-		i = i % c.length
-		for n = c.start; i > 0 && n != c.end; i-- {
-			n = n.Tail
-		}
-		if i == 0 && n != nil {
-			r, ok = n.Head, true
-		}
-	}
-	return
+func (c CycList) At(i int) interface{} {
+	return c.ListHeader.At(i % c.length)
 }
 
 // Set the value stored at the given offset from the start of the list
 func (c CycList) Set(i int, v interface{}) {
-	if c.NotNil() {
-		var n	*Node
-		i = i % c.length
-		for n = c.start; i > 0 && n.Tail != c.start; i-- {
-			n = n.Tail
-		}
-		if i == 0 && n != nil {
-			n.Head = v
-		}
-	}
+	c.ListHeader.Set(i % c.length, v)
 }
 
-//	Return a Cyclist with the next item in the current list as its start
-func (c *CycList) Next() {
+func (c *CycList) Advance() {
 	if c.NotNil() {
 		start := c.start.Tail
 		end := c.end.Tail
@@ -81,7 +61,15 @@ func (c *CycList) Next() {
 	return
 }
 
-//	
+func (c *CycList) Rotate(i int) {
+	if c.NotNil() {
+		if i %= c.length; i > 0 {
+			c.end = c.start.MoveTo(i - 1)
+			c.start = c.end.Tail
+		}
+	}
+}
+
 func (c *CycList) Append(v interface{}) {
 	if c.IsNil() {
 		c.start = &Node{ Head: v }

@@ -14,11 +14,15 @@ func (n *Node) End() (r *Node) {
 	return
 }
 
-func (n *Node) Traverse(i int) (r *Node) {
-	if i >= 0 {
-		for r = n; i > 0 && r != nil; i-- {
-			r = r.Tail
-		}
+func (n *Node) MoveTo(i int) (r *Node) {
+	if i < 0 {
+		panic(i)
+	}
+	for r = n; i > 0 && r != nil; i-- {
+		r = r.Tail
+	}
+	if i != 0 || r == nil {
+		panic(i)
 	}
 	return
 }
