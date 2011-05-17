@@ -310,6 +310,10 @@ func TestLinearListAbsorb(t *testing.T) {
 		}
 	}
 
+	RefuteAbsorb(List(), -1, List(-3, -2, -1), List())
+	ConfirmAbsorb(List(), 0, List(-3, -2, -1), List(-3, -2, -1))
+	RefuteAbsorb(List(), 1, List(-3, -2, -1), List())
+
 	RefuteAbsorb(List(0, 1, 2, 3), -1, List(-3, -2, -1), List(0, 1, 2, 3))
 	ConfirmAbsorb(List(0, 1, 2, 3), 0, List(-3, -2, -1), List(-3, -2, -1, 0, 1, 2, 3))
 	ConfirmAbsorb(List(0, 1, 2, 3), 1, List(-3, -2, -1), List(0, -3, -2, -1, 1, 2, 3))
