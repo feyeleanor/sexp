@@ -321,6 +321,30 @@ func (l *LinearList) Insert(i int, o interface{}) {
 
 //	Take all the elements from another list and insert them into this list, destroying the other list if successful.
 func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
+	if l.NotNil() {
+		switch {
+		case i < 0:						fallthrough
+		case i > l.length:				return
+
+		case i == 0:
+			o.end.Tail = l.start
+			l.start = o.start
+
+		case i == l.length:
+			l.end.Tail = o.start
+			l.end = o.end
+
+		default:
+			n := l.start.Traverse(i - 1)
+			o.end.Tail = n.Tail
+			n.Tail = o.start
+		}
+		l.length += o.length
+		ok = true
+	}
+	if ok {
+		o.Clear()
+	}
 	return
 }
 

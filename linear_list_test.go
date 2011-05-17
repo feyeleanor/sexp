@@ -315,7 +315,8 @@ func TestLinearListAbsorb(t *testing.T) {
 	ConfirmAbsorb(List(0, 1, 2, 3), 1, List(-3, -2, -1), List(0, -3, -2, -1, 1, 2, 3))
 	ConfirmAbsorb(List(0, 1, 2, 3), 2, List(-3, -2, -1), List(0, 1, -3, -2, -1, 2, 3))
 	ConfirmAbsorb(List(0, 1, 2, 3), 3, List(-3, -2, -1), List(0, 1, 2, -3, -2, -1, 3))
-	RefuteAbsorb(List(0, 1, 2, 3), 4, List(-3, -2, -1), List(0, 1, 2, 3))
+	ConfirmAbsorb(List(0, 1, 2, 3), 4, List(-3, -2, -1), List(0, 1, 2, 3, -3, -2, -1))
+	RefuteAbsorb(List(0, 1, 2, 3), 5, List(-3, -2, -1), List(0, 1, 2, 3))
 }
 
 func TestLinearListCar(t *testing.T) {
