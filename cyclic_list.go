@@ -1,8 +1,5 @@
 package sexp
 
-import "fmt"
-import "strings"
-
 /*
 	A CycList is a circular list structure.
 	Each node in the list may point to exactly one other node in the list.
@@ -21,14 +18,12 @@ type CycList struct {
 	ListHeader
 }
 
-//	Iterate over all elements of the list once
-func (c CycList) Each(f func(interface{})) {
-	if c.NotNil() {
-		f(c.start.Head)
-		for n := c.start.Tail; n != c.start; n = n.Tail {
-			f(n.Head)
-		}
+func (c CycList) Clone() (r *CycList) {
+	r = &CycList{ *c.ListHeader.Clone() }
+	if r.NotNil() {
+		r.end.Tail = r.start
 	}
+	return
 }
 
 //	Iterate over all elements of the list indefinitely
@@ -71,111 +66,33 @@ func (c *CycList) Rotate(i int) {
 }
 
 func (c *CycList) Append(v interface{}) {
-	if c.IsNil() {
-		c.start = &Node{ Head: v }
-		c.start.Tail = c.start
-		c.end = c.start
-	} else {
-		c.end.Tail = &Node{ Head: v, Tail: c.start }
-		c.end = c.end.Tail
-	}
-	c.length++
+	c.ListHeader.Append(v)
+	c.end.Tail = c.start
 }
 
 func (c *CycList) AppendSlice(s []interface{}) {
-	if len(s) > 0 {
-		if c.IsNil() {
-			c.Append(s[0])
-			s = s[1:]
-		}
-		for _, v := range s {
-			c.end.Tail = &Node{ Head: v, Tail: c.start }
-			c.end = c.end.Tail
-		}
-		c.length += len(s)
+	c.ListHeader.AppendSlice(s)
+	if c.end != nil {
+		c.end.Tail = c.start
 	}
-}
-
-func (c CycList) equal(o CycList) (r bool) {
-	switch {
-	case c.IsNil():				r = o.IsNil()
-	case c.Len() == o.Len():	r = true
-								n := c.start
-								x := o.start
-								for i := 0; r && i < c.Len(); i++ {
-									if r = n.Equal(x); r {
-										n = n.Tail
-										x = x.Tail
-									}
-								}
-	}
-	return
 }
 
 //	Determines if another object is equivalent to the CycList
 //	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *CycList:		r = c.equal(*o)
-	case CycList:		r = c.equal(o)
+	case *CycList:		r = c.ListHeader.Equal(o.ListHeader)
+	case CycList:		r = c.ListHeader.Equal(o.ListHeader)
 	default:			r = c.start.Equal(o)
 	}
 	return 
 }
 
-//	Produces a human-readable representation for the CycList
-func (c CycList) String() (t string) {
-	if c.NotNil() {
-		terms := []string{ fmt.Sprintf("%v", c.start.Head) }
-		for n := c.start.Tail; n != c.start; n = n.Tail {
-			terms = append(terms, fmt.Sprintf("%v", n.Head))
-		}
-		terms = append(terms, "...")
-		t = strings.Join(terms, " ")
-		t = strings.Replace(t, "()", "nil", -1)
-		t = strings.Replace(t, "<nil>", "nil", -1)
-	}
-	return "(" + t + ")"
-}
-
-//	Calculates the nesting of elements within the CycList
-func (c CycList) Depth() (d int) {
-	if c.NotNil() {
-		if v, ok := c.start.Head.(Nested); ok {
-			if r := v.Depth() + 1; r > d {
-				d = r
-			}
-		}
-		for n := c.start.Tail; n != c.start; n = n.Tail {
-			if v, ok := n.Head.(Nested); ok {
-				if r := v.Depth() + 1; r > d {
-					d = r
-				}
-			}
-		}
-	}
-	return
-}
-
 //	Reverses the order in which elements of a CycList are traversed
 func (c *CycList) Reverse() {
-	if c.NotNil() {
-		var result	*Node
-
-		current := c.start
-		c.end = current
-
-		for ; current != nil; {
-			next := current.Tail
-			current.Tail = result
-			result = current
-			current = next
-			if current == c.start {
-				break
-			}
-		}
-		c.start.Tail = result
-		c.start = result
+	if r := c.reverseLinks(); r != nil {
+		c.start.Tail = r
+		c.start = r
 		c.end.Tail = c.start
 	}
 }

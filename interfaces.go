@@ -1,5 +1,12 @@
 package sexp
 
+type Linkable interface {
+	Start() *Node
+	End() *Node
+	Len() int
+	Clear()
+}
+
 type Nested interface {
 	Depth() int
 }

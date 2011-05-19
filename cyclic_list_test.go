@@ -19,6 +19,19 @@ func TestCycListLen(t *testing.T) {
 	ConfirmLen(Loop(4, Loop(3), 2, 1), 4)
 }
 
+func TestCycListClone(t *testing.T) {
+	ConfirmClone := func(c, r *CycList) {
+		x := c.Clone()
+		if !x.Equal(r) {
+			t.Fatalf("%v should be %v", x, r)
+		}
+	}
+	ConfirmClone(Loop(), Loop())
+	ConfirmClone(Loop(0), Loop(0))
+	ConfirmClone(Loop(0, 1), Loop(0, 1))
+	ConfirmClone(Loop(0, Loop(0, 1)), Loop(0, Loop(0, 1)))
+}
+
 func TestCycListEach(t *testing.T) {
 	c := Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
@@ -29,7 +42,7 @@ func TestCycListEach(t *testing.T) {
 		count++
 	})
 	if count != c.length {
-		t.Fatalf("loop ith length %v erroneously reported iterations as %v", c.length, count)
+		t.Fatalf("loop length %v erroneously reported iterations as %v", c.length, count)
 	}
 }
 
@@ -170,6 +183,7 @@ func TestCycListAppendSlice(t *testing.T) {
 			t.Fatalf("%v should be %v", c, r)
 		}
 	}
+	ConfirmAppendSlice(Loop(), []interface{}{}, Loop())
 	ConfirmAppendSlice(Loop(), []interface{}{ 1 }, Loop(1))
 	ConfirmAppendSlice(Loop(1), []interface{}{ 2, 3 }, Loop(1, 2, 3))
 }

@@ -156,10 +156,19 @@ func TestLinearListFlatten(t *testing.T) {
 	}
 	ConfirmFlatten(List(1), List(1))
 	ConfirmFlatten(List(1, List(2)), List(1, 2))
+	ConfirmFlatten(List(List(1), 2), List(1, 2))
+	ConfirmFlatten(List(List(1), List(2)), List(1, 2))
+	ConfirmFlatten(List(List(1, List(2))), List(1, 2))
+
 	ConfirmFlatten(List(1, List(2, 3)), List(1, 2, 3))
 	ConfirmFlatten(List(1, List(2, List(3))), List(1, 2, 3))
+	ConfirmFlatten(List(1, List(2, 3, List(4))), List(1, 2, 3, 4))
+	ConfirmFlatten(List(1, List(2, List(3, 4))), List(1, 2, 3, 4))
 	ConfirmFlatten(List(1, List(2, 3, List(4, List(5)))), List(1, 2, 3, 4, 5))
+	ConfirmFlatten(List(1, List(2, List(3), List(4, List(5)))), List(1, 2, 3, 4, 5))
+	ConfirmFlatten(List(1, List(2, List(3, List(4, List(5))))), List(1, 2, 3, 4, 5))
 	ConfirmFlatten(List(1, List(List(2, 3), List(4, List(5)))), List(1, 2, 3, 4, 5))
+	ConfirmFlatten(List(1, List(List(2, List(3)), List(4, List(5)))), List(1, 2, 3, 4, 5))
 }
 
 func TestLinearListAt(t *testing.T) {
@@ -230,6 +239,7 @@ func TestLinearListAppendSlice(t *testing.T) {
 			t.Fatalf("%v should be %v", l, r)
 		}
 	}
+	ConfirmAppendSlice(List(), []interface{}{}, List())
 	ConfirmAppendSlice(List(), []interface{}{ 1 }, List(1))
 	ConfirmAppendSlice(List(1), []interface{}{ 2, 3 }, List(1, 2, 3))
 }
