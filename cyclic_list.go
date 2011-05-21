@@ -115,3 +115,8 @@ func (c *CycList) Flatten() {
 		}
 	}
 }
+
+func (c *CycList) Tail() {
+	c.ListHeader.Tail()
+	c.end = c.start
+}

@@ -333,49 +333,25 @@ func TestLinearListAbsorb(t *testing.T) {
 	RefuteAbsorb(List(0, 1, 2, 3), 5, List(-3, -2, -1), List(0, 1, 2, 3))
 }
 
-func TestLinearListCar(t *testing.T) {
-	ConfirmCar := func(l *LinearList, r interface{}) {
-		if x := l.Car(); x != r {
+func TestLinearListHead(t *testing.T) {
+	ConfirmHead := func(l *LinearList, r interface{}) {
+		if x := l.Head(); x != r {
 			t.Fatalf("Car '%v' should be '%v' but is '%v'", l, r, x)
 		}
 	}
-	ConfirmCar(List(), nil)
-	ConfirmCar(List(0), 0)
+	ConfirmHead(List(), nil)
+	ConfirmHead(List(0), 0)
 }
 
-func TestLinearListCdr(t *testing.T) {
-	ConfirmCdr := func(l, r *LinearList) {
-		if x := l.Cdr(); !x.Equal(r) {
-			t.Fatalf("Cdr '%v' should be '%v' but is '%v'", l, r, x)
-		}
-	}
-	ConfirmCdr(List(), List())
-	ConfirmCdr(List(0), List())
-	ConfirmCdr(List(0, 1), List(1))
-	ConfirmCdr(List(0, 1, 2), List(1, 2))
-}
-
-func TestLinearListRplaca(t *testing.T) {
-	ConfirmRplaca := func(l *LinearList, v interface{}, r interface{}) {
-		l.Rplaca(v)
+func TestLinearListTail(t *testing.T) {
+	ConfirmTail := func(l, r *LinearList) {
+		l.Tail()
 		if !l.Equal(r) {
-			t.Fatalf("Rplaca should be '%v' but is '%v'", r, l)
+			t.Fatalf("Tail should be '%v' but is '%v'", r, l)
 		}
 	}
-	ConfirmRplaca(List(), 0, List(0))
-	ConfirmRplaca(List(0), 1, List(1))
-	ConfirmRplaca(List(0, 1), 1, List(1, 1))
-}
-
-func TestLinearListRplacd(t *testing.T) {
-	ConfirmRplacd := func(l, n, r *LinearList) {
-		l.Rplacd(n)
-		if !l.Equal(r) {
-			t.Fatalf("Rplacd should be '%v' but is '%v'", r, l)
-		}
-	}
-	ConfirmRplacd(List(), List(0), List(0))
-	ConfirmRplacd(List(0), List(1), List(0, 1))
-	ConfirmRplacd(List(0, 1), List(2), List(0, 2))
-	ConfirmRplacd(List(0, 1, 2), List(3, 4), List(0, 3, 4))
+	ConfirmTail(List(), List())
+	ConfirmTail(List(0), List())
+	ConfirmTail(List(0, 1), List(1))
+	ConfirmTail(List(0, 1, 2), List(1, 2))
 }

@@ -175,39 +175,3 @@ func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
 	o.Clear()
 	return true
 }
-
-func (l LinearList) Car() (r interface{}) {
-	if l.NotNil() {
-		r = l.start.Head
-	}
-	return
-}
-
-func (l LinearList) Cdr() (r LinearList) {
-	if l.NotNil() {
-		r.start = l.start.Tail
-		r.end = l.end
-		r.length = l.length - 1
-	}
-	return
-}
-
-func (l *LinearList) Rplaca(i interface{}) {
-	if l.IsNil() {
-		*l = *(List(i))
-	} else {
-		l.start.Head = i
-	}
-}
-
-func (l *LinearList) Rplacd(tail *LinearList) {
-	if l.IsNil() {
-		l.start = tail.start
-		l.end = tail.end
-		l.length = tail.length
-	} else {
-		l.start.Tail = tail.start
-		l.end = tail.end
-		l.length = tail.length + 1
-	}
-}

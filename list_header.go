@@ -203,3 +203,19 @@ func (l *ListHeader) reverseLinks() (r *Node) {
 func (l *ListHeader) Reverse() {
 	l.start = l.reverseLinks()
 }
+
+func (l ListHeader) Head() (r interface{}) {
+	if l.NotNil() {
+		r = l.start.Head
+	}
+	return
+}
+
+func (l *ListHeader) Tail() {
+	if l.NotNil() {
+		n := l.start
+		l.start = l.start.Tail
+		n.Tail = nil
+		l.length--
+	}
+}
