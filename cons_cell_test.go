@@ -2,13 +2,13 @@ package sexp
 
 import "testing"
 
-func TestNodeIsNil(t *testing.T) {
-	ConfirmIsNil := func(n *Node, r bool) {
+func TestConsCellIsNil(t *testing.T) {
+	ConfirmIsNil := func(n *ConsCell, r bool) {
 		if n.IsNil() != r {
 			t.Fatalf("%v.IsNil() should be %v", n, r)
 		}
 	}
-	n := &Node{}
+	n := &ConsCell{}
 	ConfirmIsNil(n, true)
 
 	n.Head = 0
@@ -17,16 +17,16 @@ func TestNodeIsNil(t *testing.T) {
 	n.Tail = n
 	ConfirmIsNil(n, false)
 
-	ConfirmIsNil(&Node{ Head: n, Tail: n }, false)
+	ConfirmIsNil(&ConsCell{ Head: n, Tail: n }, false)
 }
 
-func TestNodeNotNil(t *testing.T) {
-	ConfirmNotNil := func(n *Node, r bool) {
+func TestConsCellNotNil(t *testing.T) {
+	ConfirmNotNil := func(n *ConsCell, r bool) {
 		if n.NotNil() != r {
 			t.Fatalf("%v.NotNil() should be %v", n, r)
 		}
 	}
-	n := &Node{}
+	n := &ConsCell{}
 	ConfirmNotNil(n, false)
 
 	n.Head = 0
@@ -35,11 +35,11 @@ func TestNodeNotNil(t *testing.T) {
 	n.Tail = n
 	ConfirmNotNil(n, true)
 
-	ConfirmNotNil(&Node{ Head: n, Tail: n }, true)
+	ConfirmNotNil(&ConsCell{ Head: n, Tail: n }, true)
 }
 
-func TestEnd(t *testing.T) {
-	ConfirmEnd := func(n *Node, r interface{}) {
+func TestConsCellEnd(t *testing.T) {
+	ConfirmEnd := func(n *ConsCell, r interface{}) {
 		if x := n.End(); x.Head != r {
 			t.Fatalf("%v.End() should be '%v' but is '%v'", n, r, x.Head)
 		}
@@ -49,13 +49,13 @@ func TestEnd(t *testing.T) {
 	ConfirmEnd(List(0, 1, 2).start.End(), 2)
 }
 
-func TestMoveTo(t *testing.T) {
-	ConfirmMoveTo := func(n *Node, i int, r interface{}) {
+func TestConsCellMoveTo(t *testing.T) {
+	ConfirmMoveTo := func(n *ConsCell, i int, r interface{}) {
 		switch x := n.MoveTo(i); {
 		case x.Head != r:	t.Fatalf("%v.MoveTo(%v) should be '%v' but is '%v'", n, i, r, x.Head)
 		}
 	}
-	RefuteMoveTo := func(n *Node, i int) {
+	RefuteMoveTo := func(n *ConsCell, i int) {
 		defer func() {
 			if x := recover(); x == nil {
 				t.Fatalf("%v.MoveTo(%v) should not succeed", n, i)

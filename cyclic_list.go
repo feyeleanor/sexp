@@ -101,7 +101,7 @@ func (c *CycList) Reverse() {
 //	In the case of LinearList items these will be spliced inline into the CycList.
 func (c *CycList) Flatten() {
 	if c.NotNil() {
-		n := &Node{ Head: c.start.Head, Tail: c.start.Tail }
+		n := &ConsCell{ Head: c.start.Head, Tail: c.start.Tail }
 		for ; n != c.start; n = n.Tail {
 			switch v := n.Head.(type) {
 			case *LinearList:			v.Flatten()

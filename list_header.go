@@ -4,8 +4,8 @@ import "fmt"
 import "strings"
 
 type ListHeader struct {
-	start 	*Node
-	end		*Node
+	start 	*ConsCell
+	end		*ConsCell
 	length	int
 }
 
@@ -58,11 +58,11 @@ func (l ListHeader) Depth() (d int) {
 	return
 }
 
-func (l ListHeader) Start() *Node {
+func (l ListHeader) Start() *ConsCell {
 	return l.start
 }
 
-func (l ListHeader) End() *Node {
+func (l ListHeader) End() *ConsCell {
 	return l.end
 }
 
@@ -98,7 +98,7 @@ func (l ListHeader) Equal(o ListHeader) (r bool) {
 	return
 }
 
-func (l *ListHeader) eachNode(f func(*Node)) {
+func (l *ListHeader) eachConsCell(f func(*ConsCell)) {
 	if l.NotNil() {
 		n := l.start
 		for i := 0; i < l.length; i++ {
@@ -127,11 +127,11 @@ func (l ListHeader) Set(i int, v interface{}) {
 
 func (l *ListHeader) Append(v interface{}) {
 	if l.IsNil() {
-		l.start = &Node{ Head: v }
+		l.start = &ConsCell{ Head: v }
 		l.end = l.start
 		l.length = 1
 	} else {
-		l.end.Tail = &Node{ Head: v }
+		l.end.Tail = &ConsCell{ Head: v }
 		l.end = l.end.Tail
 		l.length++
 	}
@@ -144,7 +144,7 @@ func (l *ListHeader) AppendSlice(s []interface{}) {
 			s = s[1:]
 		}
 		for _, v := range s {
-			l.end.Tail = &Node{ Head: v }
+			l.end.Tail = &ConsCell{ Head: v }
 			l.end = l.end.Tail
 		}
 		l.length += len(s)
@@ -154,7 +154,7 @@ func (l *ListHeader) AppendSlice(s []interface{}) {
 //	Iterates through the list reducing the nesting of each element which can be flattened.
 //	Elements which are themselves LinearLists will be inlined as part of the containing list and their contained list destroyed.
 func (l *ListHeader) Flatten() {
-	l.eachNode(func(n *Node) {
+	l.eachConsCell(func(n *ConsCell) {
 		if h, ok := n.Head.(Flattenable); ok {
 			h.Flatten()
 		}
@@ -184,7 +184,7 @@ func (l *ListHeader) Flatten() {
 	})
 }
 
-func (l *ListHeader) reverseLinks() (r *Node) {
+func (l *ListHeader) reverseLinks() (r *ConsCell) {
 	if l.NotNil() {
 		current := l.start
 		l.end = current

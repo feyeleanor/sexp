@@ -1,8 +1,8 @@
 package sexp
 
 type Linkable interface {
-	Start() *Node
-	End() *Node
+	Start() *ConsCell
+	End() *ConsCell
 	Len() int
 	Clear()
 }
