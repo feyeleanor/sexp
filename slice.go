@@ -86,14 +86,14 @@ func (s *Slice) Flatten() {
 	}
 }
 
-func (s Slice) equal(o Slice) (r bool) {
+func (s Slice) equal(o *Slice) (r bool) {
 	switch {
 	case s.IsNil():				r = o.IsNil()
 	case s.Len() == o.Len():	r = true
 								for i, v := range s {
 									switch v := v.(type) {
-									case Equatable:		r = v.Equal(o[i])
-									default:			r = v == o[i]
+									case Equatable:		r = v.Equal((*o)[i])
+									default:			r = v == (*o)[i]
 									}
 									if !r {
 										return
@@ -105,8 +105,8 @@ func (s Slice) equal(o Slice) (r bool) {
 
 func (s Slice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *Slice:		r = s.equal(*o)
-	case Slice:			r = s.equal(o)
+	case *Slice:		r = s.equal(o)
+	case Slice:			r = s.equal(&o)
 	}
 	return
 }
