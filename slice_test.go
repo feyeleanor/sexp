@@ -2,6 +2,27 @@ package sexp
 
 import "testing"
 
+func TestSliceIsNil(t *testing.T) {
+	ConfirmIsNil := func(s *Slice) {
+		if !s.IsNil() {
+			t.Fatalf("%v should be nil", s)
+		}
+	}
+	RefuteIsNil := func(s *Slice) {
+		if s.IsNil() {
+			t.Fatalf("%v should not be nil", s)
+		}
+	}
+	ConfirmIsNil((*Slice)(nil))
+	ConfirmIsNil(&Slice{})
+	ConfirmIsNil(SList())
+	ConfirmIsNil((*Slice)(&[]interface{}{}))
+	RefuteIsNil(&Slice{ []interface{}{} })
+	RefuteIsNil(SList(&[]interface{}{}))
+	RefuteIsNil(SList(nil))
+	RefuteIsNil(SList(0, 1))
+}
+
 func TestSList(t *testing.T) {
 	sxp := SList(nil, nil)
 	switch {
@@ -53,7 +74,7 @@ func TestSList(t *testing.T) {
 }
 
 func TestSliceString(t *testing.T) {
-	ConfirmString := func(s Slice, r string) {
+	ConfirmString := func(s *Slice, r string) {
 		if x := s.String(); x != r {
 			t.Fatalf("%v erroneously serialised as '%v'", r, x)
 		}
@@ -67,7 +88,7 @@ func TestSliceString(t *testing.T) {
 }
 
 func TestSliceLen(t *testing.T) {
-	ConfirmLength := func(s Slice, i int) {
+	ConfirmLength := func(s *Slice, i int) {
 		if x := s.Len(); x != i {
 			t.Fatalf("%v.Len() should be %v but is %v", s, i, x)
 		}
@@ -96,7 +117,7 @@ func TestSliceEach(t *testing.T) {
 }
 
 func TestSliceDepth(t *testing.T) {
-	ConfirmDepth := func(s Slice, i int) {
+	ConfirmDepth := func(s *Slice, i int) {
 		if x := s.Depth(); x != i {
 			t.Fatalf("%v.Depth() should be %v but is %v", s, i, x)
 		}
@@ -128,7 +149,7 @@ func TestSliceReverse(t *testing.T) {
 }
 
 func TestSliceFlatten(t *testing.T) {
-	ConfirmFlatten := func(s, r Slice) {
+	ConfirmFlatten := func(s, r *Slice) {
 		s.Flatten()
 		if !s.Equal(r) {
 			t.Fatalf("%v should be %v", s, r)
@@ -137,10 +158,15 @@ func TestSliceFlatten(t *testing.T) {
 	ConfirmFlatten(SList(), SList())
 	ConfirmFlatten(SList(1), SList(1))
 	ConfirmFlatten(SList(1, SList(2)), SList(1, 2))
+	ConfirmFlatten(SList(1, SList(2, SList(3))), SList(1, 2, 3))
 	ConfirmFlatten(SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11)))), SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
 
 	ConfirmFlatten(SList(0, List(1, 2, SList(3, 4))), SList(0, List(1, 2, SList(3, 4))))
 	ConfirmFlatten(SList(0, List(1, 2, List(3, 4))), SList(0, List(1, 2, 3, 4)))
+
+	ConfirmFlatten(SList(0, Loop(1, 2)), SList(0, Loop(1, 2)))
+	ConfirmFlatten(SList(0, List(1, Loop(2, 3))), SList(0, List(1, Loop(2, 3))))
+
 	ConfirmFlatten(SList(0, List(1, 2, Loop(3, 4))), SList(0, List(1, 2, Loop(3, 4))))
 	ConfirmFlatten(SList(3, 4, SList(5, 6, 7)), SList(3, 4, 5, 6, 7))
 	ConfirmFlatten(SList(0, Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, Loop(1, 2, SList(3, 4, 5, 6, 7))))
@@ -161,11 +187,11 @@ func TestSliceFlatten(t *testing.T) {
 }
 
 func TestSliceCar(t *testing.T) {
-	ConfirmCar := func(s Slice, r interface{}) {
+	ConfirmCar := func(s *Slice, r interface{}) {
 		var ok bool
 		n := s.Car()
 		switch n := n.(type) {
-		case Slice:			ok = n.Equal(r)
+		case Equatable:		ok = n.Equal(r)
 		default:			ok = n == r
 		}
 		if !ok {
@@ -177,11 +203,11 @@ func TestSliceCar(t *testing.T) {
 }
 
 func TestSliceCaar(t *testing.T) {
-	ConfirmCaar := func(s Slice, r interface{}) {
+	ConfirmCaar := func(s *Slice, r interface{}) {
 		var ok bool
 		n := s.Caar()
 		switch n := n.(type) {
-		case Slice:			ok = n.Equal(r)
+		case Equatable:		ok = n.Equal(r)
 		default:			ok = n == r
 		}
 		if !ok {
@@ -195,7 +221,7 @@ func TestSliceCaar(t *testing.T) {
 }
 
 func TestSliceCdr(t *testing.T) {
-	ConfirmCdr := func(s, r Slice) {
+	ConfirmCdr := func(s, r *Slice) {
 		if n := s.Cdr(); !n.Equal(r) {
 			t.Fatalf("tail should be '%v' but is '%v'", r, n)
 		}
@@ -204,7 +230,7 @@ func TestSliceCdr(t *testing.T) {
 }
 
 func TestSliceCddr(t *testing.T) {
-	ConfirmCddr := func(s, r Slice) {
+	ConfirmCddr := func(s, r *Slice) {
 		if n := s.Cddr(); !n.Equal(r) {
 			t.Fatalf("tail should be '%v' but is '%v'", r, n)
 		}
@@ -215,7 +241,7 @@ func TestSliceCddr(t *testing.T) {
 }
 
 func TestSliceRplaca(t *testing.T) {
-	ConfirmRplaca := func(s Slice, v interface{}, r Slice) {
+	ConfirmRplaca := func(s *Slice, v interface{}, r *Slice) {
 		s.Rplaca(v)
 		if !s.Equal(r) {
 			t.Fatalf("slice should be '%v' but is '%v'", r, s)
@@ -226,7 +252,7 @@ func TestSliceRplaca(t *testing.T) {
 }
 
 func TestSliceRplacd(t *testing.T) {
-	ConfirmRplacd := func(s Slice, v interface{}, r Slice) {
+	ConfirmRplacd := func(s *Slice, v interface{}, r *Slice) {
 		s.Rplacd(v)
 		if !s.Equal(r) {
 			t.Fatalf("slice should be '%v' but is '%v'", r, s)

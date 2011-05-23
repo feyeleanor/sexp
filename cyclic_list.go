@@ -1,7 +1,5 @@
 package sexp
 
-//import "fmt"
-
 /*
 	A CycList is a circular list structure.
 	Each node in the list may point to exactly one other node in the list.
