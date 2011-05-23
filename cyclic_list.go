@@ -1,5 +1,7 @@
 package sexp
 
+//import "fmt"
+
 /*
 	A CycList is a circular list structure.
 	Each node in the list may point to exactly one other node in the list.
@@ -20,7 +22,7 @@ type CycList struct {
 
 func (c CycList) Clone() (r *CycList) {
 	r = &CycList{ *c.ListHeader.Clone() }
-	if r.NotNil() {
+	if !r.IsNil() {
 		r.end.Tail = r.start
 	}
 	return
@@ -29,7 +31,7 @@ func (c CycList) Clone() (r *CycList) {
 //	Iterate over all elements of the list indefinitely
 //	The only way to terminate iteration is by raising a panic() in the applied function
 func (c CycList) Cycle(f func(interface{})) {
-	if c.NotNil() {
+	if !c.IsNil() {
 		for n := c.start; ; n = n.Tail {
 			f(n.Head)
 		}
@@ -47,7 +49,7 @@ func (c CycList) Set(i int, v interface{}) {
 }
 
 func (c *CycList) Advance() {
-	if c.NotNil() {
+	if !c.IsNil() {
 		start := c.start.Tail
 		end := c.end.Tail
 		c.start = start
@@ -57,7 +59,7 @@ func (c *CycList) Advance() {
 }
 
 func (c *CycList) Rotate(i int) {
-	if c.NotNil() {
+	if !c.IsNil() {
 		if i %= c.length; i > 0 {
 			c.end = c.start.MoveTo(i - 1)
 			c.start = c.end.Tail
@@ -97,24 +99,40 @@ func (c *CycList) Reverse() {
 	}
 }
 
-//	Flatten reduces all Flattenable items in the CycList to their flattest form.
-//	In the case of LinearList items these will be spliced inline into the CycList.
+//	Iterates through the list reducing the nesting of each element which can be flattened.
+//	Elements which are themselves LinearLists will be inlined as part of the containing list and their contained list destroyed.
 func (c *CycList) Flatten() {
-	if c.NotNil() {
-		n := &ConsCell{ Head: c.start.Head, Tail: c.start.Tail }
-		for ; n != c.start; n = n.Tail {
-			switch v := n.Head.(type) {
-			case *LinearList:			v.Flatten()
-										e := v.start.End()
-										e.Tail = n.Tail
-										n.Head = v.start.Head
-										n.Tail = v.start.Tail
-										c.length += v.length - 1
-			case Flattenable:			v.Flatten()
+	c.eachConsCell(func(n *ConsCell) {
+		if h, ok := n.Head.(Flattenable); ok {
+			h.Flatten()
+		}
+
+		if h, ok := n.Head.(Linkable); ok {
+			start := h.Start()
+			end := h.End()
+
+			length := h.Len()
+			switch {
+			case start == nil:		fallthrough
+			case length == 0:		n.Head = nil
+
+			case length == 1:		n.Head = start.Head
+
+			case n == c.end:		end.Tail = c.start
+									c.end = end
+									n.Head = start.Head
+									n.Tail = start.Tail
+									c.length += length - 1
+
+			default:				end.Tail = n.Tail
+									n.Head = start.Head
+									n.Tail = start.Tail
+									c.length += length - 1
 			}
 		}
-	}
+	})
 }
+
 
 func (c *CycList) Tail() {
 	c.ListHeader.Tail()

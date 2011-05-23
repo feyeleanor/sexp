@@ -333,4 +333,7 @@ func TestCycListFlatten(t *testing.T) {
 	ConfirmFlatten(Loop(0, List(1)), Loop(0, 1))
 	ConfirmFlatten(Loop(0, List(1, 2), 3), Loop(0, 1, 2, 3))
 	ConfirmFlatten(Loop(0, List(1, List(2, 3), 4, List(5, List(6, 7)))), Loop(0, 1, 2, 3, 4, 5, 6, 7))
+
+	ConfirmFlatten(Loop(0, List(1, Loop(2, 3))), Loop(0, 1, Loop(2, 3)))
+	ConfirmFlatten(Loop(0, List(1, Loop(2, 3, List(4, Loop(5))))), Loop(0, 1, Loop(2, 3, 4, Loop(5))))
 }
