@@ -10,7 +10,7 @@ package sexp
 //	A declarative method for building CycLists
 func Loop(items... interface{}) (c *CycList) {
 	c = new(CycList)
-	c.AppendSlice(items)
+	c.AppendSlice((Slice)(items))
 	return
 }
 
@@ -38,12 +38,20 @@ func (c CycList) Cycle(f func(interface{})) {
 
 // Return the value stored at the given offset from the start of the list
 func (c CycList) At(i int) interface{} {
-	return c.ListHeader.At(i % c.length)
+	i %= c.length
+	if i < 0 {
+		i = c.length + i
+	}
+	return c.ListHeader.At(i)
 }
 
 // Set the value stored at the given offset from the start of the list
 func (c CycList) Set(i int, v interface{}) {
-	c.ListHeader.Set(i % c.length, v)
+	i %= c.length
+	if i < 0 {
+		i = c.length + i
+	}
+	c.ListHeader.Set(i, v)
 }
 
 func (c *CycList) Advance() {
@@ -70,7 +78,7 @@ func (c *CycList) Append(v interface{}) {
 	c.end.Tail = c.start
 }
 
-func (c *CycList) AppendSlice(s []interface{}) {
+func (c *CycList) AppendSlice(s Slice) {
 	c.ListHeader.AppendSlice(s)
 	if c.end != nil {
 		c.end.Tail = c.start
@@ -81,7 +89,7 @@ func (c *CycList) AppendSlice(s []interface{}) {
 //	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *CycList:		r = c.ListHeader.Equal(o.ListHeader)
+	case *CycList:		r = o != nil && c.ListHeader.Equal((*o).ListHeader)
 	case CycList:		r = c.ListHeader.Equal(o.ListHeader)
 	default:			r = c.start.Equal(o)
 	}

@@ -1,6 +1,5 @@
 package sexp
 
-//import "fmt"
 import "testing"
 
 func TestCycListIsNil(t *testing.T) {
@@ -49,22 +48,20 @@ func TestCycListEach(t *testing.T) {
 func TestCycListCycle(t *testing.T) {
 	c := Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
-	func() {
-		defer func() {
-			if x := recover(); x == nil {
-				t.Fatalf("Each terminated without raising an exception")
-			}
-		}()
-		c.Cycle(func(i interface{}) {
-			if i != count {
-				t.Fatalf("element %v erroneously reported as %v", count, i)
-			}
-			count++
-			if count == c.Len() {
-				panic(count)
-			}
-		})
+	defer func() {
+		if x := recover(); x != nil {
+			t.Fatalf("element %v erroneously reported as %v", count, x)
+		}
 	}()
+	c.Cycle(func(i interface{}) {
+		if i != count {
+			panic(i)
+		}
+		count++
+		if count == c.Len() {
+			panic(nil)
+		}
+	})
 }
 
 func TestCycListAt(t *testing.T) {
@@ -73,25 +70,12 @@ func TestCycListAt(t *testing.T) {
 			t.Fatalf("%v.At(%v) should be %v but is %v", c, i, v, x)
 		}
 	}
-	RefuteAt := func(c *CycList, i int) {
-		defer func() {
-			if x := recover(); x == nil {
-				t.Fatalf("%v.At(%v) succeeded when it shouldn't", c, i)
-			}
-		}()
-		c.At(i)
-	}
 	c := Loop(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
-	RefuteAt(c, -1)
+	ConfirmAt(c, -32, 18)
+	ConfirmAt(c, -21, 19)
+	ConfirmAt(c, -10, 10)
+	ConfirmAt(c, -1, 19)
 	ConfirmAt(c, 0, 10)
-	ConfirmAt(c, 1, 11)
-	ConfirmAt(c, 2, 12)
-	ConfirmAt(c, 3, 13)
-	ConfirmAt(c, 4, 14)
-	ConfirmAt(c, 5, 15)
-	ConfirmAt(c, 6, 16)
-	ConfirmAt(c, 7, 17)
-	ConfirmAt(c, 8, 18)
 	ConfirmAt(c, 9, 19)
 	ConfirmAt(c, 10, 10)
 	ConfirmAt(c, 21, 11)
@@ -105,25 +89,11 @@ func TestCycListSet(t *testing.T) {
 			t.Fatalf("%v.Set(%v) should be %v but is %v", c, i, v, x)
 		}
 	}
-	RefuteSet := func(c *CycList, i int, v interface{}) {
-		defer func() {
-			if x := recover(); x == nil {
-				t.Fatalf("%v.Set(%v) succeeded when it shouldn't", c, i)
-			}
-		}()
-		c.Set(i, v)
-	}
 	c := Loop(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
-	RefuteSet(c, -1, 10)
+	ConfirmSet(c, -21, 0)
+	ConfirmSet(c, -10, -10)
+	ConfirmSet(c, -1, -1)
 	ConfirmSet(c, 0, 10)
-	ConfirmSet(c, 1, 10)
-	ConfirmSet(c, 2, 10)
-	ConfirmSet(c, 3, 10)
-	ConfirmSet(c, 4, 10)
-	ConfirmSet(c, 5, 10)
-	ConfirmSet(c, 6, 10)
-	ConfirmSet(c, 7, 10)
-	ConfirmSet(c, 8, 10)
 	ConfirmSet(c, 9, 10)
 	ConfirmSet(c, 11, 11)
 	ConfirmSet(c, 22, 12)
@@ -177,15 +147,15 @@ func TestCycListAppend(t *testing.T) {
 }
 
 func TestCycListAppendSlice(t *testing.T) {
-	ConfirmAppendSlice := func(c *CycList, s []interface{}, r *CycList) {
-		c.AppendSlice(s)
+	ConfirmAppendSlice := func(c *CycList, s *Slice, r *CycList) {
+		c.AppendSlice(*s)
 		if !c.Equal(r) {
 			t.Fatalf("%v should be %v", c, r)
 		}
 	}
-	ConfirmAppendSlice(Loop(), []interface{}{}, Loop())
-	ConfirmAppendSlice(Loop(), []interface{}{ 1 }, Loop(1))
-	ConfirmAppendSlice(Loop(1), []interface{}{ 2, 3 }, Loop(1, 2, 3))
+	ConfirmAppendSlice(Loop(), SList(), Loop())
+	ConfirmAppendSlice(Loop(), SList(1), Loop(1))
+	ConfirmAppendSlice(Loop(1), SList(2, 3), Loop(1, 2, 3))
 }
 
 func TestCycListString(t *testing.T) {
@@ -331,9 +301,22 @@ func TestCycListFlatten(t *testing.T) {
 	ConfirmFlatten(Loop(1, Loop(2, Loop(3))), Loop(1, Loop(2, Loop(3))))
 
 	ConfirmFlatten(Loop(0, List(1)), Loop(0, 1))
+	ConfirmFlatten(Loop(0, List(1), 2), Loop(0, 1, 2))
 	ConfirmFlatten(Loop(0, List(1, 2), 3), Loop(0, 1, 2, 3))
 	ConfirmFlatten(Loop(0, List(1, List(2, 3), 4, List(5, List(6, 7)))), Loop(0, 1, 2, 3, 4, 5, 6, 7))
 
 	ConfirmFlatten(Loop(0, List(1, Loop(2, 3))), Loop(0, 1, Loop(2, 3)))
 	ConfirmFlatten(Loop(0, List(1, Loop(2, 3, List(4, Loop(5))))), Loop(0, 1, Loop(2, 3, 4, Loop(5))))
+}
+
+func TestCycListCompact(t *testing.T) {
+	ConfirmCompact := func(c *CycList, r *Slice) {
+		if x := c.Compact(); !r.Equal(x) {
+			t.Fatalf("%v.Compact() should be %v but is %v", c, r, x)
+		}
+	}
+
+	ConfirmCompact(Loop(), SList())
+	ConfirmCompact(Loop(1), SList(1))
+	ConfirmCompact(Loop(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 }
