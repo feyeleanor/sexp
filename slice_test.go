@@ -143,6 +143,21 @@ func TestSliceOverwrite(t *testing.T) {
 	ConfirmOverwrite(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, SList(11, 12, 13, 14), SList(0, 1, 2, 3, 4, 11, 12, 13, 14, 9))
 }
 
+func TestSliceReallocate(t *testing.T) {
+	ConfirmReallocate := func(s *Slice, capacity int, r *Slice) {
+		o := s.String()
+		switch s.Reallocate(capacity); {
+		case s == nil:				t.Fatalf("%v.Reallocate(%v) created a nil value for Slice", o, capacity)
+		case s.Cap() != capacity:	t.Fatalf("%v.Reallocate(%v) capacity should be %v but is %v", o, capacity, s.Cap())
+		case !r.Equal(s):			t.Fatalf("%v.Reallocate(%v) should be %v but is %v", o, r, s)
+		}
+	}
+
+	ConfirmReallocate(SList(), 10, SList())
+	ConfirmReallocate(SList(0, 1, 2, 3, 4), 10, SList(0, 1, 2, 3, 4))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, SList(0, 1, 2, 3, 4))
+}
+
 func TestSliceDepth(t *testing.T) {
 	ConfirmDepth := func(s *Slice, i int) {
 		if x := s.Depth(); x != i {

@@ -59,6 +59,16 @@ func (s Slice) Overwrite(offset int, source Slice) {
 	copy(s[offset:], source)
 }
 
+func (s *Slice) Reallocate(capacity int) {
+	length := len(*s)
+	if length > capacity {
+		length = capacity
+	}
+	x := make(Slice, length, capacity)
+	copy(x, *s)
+	*s = x
+}
+
 func (s Slice) Depth() (c int) {
 	if !s.IsNil() {
 		for _, v := range s {
