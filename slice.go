@@ -43,6 +43,22 @@ func (s Slice) Len() int {
 	return len(s)
 }
 
+func (s Slice) Cap() int {
+	return cap(s)
+}
+
+func (s Slice) Blit(destination, source, count int) {
+	end := source + count
+	if end > len(s) {
+		end = len(s)
+	}
+	copy(s[destination:], s[source:end])
+}
+
+func (s Slice) Overwrite(offset int, source Slice) {
+	copy(s[offset:], source)
+}
+
 func (s Slice) Depth() (c int) {
 	if !s.IsNil() {
 		for _, v := range s {
@@ -64,6 +80,45 @@ func (s Slice) Reverse() {
 			end--
 		}
 	}
+}
+
+func (s *Slice) Append(v interface{}) {
+	*s = append(*s, v)
+}
+
+func (s *Slice) AppendSlice(o Slice) {
+	*s = append(*s, o...)
+}
+
+func (s *Slice) Prepend(v interface{}) {
+	l := s.Len() + 1
+	n := make(Slice, l, l)
+	n[0] = v
+	copy(n[1:], *s)
+	*s = n
+}
+
+func (s *Slice) PrependSlice(o Slice) {
+	l := s.Len() + o.Len()
+	n := make(Slice, l, l)
+	copy(n, o)
+	copy(n[o.Len():], *s)
+	*s = n
+}
+
+func (s Slice) Repeat(count int) Slice {
+	length := len(s) * count
+	capacity := cap(s)
+	if capacity < length {
+		capacity = length
+	}
+	destination := make(Slice, length, capacity)
+	for start, end := 0, len(s); count > 0; count-- {
+		copy(destination[start:end], s)
+		start = end
+		end += len(s)
+	}
+	return destination
 }
 
 func (s *Slice) Flatten() {
@@ -107,6 +162,7 @@ func (s Slice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case *Slice:		r = s.equal(o)
 	case Slice:			r = s.equal(&o)
+	default:			r = s.Len() > 0 && s[0] == o
 	}
 	return
 }

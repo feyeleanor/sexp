@@ -116,6 +116,33 @@ func TestSliceEach(t *testing.T) {
 	})
 }
 
+func TestSliceBlit(t *testing.T) {
+	ConfirmBlit := func(s *Slice, destination, source, count int, r *Slice) {
+		s.Blit(destination, source, count)
+		if !r.Equal(s) {
+			t.Fatalf("Blit(%v, %v, %v) should be %v but is %v", destination, source, count, r, s)
+		}
+	}
+
+	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 0, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 9, 9, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, 2, 4, SList(0, 1, 2, 3, 4, 2, 3, 4, 5, 9))
+	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 2, 5, 4, SList(0, 1, 5, 6, 7, 8, 6, 7, 8, 9))
+}
+
+func TestSliceOverwrite(t *testing.T) {
+	ConfirmOverwrite := func(s *Slice, offset int, v, r *Slice) {
+		s.Overwrite(offset, *v)
+		if !r.Equal(s) {
+			t.Fatalf("Overwrite(%v, %v) should be %v but is %v", offset, v, r, s)
+		}
+	}
+
+	ConfirmOverwrite(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 0, SList(10, 9, 8, 7), SList(10, 9, 8, 7, 4, 5, 6, 7, 8, 9))
+	ConfirmOverwrite(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 10, SList(10, 9, 8, 7), SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmOverwrite(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, SList(11, 12, 13, 14), SList(0, 1, 2, 3, 4, 11, 12, 13, 14, 9))
+}
+
 func TestSliceDepth(t *testing.T) {
 	ConfirmDepth := func(s *Slice, i int) {
 		if x := s.Depth(); x != i {
@@ -146,6 +173,74 @@ func TestSliceReverse(t *testing.T) {
 	if !rxp.Equal(sxp) {
 		t.Fatalf("Reversal failed: %v", sxp)
 	}
+}
+
+func TestSliceAppend(t *testing.T) {
+	ConfirmAppend := func(s *Slice, v interface{}, r *Slice) {
+		s.Append(v)
+		if !r.Equal(s) {
+			t.Fatalf("Append(%v) should be %v but is %v", v, r, s)
+		}
+	}
+
+	ConfirmAppend(SList(), 0, SList(0))
+	ConfirmAppend(SList(), SList(0, 1), SList(SList(0, 1)))
+	ConfirmAppend(SList(0, 1, 2), SList(3, 4), SList(0, 1, 2, SList(3, 4)))
+}
+
+func TestSliceAppendSlice(t *testing.T) {
+	ConfirmAppendSlice := func(s, v, r *Slice) {
+		s.AppendSlice(*v)
+		if !r.Equal(s) {
+			t.Fatalf("AppendSlice(%v) should be %v but is %v", v, r, s)
+		}
+	}
+
+	ConfirmAppendSlice(SList(), SList(0), SList(0))
+	ConfirmAppendSlice(SList(), SList(0, 1), SList(0, 1))
+	ConfirmAppendSlice(SList(0, 1, 2), SList(3, 4), SList(0, 1, 2, 3, 4))
+}
+
+func TestSlicePrepend(t *testing.T) {
+	ConfirmPrepend := func(s *Slice, v interface{}, r *Slice) {
+		s.Prepend(v)
+		if !r.Equal(s) {
+			t.Fatalf("Prepend(%v) should be %v but is %v", v, r, s)
+		}
+	}
+
+	ConfirmPrepend(SList(), 0, SList(0))
+	ConfirmPrepend(SList(0), 1, SList(1, 0))
+	ConfirmPrepend(SList(0, 1, 2), SList(3, 4), SList(SList(3, 4), 0, 1, 2))
+}
+
+func TestSlicePrependSlice(t *testing.T) {
+	ConfirmPrependSlice := func(s, v, r *Slice) {
+		s.PrependSlice(*v)
+		if !r.Equal(s) {
+			t.Fatalf("PrependSlice(%v) should be %v but is %v", v, r, s)
+		}
+	}
+
+	ConfirmPrependSlice(SList(), SList(0), SList(0))
+	ConfirmPrependSlice(SList(), SList(0, 1), SList(0, 1))
+	ConfirmPrependSlice(SList(0, 1, 2), SList(3, 4), SList(3, 4, 0, 1, 2))
+}
+
+func TestSliceRepeat(t *testing.T) {
+	ConfirmRepeat := func(s *Slice, count int, r *Slice) {
+		x := s.Repeat(count)
+		if !x.Equal(r) {
+			t.Fatalf("%v.Repeat(%v) should be %v but is %v", s, count, r, x)
+		}
+	}
+
+	ConfirmRepeat(SList(), 5, SList())
+	ConfirmRepeat(SList(0), 1, SList(0))
+	ConfirmRepeat(SList(0), 2, SList(0, 0))
+	ConfirmRepeat(SList(0), 3, SList(0, 0, 0))
+	ConfirmRepeat(SList(0), 4, SList(0, 0, 0, 0))
+	ConfirmRepeat(SList(0), 5, SList(0, 0, 0, 0, 0))
 }
 
 func TestSliceFlatten(t *testing.T) {
