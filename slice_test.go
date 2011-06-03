@@ -2,27 +2,6 @@ package sexp
 
 import "testing"
 
-func TestSliceIsNil(t *testing.T) {
-	ConfirmIsNil := func(s *Slice) {
-		if !s.IsNil() {
-			t.Fatalf("%v should be nil", s)
-		}
-	}
-	RefuteIsNil := func(s *Slice) {
-		if s.IsNil() {
-			t.Fatalf("%v should not be nil", s)
-		}
-	}
-	ConfirmIsNil((*Slice)(nil))
-	ConfirmIsNil(&Slice{})
-	ConfirmIsNil(SList())
-	ConfirmIsNil((*Slice)(&[]interface{}{}))
-	RefuteIsNil(&Slice{ []interface{}{} })
-	RefuteIsNil(SList(&[]interface{}{}))
-	RefuteIsNil(SList(nil))
-	RefuteIsNil(SList(0, 1))
-}
-
 func TestSList(t *testing.T) {
 	sxp := SList(nil, nil)
 	switch {
@@ -116,18 +95,31 @@ func TestSliceEach(t *testing.T) {
 	})
 }
 
-func TestSliceBlit(t *testing.T) {
-	ConfirmBlit := func(s *Slice, destination, source, count int, r *Slice) {
-		s.Blit(destination, source, count)
+func TestSliceBlockCopy(t *testing.T) {
+	ConfirmBlockCopy := func(s *Slice, destination, source, count int, r *Slice) {
+		s.BlockCopy(destination, source, count)
 		if !r.Equal(s) {
-			t.Fatalf("Blit(%v, %v, %v) should be %v but is %v", destination, source, count, r, s)
+			t.Fatalf("BlockCopy(%v, %v, %v) should be %v but is %v", destination, source, count, r, s)
 		}
 	}
 
-	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 0, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
-	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 9, 9, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
-	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, 2, 4, SList(0, 1, 2, 3, 4, 2, 3, 4, 5, 9))
-	ConfirmBlit(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 2, 5, 4, SList(0, 1, 5, 6, 7, 8, 6, 7, 8, 9))
+	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 0, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 9, 9, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, 2, 4, SList(0, 1, 2, 3, 4, 2, 3, 4, 5, 9))
+	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 2, 5, 4, SList(0, 1, 5, 6, 7, 8, 6, 7, 8, 9))
+}
+
+func TestSliceBlockClear(t *testing.T) {
+	ConfirmBlockClear := func(s *Slice, start, count int, r *Slice) {
+		s.BlockClear(start, count)
+		if !r.Equal(s) {
+			t.Fatalf("BlockClear(%v, %v) should be %v but is %v", start, count, r, s)
+		}
+	}
+
+	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 0, 4, SList(nil, nil, nil, nil, 4, 5, 6, 7, 8, 9))
+	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 10, 4, SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, 4, SList(0, 1, 2, 3, 4, nil, nil, nil, nil, 9))
 }
 
 func TestSliceOverwrite(t *testing.T) {
@@ -275,9 +267,9 @@ func TestSliceFlatten(t *testing.T) {
 	ConfirmFlatten(SList(0, List(1, 2, List(3, 4))), SList(0, List(1, 2, 3, 4)))
 
 	ConfirmFlatten(SList(0, Loop(1, 2)), SList(0, Loop(1, 2)))
-	ConfirmFlatten(SList(0, List(1, Loop(2, 3))), SList(0, List(1, Loop(2, 3))))
+	ConfirmFlatten(SList(0, List(1, Loop(2, 3))), SList(0, List(1, 2, 3)))
 
-	ConfirmFlatten(SList(0, List(1, 2, Loop(3, 4))), SList(0, List(1, 2, Loop(3, 4))))
+	ConfirmFlatten(SList(0, List(1, 2, Loop(3, 4))), SList(0, List(1, 2, 3, 4)))
 	ConfirmFlatten(SList(3, 4, SList(5, 6, 7)), SList(3, 4, 5, 6, 7))
 	ConfirmFlatten(SList(0, Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, Loop(1, 2, SList(3, 4, 5, 6, 7))))
 

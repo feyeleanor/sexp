@@ -1,10 +1,35 @@
 package sexp
 
-type Linkable interface {
-	Start() *ConsCell
-	End() *ConsCell
+type Blitter interface {
+	BlockCopy(destination, source, count int)
+	BlockClear(start, count int)
+}
+
+type Equatable interface {
+	Equal(interface{}) bool
+}
+
+type Indexable interface {
+	At(index int) interface{}
+	Set(index int, value interface{})
+}
+
+type Expandable interface {
+	Expand(i, n int)
+}
+
+type Linear interface {
 	Len() int
-	Clear()
+}
+
+type FixedSize interface {
+	Linear
+	Cap()
+}
+
+type Resizeable interface {
+	FixedSize
+	Reallocate(n int)
 }
 
 type Nested interface {
@@ -15,29 +40,12 @@ type Flattenable interface {
 	Flatten()
 }
 
-type Equatable interface {
-	Equal(interface{}) bool
-}
-
-type Indexable interface {
-	At(int) interface{}
-	Set(int, interface{})
-}
-
-type Value interface {
-	IsNil() bool
-	NotNil() bool
-	String() string
-}
-
 type Iterable interface {
 	Each(func(interface{}))
 }
 
-type SEXP interface {
-	Nested
-	Flattenable
-	Equatable
-	Indexable
-	Value
+type Linkable interface {
+	Linear
+	Start() ListNode
+	End() ListNode
 }

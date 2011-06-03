@@ -20,8 +20,8 @@ type CycList struct {
 
 func (c CycList) Clone() (r *CycList) {
 	r = &CycList{ *c.ListHeader.Clone() }
-	if !r.IsNil() {
-		r.end.Tail = r.start
+	if r.end != nil {
+		r.end.Link(NEXT_NODE, r.start)
 	}
 	return
 }
@@ -29,59 +29,46 @@ func (c CycList) Clone() (r *CycList) {
 //	Iterate over all elements of the list indefinitely
 //	The only way to terminate iteration is by raising a panic() in the applied function
 func (c CycList) Cycle(f func(interface{})) {
-	if !c.IsNil() {
-		for n := c.start; ; n = n.Tail {
-			f(n.Head)
-		}
+	for n := c.start; ; n = NextNode(n) {
+		f(n.Content())
 	}
 }
 
-// Return the value stored at the given offset from the start of the list
-func (c CycList) At(i int) interface{} {
-	i %= c.length
-	if i < 0 {
-		i = c.length + i
-	}
-	return c.ListHeader.At(i)
-}
-
-// Set the value stored at the given offset from the start of the list
-func (c CycList) Set(i int, v interface{}) {
-	i %= c.length
-	if i < 0 {
-		i = c.length + i
-	}
-	c.ListHeader.Set(i, v)
-}
-
-func (c *CycList) Advance() {
-	if !c.IsNil() {
-		start := c.start.Tail
-		end := c.end.Tail
-		c.start = start
-		c.end = end
+func (c CycList) index(i int) (r int) {
+	switch {
+	case c.length == 0:		r = 0
+	case i > 0:				r = i % c.length
+	case i < 0:				r = c.length + (i % c.length)
 	}
 	return
 }
 
+// Return the value stored at the given offset from the start of the list
+func (c CycList) At(i int) interface{} {
+	return c.ListHeader.At(c.index(i))
+}
+
+// Set the value stored at the given offset from the start of the list
+func (c CycList) Set(i int, v interface{}) {
+	c.ListHeader.Set(c.index(i), v)
+}
+
 func (c *CycList) Rotate(i int) {
-	if !c.IsNil() {
-		if i %= c.length; i > 0 {
-			c.end = c.start.MoveTo(i - 1)
-			c.start = c.end.Tail
-		}
+	if c != nil && c.end != nil {
+		c.end = c.end.MoveTo(c.index(i))
+		c.start = NextNode(c.end)
 	}
 }
 
 func (c *CycList) Append(v interface{}) {
 	c.ListHeader.Append(v)
-	c.end.Tail = c.start
+	c.end.Link(NEXT_NODE, c.start)
 }
 
 func (c *CycList) AppendSlice(s Slice) {
 	c.ListHeader.AppendSlice(s)
 	if c.end != nil {
-		c.end.Tail = c.start
+		c.end.Link(NEXT_NODE, c.start)
 	}
 }
 
@@ -89,7 +76,7 @@ func (c *CycList) AppendSlice(s Slice) {
 //	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (c CycList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *CycList:		r = o != nil && c.ListHeader.Equal((*o).ListHeader)
+	case *CycList:		r = o != nil && c.ListHeader.Equal(o.ListHeader)
 	case CycList:		r = c.ListHeader.Equal(o.ListHeader)
 	default:			r = c.start.Equal(o)
 	}
@@ -99,46 +86,11 @@ func (c CycList) Equal(o interface{}) (r bool) {
 //	Reverses the order in which elements of a CycList are traversed
 func (c *CycList) Reverse() {
 	if r := c.reverseLinks(); r != nil {
-		c.start.Tail = r
+		c.start.Link(NEXT_NODE, r)
 		c.start = r
-		c.end.Tail = c.start
+		c.end.Link(NEXT_NODE, c.start)
 	}
 }
-
-//	Iterates through the list reducing the nesting of each element which can be flattened.
-//	Elements which are themselves LinearLists will be inlined as part of the containing list and their contained list destroyed.
-func (c *CycList) Flatten() {
-	c.eachConsCell(func(n *ConsCell) {
-		if h, ok := n.Head.(Flattenable); ok {
-			h.Flatten()
-		}
-
-		if h, ok := n.Head.(Linkable); ok {
-			start := h.Start()
-			end := h.End()
-
-			length := h.Len()
-			switch {
-			case start == nil:		fallthrough
-			case length == 0:		n.Head = nil
-
-			case length == 1:		n.Head = start.Head
-
-			case n == c.end:		end.Tail = c.start
-									c.end = end
-									n.Head = start.Head
-									n.Tail = start.Tail
-									c.length += length - 1
-
-			default:				end.Tail = n.Tail
-									n.Head = start.Head
-									n.Tail = start.Tail
-									c.length += length - 1
-			}
-		}
-	})
-}
-
 
 func (c *CycList) Tail() {
 	c.ListHeader.Tail()

@@ -10,7 +10,7 @@ package sexp
 
 func List(items... interface{}) (l *LinearList) {
 	l = new(LinearList)
-	l.AppendSlice(items)
+	l.AppendSlice((Slice)(items))
 	return
 }
 
@@ -18,15 +18,19 @@ type LinearList struct {
 	ListHeader
 }
 
+func (l LinearList) End() ListNode {
+	return l.end
+}
+
 func (l LinearList) Clone() *LinearList {
 	return &LinearList{ *l.ListHeader.Clone() }
 }
 
 //	Determines if another object is equivalent to the LinearList
-//	Two CycLists are identical if they both have the same number of nodes, and the head of each node is the same
+//	Two LinearLists are identical if they both have the same number of nodes, and the head of each node is the same
 func (l LinearList) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *LinearList:	r = l.ListHeader.Equal(o.ListHeader)
+	case *LinearList:	r = o != nil && l.ListHeader.Equal(o.ListHeader)
 	case LinearList:	r = l.ListHeader.Equal(o.ListHeader)
 	default:			r = l.start.Equal(o)
 	}
@@ -35,13 +39,13 @@ func (l LinearList) Equal(o interface{}) (r bool) {
 
 //	Removes all elements in the range from the list.
 func (l *LinearList) Delete(from, to int) {
-	if l.NotNil() && from >= 0 && to < l.length && from <= to {
+	if l != nil && from >= 0 && to < l.length && from <= to {
 		last_element_index := l.length - 1
 		switch {
 		case from == 0:
 			switch {
 			case to == 0:
-				l.start = l.start.Tail
+				l.start = NextNode(l.start)
 				l.length -= 1
 			case to == last_element_index:
 				l.start = nil
@@ -55,22 +59,22 @@ func (l *LinearList) Delete(from, to int) {
 		case from == to:
 			s := l.start.MoveTo(from - 1)
 			e := s.MoveTo(1)
-			s.Tail = e.Tail
+			s.Link(NEXT_NODE, NextNode(e))
 			l.length -= 1
 
 		case from == last_element_index:
 			l.end = l.start.MoveTo(from - 1)
-			l.end.Tail = nil
+			l.end.Link(NEXT_NODE, nil)
 			l.length -= 1
 
 		case to == last_element_index:
 			l.end = l.start.MoveTo(from - 1)
-			l.end.Tail = nil
+			l.end.Link(NEXT_NODE, nil)
 			l.length = from
 
 		default:
 			e := l.start.MoveTo(from - 1)
-			e.Tail = e.MoveTo(to - from + 2)
+			e.Link(NEXT_NODE, e.MoveTo(to - from + 2))
 			l.length -= to - from + 1
 		}
 	}
@@ -78,7 +82,7 @@ func (l *LinearList) Delete(from, to int) {
 
 //	Removes the elements in the range from the current list and returns a new list containing them.
 func (l *LinearList) Cut(from, to int) (r LinearList) {
-	if l.NotNil() && from >= 0 && to < l.length && from <= to {
+	if l != nil && from >= 0 && to < l.length && from <= to {
 		last_element_index := l.length - 1
 		switch {
 		case from == 0:
@@ -88,7 +92,7 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 				r.end = r.start
 				r.length = 1
 
-				l.start = l.start.Tail
+				l.start = NextNode(l.start)
 				l.length -= 1
 			case to == last_element_index:
 				r.start = l.start
@@ -101,42 +105,42 @@ func (l *LinearList) Cut(from, to int) (r LinearList) {
 			default:
 				r.start = l.start
 				r.end = r.start.MoveTo(to)
-				l.start = r.end.Tail
-				r.end.Tail = nil
+				l.start = NextNode(r.end)
+				r.end.Link(NEXT_NODE, nil)
 				r.length = to + 1
 				l.length -= r.length
 			}
 
 		case from == to:
 			s := l.start.MoveTo(from - 1)
-			r.start = s.Tail
+			r.start = NextNode(s)
 			r.end = r.start
 			r.length = 1
-			s.Tail = r.end.Tail
-			r.end.Tail = nil
+			s.Link(NEXT_NODE, NextNode(r.end))
+			r.end.Link(NEXT_NODE, nil)
 			l.length -= 1
 
 		case from == last_element_index:
 			l.end = l.start.MoveTo(from - 1)
-			l.end.Tail = nil
+			l.end.Link(NEXT_NODE, nil)
 			l.length -= 1
 
 		case to == last_element_index:
 			l.end = l.start.MoveTo(from - 1)
-			r.start = l.end.Tail
+			r.start = NextNode(l.end)
 			r.end = r.start
-			l.end.Tail = nil
+			l.end.Link(NEXT_NODE, nil)
 			r.length = to - from + 1
 			l.length = from
 
 		default:
 			e := l.start.MoveTo(from - 1)
-			r.start = e.Tail
+			r.start = NextNode(e)
 			r.end = r.start.MoveTo(to - from)
 			if r.end != nil {
-				e.Tail = r.end.Tail
+				e.Link(NEXT_NODE, NextNode(r.end))
 			} else {
-				e.Tail = nil
+				e.Link(NEXT_NODE, nil)
 			}
 			r.length = to - from + 1
 			l.length -= r.length
@@ -155,21 +159,20 @@ func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
 	switch {
 	case i < 0:						fallthrough
 	case i > l.length:				fallthrough
-	case o == nil:					fallthrough
-	case o.IsNil():					return false
+	case o == nil:					return false
 
-	case l.IsNil():					l.start = o.start
+	case l == nil:					l.start = o.start
 									l.end = o.end
 
-	case i == 0:					o.end.Tail = l.start
+	case i == 0:					o.end.Link(NEXT_NODE, l.start)
 									l.start = o.start
 
-	case i == l.length:				l.end.Tail = o.start
+	case i == l.length:				l.end.Link(NEXT_NODE, o.start)
 									l.end = o.end
 
 	default:						n := l.start.MoveTo(i - 1)
-									o.end.Tail = n.Tail
-									n.Tail = o.start
+									o.end.Link(NEXT_NODE, NextNode(n))
+									n.Link(NEXT_NODE, o.start)
 	}
 	l.length += o.length
 	o.Clear()

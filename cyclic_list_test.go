@@ -2,10 +2,6 @@ package sexp
 
 import "testing"
 
-func TestCycListIsNil(t *testing.T) {
-	t.Log("Write Tests")
-}
-
 func TestCycListLen(t *testing.T) {
 	ConfirmLen := func(c *CycList, x int) {
 		if i := c.Len(); i != x {
@@ -100,21 +96,6 @@ func TestCycListSet(t *testing.T) {
 	ConfirmSet(c, 33, 13)
 }
 
-func TestCycListAdvance(t *testing.T) {
-	ConfirmAdvance := func(c, r *CycList) {
-		c.Advance()
-		if !c.Equal(r) {
-			t.Fatalf("%v should be %v", c, r)
-		}
-	}
-	ConfirmAdvance(Loop(), Loop())
-	ConfirmAdvance(Loop(0), Loop(0))
-	ConfirmAdvance(Loop(0, 1), Loop(1, 0))
-	ConfirmAdvance(Loop(0, 1, 2), Loop(1, 2, 0))
-	ConfirmAdvance(Loop(0, 1, 2, 3), Loop(1, 2, 3, 0))
-	ConfirmAdvance(Loop(0, 1, Loop(2), 3), Loop(1, Loop(2), 3, 0))
-}
-
 func TestCycListRotate(t *testing.T) {
 	ConfirmRotate := func(c *CycList, i int, r *CycList) {
 		c.Rotate(i)
@@ -128,11 +109,20 @@ func TestCycListRotate(t *testing.T) {
 	ConfirmRotate(Loop(0), 0, Loop(0))
 	ConfirmRotate(Loop(0), 1, Loop(0))
 	ConfirmRotate(Loop(0), 2, Loop(0))
+
 	ConfirmRotate(Loop(0, 1, 2, 3), 0, Loop(0, 1, 2, 3))
+
 	ConfirmRotate(Loop(0, 1, 2, 3), 1, Loop(1, 2, 3, 0))
+	ConfirmRotate(Loop(0, 1, 2, 3), -3, Loop(1, 2, 3, 0))
+
 	ConfirmRotate(Loop(0, 1, 2, 3), 2, Loop(2, 3, 0, 1))
+	ConfirmRotate(Loop(0, 1, 2, 3), -2, Loop(2, 3, 0, 1))
+
 	ConfirmRotate(Loop(0, 1, 2, 3), 3, Loop(3, 0, 1, 2))
+	ConfirmRotate(Loop(0, 1, 2, 3), -1, Loop(3, 0, 1, 2))
+
 	ConfirmRotate(Loop(0, 1, 2, 3), 4, Loop(0, 1, 2, 3))
+	ConfirmRotate(Loop(0, 1, 2, 3), -4, Loop(0, 1, 2, 3))
 }
 
 func TestCycListAppend(t *testing.T) {
@@ -175,9 +165,9 @@ func TestCycListString(t *testing.T) {
 
 	r := Loop(10, Loop(0, Loop(0)))
 	ConfirmFormat(r, "(10 (0 (0 ...) ...) ...)")
-	r.Advance()
+	r.Rotate(NEXT_NODE)
 	ConfirmFormat(r, "((0 (0 ...) ...) 10 ...)")
-	ConfirmFormat(r.start.Head.(*CycList), "(0 (0 ...) ...)")
+	ConfirmFormat(r.start.Content().(*CycList), "(0 (0 ...) ...)")
 
 	r = Loop(r, 0, Loop(-1, -2, r))
 	ConfirmFormat(r, "(((0 (0 ...) ...) 10 ...) 0 (-1 -2 ((0 (0 ...) ...) 10 ...) ...) ...)")
@@ -297,16 +287,16 @@ func TestCycListFlatten(t *testing.T) {
 	}
 	ConfirmFlatten(Loop(), Loop())
 	ConfirmFlatten(Loop(1), Loop(1))
-	ConfirmFlatten(Loop(1, Loop(2)), Loop(1, Loop(2)))
-	ConfirmFlatten(Loop(1, Loop(2, Loop(3))), Loop(1, Loop(2, Loop(3))))
+	ConfirmFlatten(Loop(1, Loop(2)), Loop(1, 2))
+	ConfirmFlatten(Loop(1, Loop(2, Loop(3))), Loop(1, 2, 3))
 
 	ConfirmFlatten(Loop(0, List(1)), Loop(0, 1))
 	ConfirmFlatten(Loop(0, List(1), 2), Loop(0, 1, 2))
 	ConfirmFlatten(Loop(0, List(1, 2), 3), Loop(0, 1, 2, 3))
 	ConfirmFlatten(Loop(0, List(1, List(2, 3), 4, List(5, List(6, 7)))), Loop(0, 1, 2, 3, 4, 5, 6, 7))
 
-	ConfirmFlatten(Loop(0, List(1, Loop(2, 3))), Loop(0, 1, Loop(2, 3)))
-	ConfirmFlatten(Loop(0, List(1, Loop(2, 3, List(4, Loop(5))))), Loop(0, 1, Loop(2, 3, 4, Loop(5))))
+	ConfirmFlatten(Loop(0, List(1, Loop(2, 3))), Loop(0, 1, 2, 3))
+	ConfirmFlatten(Loop(0, List(1, Loop(2, 3, List(4, Loop(5))))), Loop(0, 1, 2, 3, 4, 5))
 }
 
 func TestCycListCompact(t *testing.T) {

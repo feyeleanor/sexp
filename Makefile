@@ -4,8 +4,9 @@ TARG=sexp
 
 GOFILES=\
 	interfaces.go\
-	cons_cell.go\
 	slice.go\
+	node.go\
+	cons_cell.go\
 	list_header.go\
 	linear_list.go\
 	cyclic_list.go

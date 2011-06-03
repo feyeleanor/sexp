@@ -3,9 +3,33 @@ package sexp
 import "fmt"
 import "strings"
 
+type cachedNode struct {
+	ListNode
+	index	int
+}
+
+func (c cachedNode) Update(i int, node ListNode) {
+	c.index = i
+	c.ListNode = node
+}
+
+func (c cachedNode) Clear() {
+	c.index = 0
+	c.ListNode = nil
+}
+
+func (c cachedNode) ClosestNode(i int) (node ListNode, offset int) {
+	if i > c.index {
+		return c.ListNode, c.index
+	}
+	return
+}
+
+
 type ListHeader struct {
-	start 	*ConsCell
-	end		*ConsCell
+	start 	ListNode
+	end		ListNode
+	cache	cachedNode
 	length	int
 }
 
@@ -13,38 +37,25 @@ func (l *ListHeader) Clear() {
 	l.start = nil
 	l.end = nil
 	l.length = 0
+	l.cache.Clear()
 }
 
-func (l ListHeader) IsNil() bool {
-	return l.start == nil && l.end == nil && l.length == 0
-}
-
-func (l ListHeader) NotNil() bool {
-	return l.start != nil || l.end != nil || l.length > 0
-}
-
-//	Produces a human-readable representation for the CycList
 func (l ListHeader) String() (t string) {
-	if l.NotNil() {
-		terms := []string{}
-		l.Each(func(term interface{}) {
-			terms = append(terms, fmt.Sprintf("%v", term))
-		})
-		if l.start == l.end.Tail {
-			terms = append(terms, "...")
-		}
-		t = strings.Join(terms, " ")
-		t = strings.Replace(t, "()", "nil", -1)
-		t = strings.Replace(t, "<nil>", "nil", -1)
+	terms := []string{}
+	l.Each(func(term interface{}) {
+		terms = append(terms, fmt.Sprintf("%v", term))
+	})
+	if l.length > 0 && l.start == NextNode(l.end) {
+		terms = append(terms, "...")
 	}
+	t = strings.Join(terms, " ")
+	t = strings.Replace(t, "()", "nil", -1)
+	t = strings.Replace(t, "<nil>", "nil", -1)
 	return "(" + t + ")"
 }
 
 func (l ListHeader) Len() (c int) {
-	if l.NotNil() {
-		c = l.length
-	}
-	return
+	return l.length
 }
 
 func (l ListHeader) Depth() (d int) {
@@ -58,11 +69,11 @@ func (l ListHeader) Depth() (d int) {
 	return
 }
 
-func (l ListHeader) Start() *ConsCell {
+func (l ListHeader) Start() ListNode {
 	return l.start
 }
 
-func (l ListHeader) End() *ConsCell {
+func (l ListHeader) End() ListNode {
 	return l.end
 }
 
@@ -72,126 +83,159 @@ func (l ListHeader) Clone() (r *ListHeader) {
 	return
 }
 
-func (l ListHeader) Each(f func(interface{})) {
-	if l.NotNil() {
-		n := l.start
-		for i := 0; i < l.length; i++ {
-			f(n.Head)
-			n = n.Tail
-		}
+func (l ListHeader) Expand(i, n int) {
+	node := l.findNode(i)
+	if node == nil {
+		l.start = (*ConsCell)(nil)
+		node = l.start
+	}
+	if node.Store(i, nil) {
+		l.length += n			
 	}
 }
 
-func (l ListHeader) Equal(o ListHeader) (r bool) {
+func (l ListHeader) Each(f func(interface{})) {
+	n := l.start
+	for i := l.length; i > 0; i-- {
+		f(n.Content())
+		n = NextNode(n)
+	}
+}
+
+func (l ListHeader) equal(o ListHeader) (r bool) {
+	if l.length == o.length {
+		r = true
+		n := l.start
+		x := o.start
+		for i := l.length; r && i > 0; i-- {
+			if r = n != nil && n.Equal(x); r {
+				n = NextNode(n)
+				x = NextNode(x)
+			}
+		}
+	}
+	return
+}
+
+func (l ListHeader) Equal(o interface{}) (r bool) {
+	switch o := o.(type) {
+	case *ListHeader:	r = o != nil && l.equal(*o)
+	case ListHeader:	r = l.equal(o)
+	}
+	return
+}
+
+func (l *ListHeader) eachNode(f func(int, ListNode)) {
+	n := l.start
+	for i := 0; i < l.length; i++ {
+		f(i, n)
+		n = NextNode(n)
+	}
+}
+
+func (l ListHeader) findNode(i int) (n ListNode) {
 	switch {
-	case l.IsNil():				r = o.IsNil()
-	case l.length == o.length:	r = true
-								n := l.start
-								x := o.start
-								for i := l.length; r && i > 0; i-- {
-									if r = n.Equal(x); r {
-										n = n.Tail
-										x = x.Tail
-									}
+	case i == 0:				n = l.start
+	case i == l.length - 1:		n = l.end
+	default:					start, offset := l.cache.ClosestNode(i)
+								if start == nil {
+									start = l.start
+								}
+								if n = start.MoveTo(i - offset); n != nil {
+									l.cache.Update(i, n)
 								}
 	}
 	return
 }
 
-func (l *ListHeader) eachConsCell(f func(*ConsCell)) {
-	if l.NotNil() {
-		n := l.start
-		for i := 0; i < l.length; i++ {
-			f(n)
-			n = n.Tail
-		}
-	}
-}
-
 func (l ListHeader) At(i int) (r interface{}) {
-	if l.NotNil() {
-		if n := l.start.MoveTo(i); n != nil {
-			r = n.Head
-		}
+	if n := l.findNode(i); n != nil {
+		r = n.Content()
 	}
 	return
 }
 
 func (l ListHeader) Set(i int, v interface{}) {
-	if l.NotNil() {
-		if n := l.start.MoveTo(i); n != nil {
-			n.Head = v
-		}
+	if n := l.findNode(i); n != nil {
+		n.Store(CURRENT_NODE, v)
 	}
 }
 
 func (l *ListHeader) Append(v interface{}) {
-	if l.IsNil() {
-		l.start = &ConsCell{ Head: v }
-		l.end = l.start
-		l.length = 1
-	} else {
-		l.end.Tail = &ConsCell{ Head: v }
-		l.end = l.end.Tail
-		l.length++
+	switch {
+	case l == nil:			*l = ListHeader{ start: &ConsCell{ Head: v }, end: l.start }
+	case l.start == nil:	l.start = &ConsCell{ Head: v }
+							l.end = l.start
+	default:				l.end.Store(NEXT_NODE, v)
+							l.end = NextNode(l.end)
 	}
+	l.length++
 }
 
-func (l *ListHeader) AppendSlice(s []interface{}) {
-	if len(s) > 0 {
-		if l.IsNil() {
-			l.Append(s[0])
-			s = s[1:]
+func (l *ListHeader) AppendSlice(s Slice) {
+	length := s.Len()
+	if length > 0 {
+		l.Append(s[0])
+		if length > 1 {
+			for _, v := range s[1:] {
+				l.end.Store(NEXT_NODE, v)
+				l.end = NextNode(l.end)
+			}
+			l.length += length - 1
 		}
-		for _, v := range s {
-			l.end.Tail = &ConsCell{ Head: v }
-			l.end = l.end.Tail
-		}
-		l.length += len(s)
 	}
 }
 
 //	Iterates through the list reducing the nesting of each element which can be flattened.
 //	Elements which are themselves LinearLists will be inlined as part of the containing list and their contained list destroyed.
 func (l *ListHeader) Flatten() {
-	l.eachConsCell(func(n *ConsCell) {
-		if h, ok := n.Head.(Flattenable); ok {
+	l.eachNode(func(i int, n ListNode) {
+		value := n.Content()
+		if h, ok := value.(Flattenable); ok {
 			h.Flatten()
 		}
 
-		if h, ok := n.Head.(Linkable); ok {
-			start := h.Start()
-			end := h.End()
-			length := h.Len()
-			switch {
-			case start == nil:		fallthrough
-			case length == 0:		n.Head = nil
+		if h, ok := value.(Linkable); ok {
+			switch length := h.Len(); {
+			case length == 0:		n.Store(CURRENT_NODE, nil)
 
-			case length == 1:		n.Head = start.Head
+			case length == 1:		n.Store(CURRENT_NODE, h.Start().Content())
 
-			case n == l.end:		l.end = end
-									n.Head = start.Head
-									n.Tail = start.Tail
-									l.length += length - 1
+			default:				l.length += length - 1
+									h.End().Link(NEXT_NODE, NextNode(n))
+									n.Link(CURRENT_NODE, h.Start())
+									if n == l.start {
+										l.start = h.Start()
+									}
 
-			default:				end.Tail = n.Tail
-									n.Head = start.Head
-									n.Tail = start.Tail
-									l.length += length - 1
+									if n == l.end {
+										l.end = h.End()
+									}
 			}
-			h.Clear()
+		} else {
+			n.Store(CURRENT_NODE, value)
 		}
 	})
 }
 
-func (l *ListHeader) reverseLinks() (r *ConsCell) {
-	if l.NotNil() {
+func (l ListHeader) Compact() *Slice {
+	s := make(Slice, l.Len(), l.Len())
+	i := 0
+	l.Each(func(v interface{}) {
+		s[i] = v
+		i++
+	})
+	return &s
+}
+
+func (l *ListHeader) reverseLinks() (r ListNode) {
+	if l != nil {
 		current := l.start
 		l.end = current
 
 		for i := l.length; i > 0; i-- {
-			next := current.Tail
-			current.Tail = r
+			next := NextNode(current)
+			current.Link(NEXT_NODE, r)
 			r = current
 			current = next				
 		}
@@ -205,17 +249,17 @@ func (l *ListHeader) Reverse() {
 }
 
 func (l ListHeader) Head() (r interface{}) {
-	if l.NotNil() {
-		r = l.start.Head
+	if l.start != nil {
+fmt.Printf("%v.Head() = %v\n", l, l.start)
+		l.start.Content()
 	}
 	return
 }
 
 func (l *ListHeader) Tail() {
-	if l.NotNil() {
-		n := l.start
-		l.start = l.start.Tail
-		n.Tail = nil
+	if n := l.start; n != nil {
+		l.start = NextNode(n)
+		n.Link(NEXT_NODE, nil)
 		l.length--
 	}
 }

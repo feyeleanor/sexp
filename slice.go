@@ -9,10 +9,6 @@ func SList(n... interface{}) *Slice {
 
 type Slice	[]interface{}
 
-func (s *Slice) IsNil() bool {
-	return s == nil || s.Len() == 0
-}
-
 func (s Slice) At(i int) interface{} {
 	return s[i]
 }
@@ -28,13 +24,11 @@ func (s Slice) Each(f func(interface{})) {
 }
 
 func (s Slice) String() (t string) {
-	if !s.IsNil() {
-		for _, v := range s {
-			if len(t) > 0 {
-				t += " "
-			}
-			t += fmt.Sprintf("%v", v)
+	for _, v := range s {
+		if len(t) > 0 {
+			t += " "
 		}
+		t += fmt.Sprintf("%v", v)
 	}
 	return fmt.Sprintf("(%v)", t)
 }
@@ -47,12 +41,17 @@ func (s Slice) Cap() int {
 	return cap(s)
 }
 
-func (s Slice) Blit(destination, source, count int) {
+func (s Slice) BlockCopy(destination, source, count int) {
 	end := source + count
 	if end > len(s) {
 		end = len(s)
 	}
 	copy(s[destination:], s[source:end])
+}
+
+func (s Slice) BlockClear(start, count int) {
+	n := make(Slice, count, count)
+	copy(s[start:], n)
 }
 
 func (s Slice) Overwrite(offset int, source Slice) {
@@ -70,12 +69,10 @@ func (s *Slice) Reallocate(capacity int) {
 }
 
 func (s Slice) Depth() (c int) {
-	if !s.IsNil() {
-		for _, v := range s {
-			if v, ok := v.(Nested); ok {
-				if r := v.Depth() + 1; r > c {
-					c = r
-				}
+	for _, v := range s {
+		if v, ok := v.(Nested); ok {
+			if r := v.Depth() + 1; r > c {
+				c = r
 			}
 		}
 	}
@@ -83,12 +80,10 @@ func (s Slice) Depth() (c int) {
 }
 
 func (s Slice) Reverse() {
-	if !s.IsNil() {
-		end := s.Len() - 1
-		for i := 0; i < end; i++ {
-			s[i], s[end] = s[end], s[i]
-			end--
-		}
+	end := s.Len() - 1
+	for i := 0; i < end; i++ {
+		s[i], s[end] = s[end], s[i]
+		end--
 	}
 }
 
@@ -132,8 +127,8 @@ func (s Slice) Repeat(count int) Slice {
 }
 
 func (s *Slice) Flatten() {
-	if !s.IsNil() {
-		n := make([]interface{}, 0, cap(*s))
+	if s != nil {
+		n := make(Slice, 0, 0)
 		for _, v := range *s {
 			switch v := v.(type) {
 			case *Slice:			v.Flatten()
@@ -151,14 +146,14 @@ func (s *Slice) Flatten() {
 	}
 }
 
-func (s Slice) equal(o *Slice) (r bool) {
+func (s Slice) equal(o Slice) (r bool) {
 	switch {
-	case s.IsNil():				r = o.IsNil()
+	case s == nil:				r = o == nil
 	case s.Len() == o.Len():	r = true
 								for i, v := range s {
 									switch v := v.(type) {
-									case Equatable:		r = v.Equal((*o)[i])
-									default:			r = v == (*o)[i]
+									case Equatable:		r = v.Equal(o[i])
+									default:			r = v == o[i]
 									}
 									if !r {
 										return
@@ -170,15 +165,17 @@ func (s Slice) equal(o *Slice) (r bool) {
 
 func (s Slice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *Slice:		r = s.equal(o)
-	case Slice:			r = s.equal(&o)
-	default:			r = s.Len() > 0 && s[0] == o
+	case *Slice:			r = o != nil && s.equal(*o)
+	case Slice:				r = s.equal(o)
+	case *[]interface{}:	r = o != nil && s.equal(([]interface{})(*o))
+	case []interface{}:		r = s.equal(([]interface{})(o))
+	default:				r = s.Len() > 0 && s[0] == o
 	}
 	return
 }
 
 func (s Slice) Car() (h interface{}) {
-	if !s.IsNil() {
+	if s.Len() > 0 {
 		h = s[0]
 	}
 	return
@@ -193,16 +190,15 @@ func (s Slice) Caar() (h interface{}) {
 }
 
 func (s Slice) Cdr() (t Slice) {
-	if !s.IsNil() {
-		switch s.Len() {
-		case 1:		break
-		case 2:		switch v := s[1].(type) {
-					case *Slice:		t = *v
-					case Slice:			t = v
-					default:			t = s[1:]
-					}
-		default:	t = s[1:]
-		}
+	switch s.Len() {
+	case 0:		fallthrough
+	case 1:		break
+	case 2:		switch v := s[1].(type) {
+				case *Slice:		t = *v
+				case Slice:			t = v
+				default:			t = s[1:]
+				}
+	default:	t = s[1:]
 	}
 	return
 }
@@ -212,22 +208,22 @@ func (s Slice) Cddr() Slice {
 }
 
 func (s *Slice) Rplaca(v interface{}) {
-	if s.IsNil() {
-		*s = *SList(v)
-	} else {
-		(*s)[0] = v
+	switch {
+	case s == nil:			*s = *SList(v)
+	case s.Len() == 0:		*s = append(*s, v)
+	default:				(*s)[0] = v
 	}
 }
 
 func (s *Slice) Rplacd(v interface{}) {
-	if s.IsNil() {
+	if s == nil {
 		*s = *SList(v)
 	} else {
 		ReplaceSlice := func(v Slice) {
 			if l := v.Len(); l >= cap(*s) {
 				l++
 				n := make([]interface{}, l, l)
-				n[0] = (*s)[0]
+				copy(n, (*s)[:1])
 				copy(n[1:], v)
 				*s = n
 			} else {
