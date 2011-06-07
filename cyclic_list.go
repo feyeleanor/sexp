@@ -9,13 +9,17 @@ package sexp
 
 //	A declarative method for building CycLists
 func Loop(items... interface{}) (c *CycList) {
-	c = new(CycList)
+	c = NewCycList(&ConsCell{})
 	c.AppendSlice((Slice)(items))
 	return
 }
 
 type CycList struct {
 	ListHeader
+}
+
+func NewCycList(n ListNode) *CycList {
+	return &CycList{ NewListHeader(n) }
 }
 
 func (c CycList) Clone() (r *CycList) {
@@ -62,7 +66,9 @@ func (c *CycList) Rotate(i int) {
 
 func (c *CycList) Append(v interface{}) {
 	c.ListHeader.Append(v)
-	c.end.Link(NEXT_NODE, c.start)
+	if c.end == c.start {
+		c.end.Link(NEXT_NODE, c.start)
+	}
 }
 
 func (c *CycList) AppendSlice(s Slice) {

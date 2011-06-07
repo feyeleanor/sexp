@@ -1,6 +1,7 @@
 package sexp
 
 import "fmt"
+import "reflect"
 import "strings"
 
 type cachedNode struct {
@@ -27,10 +28,45 @@ func (c cachedNode) ClosestNode(i int) (node ListNode, offset int) {
 
 
 type ListHeader struct {
-	start 	ListNode
-	end		ListNode
-	cache	cachedNode
-	length	int
+	nodeType	reflect.Type
+	start 		ListNode
+	end			ListNode
+	cache		cachedNode
+	length		int
+}
+
+
+func NewListHeader(n ListNode) ListHeader {
+	t := reflect.TypeOf(n)
+	if t.Kind() != reflect.Ptr {
+		t = reflect.PtrTo(t)
+	}
+	return ListHeader{ nodeType: t }
+}
+
+func (l ListHeader) newListNode() ListNode {
+	return reflect.New(l.nodeType.Elem()).Interface().(ListNode)
+}
+
+func (l ListHeader) NewListNode(value interface{}) (n ListNode) {
+	n = l.newListNode()
+	n.Store(CURRENT_NODE, value)
+	return
+}
+
+func (l ListHeader) EnforceBounds(start, end *int) (ok bool) {
+	if *start < 0 {
+		*start = 0
+	}
+
+	if *end > l.length - 1 {
+		*end = l.length - 1
+	}
+
+	if *end >= *start {
+		ok = true
+	}
+	return
 }
 
 func (l *ListHeader) Clear() {
@@ -78,19 +114,35 @@ func (l ListHeader) End() ListNode {
 }
 
 func (l ListHeader) Clone() (r *ListHeader) {
-	r = &ListHeader{}
+	r = &ListHeader{ nodeType: l.nodeType }
 	l.Each(func(v interface{}) { r.Append(v) })
 	return
 }
 
-func (l ListHeader) Expand(i, n int) {
-	node := l.findNode(i)
-	if node == nil {
-		l.start = (*ConsCell)(nil)
-		node = l.start
-	}
-	if node.Store(i, nil) {
-		l.length += n			
+func (l *ListHeader) Expand(i, n int) {
+	if i > -1 && i <= l.length {
+		switch {
+		case l == nil:					fallthrough
+		case i == l.length:				for ; n > 0; n-- {
+											l.Append(l.newListNode())
+										}
+
+		case i == 0:					l.length = n
+										for ; n > 0; n-- {
+											x := l.newListNode()
+											x.Link(NEXT_NODE, l.start)
+											l.start = x
+										}
+
+		default:						x1 := l.findNode(i - 1)
+										x2 := l.findNode(i)
+										l.length += n
+										for ; n > 0; n-- {
+											x1.Link(NEXT_NODE, l.newListNode())
+											x1 = NextNode(x1)
+										}
+										x1.Link(NEXT_NODE, x2)
+		}
 	}
 }
 
@@ -163,11 +215,13 @@ func (l ListHeader) Set(i int, v interface{}) {
 
 func (l *ListHeader) Append(v interface{}) {
 	switch {
-	case l == nil:			*l = ListHeader{ start: &ConsCell{ Head: v }, end: l.start }
-	case l.start == nil:	l.start = &ConsCell{ Head: v }
+	case l.start == nil:	l.start = l.NewListNode(v)
 							l.end = l.start
-	default:				l.end.Store(NEXT_NODE, v)
+
+	default:				tail := NextNode(l.end)
+							l.end.Link(NEXT_NODE, l.NewListNode(v))
 							l.end = NextNode(l.end)
+							l.end.Link(NEXT_NODE, tail)
 	}
 	l.length++
 }
@@ -177,10 +231,12 @@ func (l *ListHeader) AppendSlice(s Slice) {
 	if length > 0 {
 		l.Append(s[0])
 		if length > 1 {
+			tail := NextNode(l.end)
 			for _, v := range s[1:] {
-				l.end.Store(NEXT_NODE, v)
+				l.end.Link(NEXT_NODE, l.NewListNode(v))
 				l.end = NextNode(l.end)
 			}
+			l.end.Link(NEXT_NODE, tail)
 			l.length += length - 1
 		}
 	}
@@ -250,7 +306,6 @@ func (l *ListHeader) Reverse() {
 
 func (l ListHeader) Head() (r interface{}) {
 	if l.start != nil {
-fmt.Printf("%v.Head() = %v\n", l, l.start)
 		l.start.Content()
 	}
 	return

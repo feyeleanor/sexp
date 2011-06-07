@@ -21,26 +21,11 @@ func Expand(i Indexable, x, n int) (b bool) {
 									return
 								}
 
-	case ListHeader:			start := i.findCell(x)
-								i.length += n
-								for count := n; count > 0; count-- {
-									start.Tail = &ConsCell{ Tail: start.Tail }
-									start = start.Tail
-								}
+	case Expandable:			block.Expand(x, n)
 								b = true
 
-
-	case ConsCell:				start := i.MoveTo(x)
-								for count := n; count > 0; count-- {
-									start.Tail = &ConsCell{ Tail: start.Tail }
-									start = start.Tail
-								}
-								b = true
-
-	case ConsCell:				start := i.MoveTo(x)
-								for count := n; count > 0; count-- {
-									start.Tail = &ConsCell{ Tail: start.Tail }
-									start = start.Tail
+	case Appendable:			for count := n; count > 0; count-- {
+									block.Append(nil)
 								}
 								b = true
 	}

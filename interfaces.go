@@ -18,6 +18,10 @@ type Expandable interface {
 	Expand(i, n int)
 }
 
+type Appendable interface {
+	Append(interface{})
+}
+
 type Linear interface {
 	Len() int
 }

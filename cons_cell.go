@@ -32,11 +32,11 @@ func (c *ConsCell) End() (r *ConsCell) {
 	return
 }
 
-func (c *ConsCell) MoveTo(i int) (l ListNode) {
+func (c ConsCell) MoveTo(i int) (l ListNode) {
 	switch {
 	case i < 0:				break
-	case i == 0:			l = c
-	default:				n := c
+	case i == 0:			l = &c
+	default:				n := &c
 							for ; i > 0 && n != nil; i-- {
 								n = n.Tail
 							}
@@ -50,25 +50,26 @@ func (c *ConsCell) MoveTo(i int) (l ListNode) {
 func (c *ConsCell) Link(i int, l ListNode) (b bool) {
 	if l == nil {
 		switch i {
-		case PREVIOUS_NODE:		b = false
+//		case PREVIOUS_NODE:		b = false
 
-		case CURRENT_NODE:		c = nil
-								b = true
+//		case CURRENT_NODE:		c = nil
+//								b = true
 
 		case NEXT_NODE:			c.Tail = nil
 								b = true
 		}
 	} else {
 		switch i {
-		case PREVIOUS_NODE:		if n, ok := l.(*ConsCell); ok {
-									n.Tail = c
-								} else {
-									l.Link(NEXT_NODE, c)
-								}
-								b = true
+//		case PREVIOUS_NODE:		if n, ok := l.(*ConsCell); ok {
+//									n.Tail = c
+//								} else {
+//									l.Link(NEXT_NODE, c)
+//								}
+//								b = true
 
 		case CURRENT_NODE:		if n, ok := l.(*ConsCell); ok {
-									*c = *n
+									c.Head = l.Content()
+									c.Tail = n.Tail
 									b = true
 								} else {
 									if t, ok := NextNode(l).(*ConsCell); ok {
@@ -88,25 +89,21 @@ func (c *ConsCell) Link(i int, l ListNode) (b bool) {
 }
 
 func (c *ConsCell) Store(i int, v interface{}) bool {
-	switch {
-	case i == CURRENT_NODE:		if c == nil {
-									c = &ConsCell{}
-								}
-	case i > CURRENT_NODE:		if c == nil {
-									c = &ConsCell{}
-									i--
-								}
-								for ; i > 0; i-- {
-									c.Tail = &ConsCell{ Head: nil }
-									c = c.Tail
-								}
+	if i > PREVIOUS_NODE {
+		if c == nil {
+			*c = ConsCell{}
+		}
 
-	case i < CURRENT_NODE:		for ; i < 0; i++ {
-									*c = ConsCell{ Head: nil, Tail: c }
-								}
+		for ; i > 0; i-- {
+			if c.Tail == nil {
+				c.Tail = &ConsCell{}
+			}
+			c = c.Tail
+		}
+		c.Head = v
+		return true
 	}
-	c.Head = v
-	return true
+	return false
 }
 
 func (c *ConsCell) Append(x interface{}) {
@@ -132,14 +129,10 @@ func (c ConsCell) equal(o ConsCell) (r bool) {
 }
 
 func (c *ConsCell) Equal(o interface{}) (r bool) {
-	if c == nil {
-		r = o == nil
-	} else {
-		switch o := o.(type) {
-		case *ConsCell:			r = o != nil && c.equal(*o)
-		case ConsCell:			r = c.equal(o)
-		default:				r = c.equal(ConsCell{ Head: o })
-		}
+	switch o := o.(type) {
+	case *ConsCell:			r = o != nil && c.equal(*o)
+	case ConsCell:			r = c.equal(o)
+	default:				r = c.equal(ConsCell{ Head: o })
 	}
 	return
 }

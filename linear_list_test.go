@@ -269,9 +269,9 @@ func TestLinearListDelete(t *testing.T) {
 		case l.Len() != r.Len():	t.Fatalf("Delete(%v, %v) length be '%v' and not '%v'", from, to, r.Len(), l.Len())
 		}
 	}
-	ConfirmDelete(List(0, 1, 2, 3), -1, 0, List(0, 1, 2, 3))
+	ConfirmDelete(List(0, 1, 2, 3), -1, 0, List(1, 2, 3))
 	ConfirmDelete(List(0, 1, 2, 3), 0, -1, List(0, 1, 2, 3))
-	ConfirmDelete(List(0, 1, 2, 3), 0, 4, List(0, 1, 2, 3))
+	ConfirmDelete(List(0, 1, 2, 3), 0, 4, List())
 	ConfirmDelete(List(0, 1, 2, 3), 4, 0, List(0, 1, 2, 3))
 
 	ConfirmDelete(List(0, 1, 2, 3), 0, 0, List(1, 2, 3))
@@ -298,36 +298,67 @@ func TestLinearListCut(t *testing.T) {
 		case l.Len() != r2.Len():	t.Fatalf("Cut(%v, %v) remainder length should be '%v' and not '%v'", from, to, r2.Len(), l.Len())
 		}
 	}
-	ConfirmCut(List(0, 1, 2, 3), -1, 0, List(), List(0, 1, 2, 3))
-	ConfirmCut(List(0, 1, 2, 3), 1, 0, List(), List(0, 1, 2, 3))
-	ConfirmCut(List(0, 1, 2, 3), 0, 4, List(), List(0, 1, 2, 3))
+	ConfirmCut(List(0, 1, 2, 3), -1, -2, List(), List(0, 1, 2, 3))
+	ConfirmCut(List(0, 1, 2, 3), -1, -1, List(), List(0, 1, 2, 3))
+	ConfirmCut(List(0, 1, 2, 3), -1, 0, List(0), List(1, 2, 3))
+	ConfirmCut(List(0, 1, 2, 3), -1, 3, List(0, 1, 2, 3), List())
+	ConfirmCut(List(0, 1, 2, 3), -1, 4, List(0, 1, 2, 3), List())
 
+	ConfirmCut(List(0, 1, 2, 3), 0, -1, List(), List(0, 1, 2, 3))
 	ConfirmCut(List(0, 1, 2, 3), 0, 0, List(0), List(1, 2, 3))
 	ConfirmCut(List(0, 1, 2, 3), 0, 1, List(0, 1), List(2, 3))
 	ConfirmCut(List(0, 1, 2, 3), 0, 2, List(0, 1, 2), List(3))
 	ConfirmCut(List(0, 1, 2, 3), 0, 3, List(0, 1, 2, 3), List())
+	ConfirmCut(List(0, 1, 2, 3), 0, 4, List(0, 1, 2, 3), List())
 
-	ConfirmCut(List(0, 1, 2, 3), 1, 3, List(1, 2, 3), List(0))
-	ConfirmCut(List(0, 1, 2, 3), 2, 3, List(2, 3), List(0, 1))
-	ConfirmCut(List(0, 1, 2, 3), 3, 3, List(3), List(0, 1, 2))
-
+	ConfirmCut(List(0, 1, 2, 3), 1, 0, List(), List(0, 1, 2, 3))
 	ConfirmCut(List(0, 1, 2, 3), 1, 1, List(1), List(0, 2, 3))
 	ConfirmCut(List(0, 1, 2, 3), 1, 2, List(1, 2), List(0, 3))
+	ConfirmCut(List(0, 1, 2, 3), 1, 3, List(1, 2, 3), List(0))
+	ConfirmCut(List(0, 1, 2, 3), 1, 4, List(1, 2, 3), List(0))
+
+
 	ConfirmCut(List(0, 1, 2, 3), 2, 2, List(2), List(0, 1, 3))
+	ConfirmCut(List(0, 1, 2, 3), 2, 3, List(2, 3), List(0, 1))
+	ConfirmCut(List(0, 1, 2, 3), 3, 3, List(3), List(0, 1, 2))
 }
 
-/*
 func TestLinearListInsert(t *testing.T) {
-	t.Fatal("Write Tests")
-}
-*/
+	ConfirmInsert := func(l *LinearList, i int, v interface{}, r *LinearList) {
+		l.Insert(i, v)
+		if !r.Equal(l) {
+			t.Fatalf("Insert(%v, %v) should be %v but is %v", i, v, r, l)
+		}
+	}
 
-/*
+	ConfirmInsert(List(), -1, 1, List())
+	ConfirmInsert(List(), 0, 1, List(1))
+	ConfirmInsert(List(), 1, 1, List())
+
+	ConfirmInsert(List(0), -1, 1, List(0))
+	ConfirmInsert(List(0), 0, 1, List(1, 0))
+	ConfirmInsert(List(0), 1, 1, List(0, 1))
+	ConfirmInsert(List(0), 2, 1, List(0))
+
+	ConfirmInsert(List(0, 1), -1, 2, List(0, 1))
+	ConfirmInsert(List(0, 1), 0, 2, List(2, 0, 1))
+	ConfirmInsert(List(0, 1), 1, 2, List(0, 2, 1))
+	ConfirmInsert(List(0, 1), 2, 2, List(0, 1, 2))
+	ConfirmInsert(List(0, 1), 3, 2, List(0, 1))
+
+	ConfirmInsert(List(0, 1, 2), -1, 3, List(0, 1, 2))
+	ConfirmInsert(List(0, 1, 2), 0, 3, List(3, 0, 1, 2))
+	ConfirmInsert(List(0, 1, 2), 1, 3, List(0, 3, 1, 2))
+	ConfirmInsert(List(0, 1, 2), 2, 3, List(0, 1, 3, 2))
+	ConfirmInsert(List(0, 1, 2), 3, 3, List(0, 1, 2, 3))
+	ConfirmInsert(List(0, 1, 2), 4, 3, List(0, 1, 2))
+}
+
 func TestLinearListAbsorb(t *testing.T) {
 	ConfirmAbsorb := func(l *LinearList, i int, s, r *LinearList) {
 		switch ok := l.Absorb(i, s); {
 		case !ok:				t.Fatalf("Absorb(%v, ...) should return true", i)
-		case s != nil:			t.Fatalf("Absorb(%v, ...) source should be nil and not %v", i, s)
+		case !s.Equal(List()):	t.Fatalf("Absorb(%v, ...) source should be %v and not %v", i, List(), s)
 		case !l.Equal(r):		t.Fatalf("Absorb(%v, ...) result should be '%v' and not %v", i, r, l)
 		}
 	}
@@ -335,8 +366,8 @@ func TestLinearListAbsorb(t *testing.T) {
 		source := s.Clone()
 		switch ok := l.Absorb(i, s); {
 		case ok:				t.Fatalf("Absorb(%v, ...) should return false", i)
-		case !s.Equal(source):	t.Fatalf("Absorb(%v, ...) source should be %v and not %v", i, source, s)
-		case !l.Equal(r):		t.Fatalf("Absorb(%v, ...) result should be '%v' and not '%v'", i, r, l)
+		case !source.Equal(s):	t.Fatalf("Absorb(%v, ...) source should be %v and not %v", i, source, s)
+		case !r.Equal(l):		t.Fatalf("Absorb(%v, ...) result should be '%v' and not '%v'", i, r, l)
 		}
 	}
 
@@ -352,7 +383,6 @@ func TestLinearListAbsorb(t *testing.T) {
 	ConfirmAbsorb(List(0, 1, 2, 3), 4, List(-3, -2, -1), List(0, 1, 2, 3, -3, -2, -1))
 	RefuteAbsorb(List(0, 1, 2, 3), 5, List(-3, -2, -1), List(0, 1, 2, 3))
 }
-*/
 
 func TestLinearListCompact(t *testing.T) {
 	ConfirmCompact := func(l *LinearList, r *Slice) {
@@ -366,7 +396,6 @@ func TestLinearListCompact(t *testing.T) {
 	ConfirmCompact(List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 }
 
-/*
 func TestLinearListExpand(t * testing.T) {
 	ConfirmExpand := func(l *LinearList, i, n int, r *LinearList) {
 		l.Expand(i, n)
@@ -375,11 +404,11 @@ func TestLinearListExpand(t * testing.T) {
 		}
 	}
 
+	t.Fatal("Fix these tests")
 	ConfirmExpand(List(), 0, 3, List(nil, nil, nil))
-	ConfirmExpand(List(0, 1, 2, 3), 1, 2, List(0, 1, nil, nil, 2, 3))
+	ConfirmExpand(List(0, 1, 2, 3), 1, 2, List(0, nil, nil, 1, 2, 3))
 	ConfirmExpand(List(0, 1, 2, 3), 5, 2, List(0, 1, 2, 3))
 }
-*/
 
 func TestLinearListStart(t *testing.T) {
 	ConfirmStart := func(l *LinearList, r interface{}) {
