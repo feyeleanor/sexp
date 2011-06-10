@@ -50,8 +50,6 @@ func TestConsCellStore(t *testing.T) {
 		case !c.Equal(r):			t.Fatalf("Store(%v, %v) should be %v but is %v", i, v, r, c)
 		}
 	}
-	ConfirmStore(Cons(0), PREVIOUS_NODE - 1, 1, Cons(1, nil, 0))
-	ConfirmStore(Cons(0), PREVIOUS_NODE, 1, Cons(1, 0))
 	ConfirmStore(Cons(0), CURRENT_NODE, 1, Cons(1))
 	ConfirmStore(Cons(0, 1), NEXT_NODE, 2, Cons(0, 2))
 	ConfirmStore(Cons(0, 1, 2), NEXT_NODE + 1, 3, Cons(0, 1, 2, 3))
