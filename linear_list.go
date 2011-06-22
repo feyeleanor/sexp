@@ -165,7 +165,7 @@ func (l *LinearList) Absorb(i int, o *LinearList) (ok bool) {
 										n.Link(NEXT_NODE, o.start)
 										l.length += o.length
 		}
-		o.Clear()
+		o.Erase()
 	 	ok = true
 	}
 	return

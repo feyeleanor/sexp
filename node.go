@@ -5,7 +5,7 @@ type ListNode interface {
 	MoveTo(int) ListNode
 	Content() interface{}
 	Link(int, ListNode) bool
-	Store(int, interface{}) bool
+	Set(int, interface{}) bool
 }
 
 const(

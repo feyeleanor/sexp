@@ -88,7 +88,7 @@ func (c *ConsCell) Link(i int, l ListNode) (b bool) {
 	return
 }
 
-func (c *ConsCell) Store(i int, v interface{}) bool {
+func (c *ConsCell) Set(i int, v interface{}) bool {
 	if i > PREVIOUS_NODE {
 		if c == nil {
 			*c = ConsCell{}
@@ -107,7 +107,7 @@ func (c *ConsCell) Store(i int, v interface{}) bool {
 }
 
 func (c *ConsCell) Append(x interface{}) {
-	c.Store(NEXT_NODE, x)
+	c.Set(NEXT_NODE, x)
 }
 
 func (c *ConsCell) Prepend(x interface{}) {

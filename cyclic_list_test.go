@@ -192,62 +192,6 @@ func TestLoop(t *testing.T) {
 	ConfirmFormat(c, "(5 (4 3 2 1 ...) 0 ...)")
 }
 
-func TestCycListDepth(t *testing.T) {
-	ConfirmDepth := func(c *CycList, x int) {
-		if i := c.Depth(); i != x {
-			t.Fatalf("'%v' depth should be %v but is %v", c.String(), x, i)
-		}
-	}
-	ConfirmDepth(Loop(	4, 3, 2, 1), 0)
-	ConfirmDepth(Loop(	5,
-						Loop(4, 3),
-						2), 1)
-	ConfirmDepth(Loop(	6,
-						Loop(	5,
-								Loop(4, 3, 2)),
-						1), 2)
-	ConfirmDepth(Loop(	7,
-						Loop(	6,
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1)),
-								0), 3)
-	ConfirmDepth(Loop(	8,
-						Loop(	7,
-								Loop(	6,
-										5,
-										Loop(4, 3),
-								2)),
-								Loop(	1,
-										Loop(0, -1))), 3)
-	ConfirmDepth(Loop(	9,
-						Loop(	8,
-								Loop(	7,
-										Loop(	6, 5)),
-										Loop(	4,
-												3,
-												Loop(2, 1),
-												0))), 3)
-	ConfirmDepth(Loop(	'A',
-						Loop(	9,
-								SList(	8,
-										SList(	7, 6 )),
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1))), 3)
-	ConfirmDepth(Loop(	'B',
-						Loop(	'A',
-								SList(	9,
-										SList(	8,
-												SList( 7, 6 ))),
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1))), 4)
-}
-
 func TestCycListReverse(t *testing.T) {
 	ConfirmReverse := func(c, r *CycList) {
 		c.Reverse()

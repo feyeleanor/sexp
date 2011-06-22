@@ -17,6 +17,10 @@ func (s Slice) Set(i int, v interface{}) {
 	s[i] = v
 }
 
+func (s Slice) Clear(i int) {
+	s[i] = nil
+}
+
 func (s Slice) Each(f func(interface{})) {
 	for _, v := range s {
 		f(v)
@@ -58,14 +62,14 @@ func (s Slice) Overwrite(offset int, source Slice) {
 	copy(s[offset:], source)
 }
 
-func (s *Slice) Reallocate(capacity int) {
-	length := len(*s)
-	if length > capacity {
-		length = capacity
+func (s *Slice) Reallocate(length, capacity int) {
+	switch {
+	case length > capacity:		s.Reallocate(capacity, capacity)
+	case capacity != cap(*s):	x := make(Slice, length, capacity)
+								copy(x, *s)
+								*s = x
+	default:					*s = (*s)[:length]
 	}
-	x := make(Slice, length, capacity)
-	copy(x, *s)
-	*s = x
 }
 
 func (s Slice) Depth() (c int) {
@@ -169,7 +173,6 @@ func (s Slice) Equal(o interface{}) (r bool) {
 	case Slice:				r = s.equal(o)
 	case *[]interface{}:	r = o != nil && s.equal(([]interface{})(*o))
 	case []interface{}:		r = s.equal(([]interface{})(o))
-	default:				r = s.Len() > 0 && s[0] == o
 	}
 	return
 }

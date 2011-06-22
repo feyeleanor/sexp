@@ -136,18 +136,27 @@ func TestSliceOverwrite(t *testing.T) {
 }
 
 func TestSliceReallocate(t *testing.T) {
-	ConfirmReallocate := func(s *Slice, capacity int, r *Slice) {
+	ConfirmReallocate := func(s *Slice, l, c int, r *Slice) {
 		o := s.String()
-		switch s.Reallocate(capacity); {
-		case s == nil:				t.Fatalf("%v.Reallocate(%v) created a nil value for Slice", o, capacity)
-		case s.Cap() != capacity:	t.Fatalf("%v.Reallocate(%v) capacity should be %v but is %v", o, capacity, s.Cap())
-		case !r.Equal(s):			t.Fatalf("%v.Reallocate(%v) should be %v but is %v", o, r, s)
+		el := l
+		if el > c {
+			el = c
+		}
+		switch s.Reallocate(l, c); {
+		case s == nil:				t.Fatalf("%v.Reallocate(%v, %v) created a nil value for Slice", o, l, c)
+		case s.Cap() != c:			t.Fatalf("%v.Reallocate(%v, %v) capacity should be %v but is %v", o, l, c, c, s.Cap())
+		case s.Len() != el:			t.Fatalf("%v.Reallocate(%v, %v) length should be %v but is %v", o, l, c, el, s.Len())
+		case !r.Equal(s):			t.Fatalf("%v.Reallocate(%v, %v) should be %v but is %v", o, l, c, r, s)
 		}
 	}
 
-	ConfirmReallocate(SList(), 10, SList())
-	ConfirmReallocate(SList(0, 1, 2, 3, 4), 10, SList(0, 1, 2, 3, 4))
-	ConfirmReallocate(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, SList(0, 1, 2, 3, 4))
+	ConfirmReallocate(SList(), 0, 10, SList())
+	ConfirmReallocate(SList(0, 1, 2, 3, 4), 3, 10, SList(0, 1, 2))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4), 5, 10, SList(0, 1, 2, 3, 4))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4), 10, 10, SList(0, 1, 2, 3, 4, nil, nil, nil, nil, nil))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 1, 5, SList(0))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 5, 5, SList(0, 1, 2, 3, 4))
+	ConfirmReallocate(SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 10, 5, SList(0, 1, 2, 3, 4))
 }
 
 func TestSliceDepth(t *testing.T) {

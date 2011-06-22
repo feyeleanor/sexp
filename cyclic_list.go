@@ -91,9 +91,8 @@ func (c CycList) Equal(o interface{}) (r bool) {
 
 //	Reverses the order in which elements of a CycList are traversed
 func (c *CycList) Reverse() {
-	if r := c.reverseLinks(); r != nil {
-		c.start.Link(NEXT_NODE, r)
-		c.start = r
+	if c != nil {
+		c.ListHeader.Reverse()
 		c.end.Link(NEXT_NODE, c.start)
 	}
 }

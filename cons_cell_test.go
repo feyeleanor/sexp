@@ -43,14 +43,14 @@ func TestConsCellMoveTo(t *testing.T) {
 	RefuteMoveTo(c, 5)
 }
 
-func TestConsCellStore(t *testing.T) {
-	ConfirmStore := func(c *ConsCell, i int, v interface{}, r interface{}) {
+func TestConsCellSet(t *testing.T) {
+	ConfirmSet := func(c *ConsCell, i int, v interface{}, r interface{}) {
 		switch {
-		case !c.Store(i, v):		t.Fatalf("Store(%v, %v) failed", i, v)
-		case !c.Equal(r):			t.Fatalf("Store(%v, %v) should be %v but is %v", i, v, r, c)
+		case !c.Set(i, v):		t.Fatalf("Set(%v, %v) failed", i, v)
+		case !c.Equal(r):			t.Fatalf("Set(%v, %v) should be %v but is %v", i, v, r, c)
 		}
 	}
-	ConfirmStore(Cons(0), CURRENT_NODE, 1, Cons(1))
-	ConfirmStore(Cons(0, 1), NEXT_NODE, 2, Cons(0, 2))
-	ConfirmStore(Cons(0, 1, 2), NEXT_NODE + 1, 3, Cons(0, 1, 2, 3))
+	ConfirmSet(Cons(0), CURRENT_NODE, 1, Cons(1))
+	ConfirmSet(Cons(0, 1), NEXT_NODE, 2, Cons(0, 2))
+	ConfirmSet(Cons(0, 1, 2), NEXT_NODE + 1, 3, Cons(0, 1, 2, 3))
 }

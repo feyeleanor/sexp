@@ -51,62 +51,6 @@ func TestLinearListLen(t *testing.T) {
 	ConfirmLen(List(4, List(3, 3, 3), 2, 1), 4)
 }
 
-func TestLinearListDepth(t *testing.T) {
-	ConfirmDepth := func(l *LinearList, x int) {
-		if i := l.Depth(); i != x {
-			t.Fatalf("'%v' depth should be %v but is %v", l.String(), x, i)
-		}
-	}
-	ConfirmDepth(List(	4, 3, 2, 1), 0)
-	ConfirmDepth(List(	5,
-						List(4, 3),
-						2), 1)
-	ConfirmDepth(List(	6,
-						List(	5,
-								List(4, 3, 2)),
-						1), 2)
-	ConfirmDepth(List(	7,
-						List(	6,
-								List(	5,
-										4,
-										List(3, 2),
-										1)),
-								0), 3)
-	ConfirmDepth(List(	8,
-						List(	7,
-								List(	6,
-										5,
-										List(4, 3),
-								2)),
-								List(	1,
-										List(0, -1))), 3)
-	ConfirmDepth(List(	9,
-						List(	8,
-								List(	7,
-										List(	6, 5)),
-										List(	4,
-												3,
-												List(2, 1),
-												0))), 3)
-	ConfirmDepth(List(	'A',
-						List(	9,
-								SList(	8,
-										SList(	7, 6 )),
-								List(	5,
-										4,
-										List(3, 2),
-										1))), 3)
-	ConfirmDepth(List(	'B',
-						List(	'A',
-								SList(	9,
-										SList(	8,
-												SList( 7, 6 ))),
-								List(	5,
-										4,
-										List(3, 2),
-										1))), 4)
-}
-
 func TestLinearListEach(t *testing.T) {
 	c := List(0, 1, 2, 3, 4, 5, 6, 7, 8 ,9)
 	count := 0
@@ -397,7 +341,7 @@ func TestLinearListCompact(t *testing.T) {
 }
 
 func TestLinearListExpand(t * testing.T) {
-	ConfirmExpand := func(l *LinearList, i, n int, r *LinearList) {
+/*	ConfirmExpand := func(l *LinearList, i, n int, r *LinearList) {
 		l.Expand(i, n)
 		if !r.Equal(l) {
 			t.Fatalf("Expand(%v, %v) should be %v but is %v", i, n, r, l)
@@ -408,6 +352,7 @@ func TestLinearListExpand(t * testing.T) {
 	ConfirmExpand(List(), 0, 3, List(nil, nil, nil))
 	ConfirmExpand(List(0, 1, 2, 3), 1, 2, List(0, nil, nil, 1, 2, 3))
 	ConfirmExpand(List(0, 1, 2, 3), 5, 2, List(0, 1, 2, 3))
+*/
 }
 
 func TestLinearListStart(t *testing.T) {

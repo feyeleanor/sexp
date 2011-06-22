@@ -50,7 +50,7 @@ func (l ListHeader) newListNode() ListNode {
 
 func (l ListHeader) NewListNode(value interface{}) (n ListNode) {
 	n = l.newListNode()
-	n.Store(CURRENT_NODE, value)
+	n.Set(CURRENT_NODE, value)
 	return
 }
 
@@ -69,7 +69,7 @@ func (l ListHeader) EnforceBounds(start, end *int) (ok bool) {
 	return
 }
 
-func (l *ListHeader) Clear() {
+func (l *ListHeader) Erase() {
 	l.start = nil
 	l.end = nil
 	l.length = 0
@@ -92,17 +92,6 @@ func (l ListHeader) String() (t string) {
 
 func (l ListHeader) Len() (c int) {
 	return l.length
-}
-
-func (l ListHeader) Depth() (d int) {
-	l.Each(func(v interface{}) {
-		if v, ok := v.(Nested); ok {
-			if r := v.Depth() + 1; r > d {
-				d = r
-			}
-		}
-	})
-	return
 }
 
 func (l ListHeader) Start() ListNode {
@@ -209,8 +198,12 @@ func (l ListHeader) At(i int) (r interface{}) {
 
 func (l ListHeader) Set(i int, v interface{}) {
 	if n := l.findNode(i); n != nil {
-		n.Store(CURRENT_NODE, v)
+		n.Set(CURRENT_NODE, v)
 	}
+}
+
+func (l ListHeader) Clear(i int) {
+	l.Set(i, nil)
 }
 
 func (l *ListHeader) Append(v interface{}) {
@@ -253,9 +246,9 @@ func (l *ListHeader) Flatten() {
 
 		if h, ok := value.(Linkable); ok {
 			switch length := h.Len(); {
-			case length == 0:		n.Store(CURRENT_NODE, nil)
+			case length == 0:		n.Set(CURRENT_NODE, nil)
 
-			case length == 1:		n.Store(CURRENT_NODE, h.Start().Content())
+			case length == 1:		n.Set(CURRENT_NODE, h.Start().Content())
 
 			default:				l.length += length - 1
 									h.End().Link(NEXT_NODE, NextNode(n))
@@ -269,7 +262,7 @@ func (l *ListHeader) Flatten() {
 									}
 			}
 		} else {
-			n.Store(CURRENT_NODE, value)
+			n.Set(CURRENT_NODE, value)
 		}
 	})
 }
@@ -284,24 +277,20 @@ func (l ListHeader) Compact() *Slice {
 	return &s
 }
 
-func (l *ListHeader) reverseLinks() (r ListNode) {
+//	Reverses the order in which elements of a List are traversed
+func (l *ListHeader) Reverse() {
 	if l != nil {
 		current := l.start
 		l.end = current
 
 		for i := l.length; i > 0; i-- {
 			next := NextNode(current)
-			current.Link(NEXT_NODE, r)
-			r = current
+			current.Link(NEXT_NODE, l.start)
+			l.start = current
 			current = next				
 		}
 	}
 	return
-}
-
-//	Reverses the order in which elements of a List are traversed
-func (l *ListHeader) Reverse() {
-	l.start = l.reverseLinks()
 }
 
 func (l ListHeader) Head() (r interface{}) {
