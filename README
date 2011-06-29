@@ -5,14 +5,6 @@ S-Expressions can be modelled using a variety of structures. This package provid
 Slice uses an []interface{} as its backing store but is accessed via list semantics. As such it is suited to tasks
 where breadth-first search and speed of element access are priorities;
 
-LinearList is a standard singly-linked list without any protections to guard against cyclic links between nodes;
-
-CycList is a generalised circular list where the terminating node links back to the first node.
-
-Both CycList and LinearList use a common ListHeader allowing them to be interchanged as necessary. This ListHeader
-has a ListNode type associated with it which specifies the type of node used by a given instance of a list, and
-provides access caching to speed operations in frequently accessed portions of the list.
-
 All three S-Expression data structures store interface{} objects and as such can be used to store each other in
 arbitrary numbers and to arbitrary depths.
 

@@ -58,8 +58,10 @@ func (s Slice) BlockClear(start, count int) {
 	copy(s[start:], n)
 }
 
-func (s Slice) Overwrite(offset int, source Slice) {
-	copy(s[offset:], source)
+func (s Slice) Overwrite(offset int, container interface{}) {
+	switch container := container.(type) {
+	case Slice:					copy(s[offset:], container)
+	}
 }
 
 func (s *Slice) Reallocate(length, capacity int) {

@@ -1,5 +1,6 @@
 package sexp
 
+import "github.com/feyeleanor/chain"
 import "reflect"
 
 type Typed interface {
@@ -32,6 +33,21 @@ type Indexable interface {
 	Linear
 	IndexedReader
 	IndexedWriter
+}
+
+type MappedReader interface {
+	At(key interface{}) interface{}
+}
+
+type MappedWriter interface {
+	Set(key interface{}) interface{}
+	Clear(key interface{})
+}
+
+type Mapable interface {
+	Linear
+	MappedReader
+	MappedWriter
 }
 
 type Reversible interface {
@@ -73,6 +89,22 @@ type Iterable interface {
 	Each(func(interface{}))
 }
 
+type Sequence interface {
+	EachWithIndex(func(int, interface{}))
+}
+
+type Map interface {
+	EachWithKey(func(key, value interface{}))
+}
+
+type Sliceable interface {
+	Subslice(start, end int) interface{}
+}
+
+type Overwriteable interface {
+	Overwrite(offset interface{}, container interface{})
+}
+
 type Transformable interface {
 	Transform(func(interface{}) interface{})
 }
@@ -87,8 +119,15 @@ type Combinable interface {
 
 type Linkable interface {
 	Linear
-	Start() ListNode
-	End() ListNode
+	Start() chain.Node
+	End() chain.Node
+}
+
+type Deque interface {
+	PopFirst() interface{}
+	PopLast() interface{}
+	Append(i interface{})
+	Prepend(i interface{})
 }
 
 type Feeder interface {

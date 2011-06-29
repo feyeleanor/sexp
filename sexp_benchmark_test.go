@@ -1,5 +1,6 @@
 package sexp
 
+import "github.com/feyeleanor/lists"
 import "testing"
 
 //	Write benchmarks for Equal()
@@ -78,7 +79,7 @@ func BenchmarkBlockClearBlitter(b *testing.B) {
 }
 
 func BenchmarkBlockClearIndexable(b *testing.B) {
-	l := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	l := lists.List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		BlockClear(l, 0, 5)
 	}

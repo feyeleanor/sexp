@@ -1,5 +1,6 @@
 package sexp
 
+import "github.com/feyeleanor/lists"
 import "testing"
 
 func TestSList(t *testing.T) {
@@ -272,15 +273,15 @@ func TestSliceFlatten(t *testing.T) {
 	ConfirmFlatten(SList(1, SList(2, SList(3))), SList(1, 2, 3))
 	ConfirmFlatten(SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11)))), SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
 
-	ConfirmFlatten(SList(0, List(1, 2, SList(3, 4))), SList(0, List(1, 2, SList(3, 4))))
-	ConfirmFlatten(SList(0, List(1, 2, List(3, 4))), SList(0, List(1, 2, 3, 4)))
+	ConfirmFlatten(SList(0, lists.List(1, 2, SList(3, 4))), SList(0, lists.List(1, 2, SList(3, 4))))
+	ConfirmFlatten(SList(0, lists.List(1, 2, lists.List(3, 4))), SList(0, lists.List(1, 2, 3, 4)))
 
-	ConfirmFlatten(SList(0, Loop(1, 2)), SList(0, Loop(1, 2)))
-	ConfirmFlatten(SList(0, List(1, Loop(2, 3))), SList(0, List(1, 2, 3)))
+	ConfirmFlatten(SList(0, lists.Loop(1, 2)), SList(0, lists.Loop(1, 2)))
+	ConfirmFlatten(SList(0, lists.List(1, lists.Loop(2, 3))), SList(0, lists.List(1, 2, 3)))
 
-	ConfirmFlatten(SList(0, List(1, 2, Loop(3, 4))), SList(0, List(1, 2, 3, 4)))
+	ConfirmFlatten(SList(0, lists.List(1, 2, lists.Loop(3, 4))), SList(0, lists.List(1, 2, 3, 4)))
 	ConfirmFlatten(SList(3, 4, SList(5, 6, 7)), SList(3, 4, 5, 6, 7))
-	ConfirmFlatten(SList(0, Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, Loop(1, 2, SList(3, 4, 5, 6, 7))))
+	ConfirmFlatten(SList(0, lists.Loop(1, 2, SList(3, 4, SList(5, 6, 7)))), SList(0, lists.Loop(1, 2, SList(3, 4, 5, 6, 7))))
 
 	sxp := SList(1, 2, SList(3, SList(4, 5), SList(6, SList(7, 8, 9), SList(10, 11))))
 	rxp := SList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)

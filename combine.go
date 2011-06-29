@@ -1,6 +1,15 @@
 package sexp
 
+import "github.com/feyeleanor/raw"
 import "reflect"
+
+/*
+func Merge(d, s Mapping) {
+	Each(s.Keys(), func(k interface{}) {
+		d.Store(k, s.At(k))
+	})
+}
+*/
 
 /*
 	Combine takes two parameters and applies a function to them.
@@ -26,7 +35,7 @@ func blank(container interface{}) reflect.Value {
 func combineIndexable(left Indexable, right interface{}, f func(interface{}, interface{}) interface{}) (result interface{}) {
 	switch right := right.(type) {
 	case Indexable:		makeSlice := func(length int) (r Indexable) {
-							CatchAll(func() {
+							raw.CatchAll(func() {
 								r = Reallocate(left, length, length).(Indexable)
 							})
 							return 
@@ -66,7 +75,7 @@ func combineIndexable(left Indexable, right interface{}, f func(interface{}, int
 
 	default:			switch right := reflect.ValueOf(right); right.Kind() {
 						case reflect.Slice:		makeSlice := func(length int) (r reflect.Value) {
-													CatchAll(func() {
+													raw.CatchAll(func() {
 														r = reflect.ValueOf(Reallocate(left, length, length))
 													})
 													return 
@@ -129,7 +138,7 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 	switch left := reflect.ValueOf(left); left.Kind() {
 	case reflect.Slice:		switch right := right.(type) {
 							case Indexable:			makeSlice := func(length int) (r reflect.Value) {
-														CatchAll(func() {
+														raw.CatchAll(func() {
 															r = reflect.ValueOf(Reallocate(left, length, length))
 															})
 														return 
@@ -210,6 +219,17 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 													}
 							}
 	case reflect.Map:		switch right := right.(type) {
+							case Map:				m := reflect.MakeMap(left.Type())
+													CombineAndSet := func(k interface{}, l reflect.Value, r interface{}) {
+														m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(f(l.Interface(), r)))
+													}
+
+													right.EachWithKey(func(k, r interface{}) {
+														if l := left.MapIndex(reflect.ValueOf(k)); l.IsValid() {
+															CombineAndSet(k, l, r)
+														}
+													})
+
 							case Indexable:			m := reflect.MakeMap(left.Type())
 													CombineAndSet := func(i int, l reflect.Value, r interface{}) {
 														m.SetMapIndex(reflect.ValueOf(i), reflect.ValueOf(f(l.Interface(), r)))

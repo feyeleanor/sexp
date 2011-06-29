@@ -9,11 +9,6 @@ GOFILES=\
 	sexp.go\
 	combine.go\
 	slice.go\
-	slice_value.go\
-	node.go\
-	cons_cell.go\
-	list_header.go\
-	linear_list.go\
-	cyclic_list.go
+	slice_value.go
 
 include $(GOROOT)/src/Make.pkg

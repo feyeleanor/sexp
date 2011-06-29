@@ -1,6 +1,7 @@
 package sexp
 
 import "reflect"
+import "github.com/feyeleanor/raw"
 
 func Len(container interface{}) (l int) {
 	switch container := container.(type) {
@@ -28,6 +29,15 @@ func Each(container interface{}, f func(interface{})) {
 	switch container := container.(type) {
 	case Iterable:			container.Each(f)
 
+	case Sequence:			container.EachWithIndex(func(i int, v interface{}) {
+								f(v)
+							})
+
+
+	case Map:				container.EachWithKey(func(k interface{}, v interface{}) {
+								f(v)
+							})
+
 	case Indexable:			end := container.Len()
 							for i := 0; i < end; i++ {
 								f(container.At(i))
@@ -40,6 +50,56 @@ func Each(container interface{}, f func(interface{})) {
 													}
 							case reflect.Map:		for _, key := range c.MapKeys() {
 														f(c.MapIndex(key).Interface())
+													}
+							}
+	}
+}
+
+func EachWithIndex(container interface{}, f func(int, interface{})) {
+	switch container := container.(type) {
+	case Sequence:			container.EachWithIndex(f)
+
+	case Map:				container.EachWithKey(func(k, v interface{}) {
+								f(k.(int), v)
+							})
+
+	case Indexable:			end := container.Len()
+							for i := 0; i < end; i++ {
+								f(i, container.At(i))
+							}
+
+	default:				switch c := reflect.ValueOf(container); c.Kind() {
+							case reflect.Slice:		end := c.Len()
+													for i := 0; i < end; i++ {
+														f(i, c.Index(i).Interface())
+													}
+							case reflect.Map:		for _, key := range c.MapKeys() {
+														f(int(key.Int()), c.MapIndex(key).Interface())
+													}
+							}
+	}
+}
+
+func EachWithKey(container interface{}, f func(k, v interface{})) {
+	switch container := container.(type) {
+	case Map:				container.EachWithKey(f)
+
+	case Sequence:			container.EachWithIndex(func(i int, v interface{}) {
+								f(i, v)
+							})
+
+	case Indexable:			end := container.Len()
+							for i := 0; i < end; i++ {
+								f(i, container.At(i))
+							}
+
+	default:				switch c := reflect.ValueOf(container); c.Kind() {
+							case reflect.Slice:		end := c.Len()
+													for i := 0; i < end; i++ {
+														f(i, c.Index(i).Interface())
+													}
+							case reflect.Map:		for _, key := range c.MapKeys() {
+														f(key.Interface(), c.MapIndex(key).Interface())
 													}
 							}
 	}
@@ -60,6 +120,7 @@ func Transform(container interface{}, f func(interface{}) interface{}) {
 							for i := 0; i < end; i++ {
 								container.Set(i, f(container.At(i)))
 							}
+
 	default:				switch c := reflect.ValueOf(container); c.Kind() {
 							case reflect.Slice:		end := c.Len()
 													for i := 0; i < end; i++ {
@@ -104,12 +165,12 @@ func Reduce(container, seed interface{}, f func(interface{}, interface{}) interf
 //	While processes values from a container whilst a condition is true or until the end of the container is reached.
 //	Returns the count of items which pass the test.
 func While(container interface{}, f func(interface{}) bool) (i int) {
-	Catch(func() {
+	raw.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
 				i++
 			} else {
-				Throw()
+				raw.Throw()
 			}
 		})
 	})
@@ -119,10 +180,10 @@ func While(container interface{}, f func(interface{}) bool) (i int) {
 //	Until processes values from a container until a condition is true or until the end of the container is reached.
 //	Returns the count of items which fail the test.
 func Until(container interface{}, f func(interface{}) bool) (i int) {
-	Catch(func() {
+	raw.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
-				Throw()
+				raw.Throw()
 			} else {
 				i++
 			}
@@ -150,12 +211,12 @@ func None(container interface{}, f func(interface{}) bool) (b bool) {
 }
 
 func One(container interface{}, f func(interface{}) bool) (b bool) {
-	Catch(func() {
+	raw.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
 				if b {
 					b = false
-					Throw()
+					raw.Throw()
 				} else {
 					b = true
 				}
@@ -268,11 +329,64 @@ func Repeat(container interface{}, count int) {
 	}
 }
 
+func Subslice(container interface{}, start, end int) (r interface{}) {
+	if start < 0 {
+		start = 0
+	}
+	switch container := container.(type) {
+	case Sliceable:				r = container.Subslice(start, end)
+	case Indexable:				LastIndex := container.Len() - 1
+								if end > LastIndex {
+									end = LastIndex
+								}
+								l := end - start
+								if c, ok := container.(Typed); ok {
+									s := reflect.MakeSlice(c.Type(), l, l)
+									for i, j := 0, start; j < end; j++ {
+										s.Index(i).Set(reflect.ValueOf(container.At(j)))
+										i++
+									}
+									r = s.Interface()
+								} else {
+									s := make([]interface{}, l, l)
+									for i, j := 0, start; j < end; j++ {
+										s[i] = container.At(j)
+										i++
+									}
+									r = s
+								}
+	default:					switch container := reflect.ValueOf(container); container.Kind() {
+								case reflect.Slice:			LastIndex := container.Len() - 1
+															if end > LastIndex {
+																end = LastIndex
+															}
+															l := end - start
+															s := reflect.MakeSlice(container.Type(), l, l)
+															for i, j := 0, start; j < end; j++ {
+																s.Index(i).Set(container.Index(j))
+																i++
+															}
+															r = s.Interface()
+								}
+	}
+	return
+}
+
+func Overwrite(destination interface{}, offset int, source interface{}) {
+	switch destination := destination.(type) {
+	case Overwriteable:			destination.Overwrite(offset, source)
+	default:					switch d := reflect.ValueOf(destination); d.Kind() {
+								case reflect.Slice:			switch s := reflect.ValueOf(source); s.Kind() {
+															case reflect.Slice:			reflect.Copy(d.Slice(offset, d.Len() - 1), s)
+															}
+								}
+	}
+}
+
 func BlockCopy(container interface{}, d, s, n int) {
 	if d > -1 && s > -1 && d != s && n > 0 {
 		switch container := container.(type) {
 		case Blitter:			container.BlockCopy(d, s, n)
-
 		case Indexable:			switch {
 								case d > s:		n = boundOffset(container, d, n)
 												s += n
@@ -311,6 +425,14 @@ func BlockCopy(container interface{}, d, s, n int) {
 									}
 								}
 		}
+	}
+}
+
+func BlockSwap(container interface{}, d, s, n int) {
+	if d > -1 && s > -1 && d != s && n > 0 {
+		temp := Subslice(container, d, d + n)
+		BlockCopy(container, d, s, n)
+		Overwrite(container, s, temp)
 	}
 }
 
@@ -398,6 +520,24 @@ func Expand(container interface{}, x, n int) (r interface{}) {
 	return
 }
 
+func First(container interface{}, i int) interface{} {
+	return Subslice(container, 0, i - 1)
+}
+
+func Last(container interface{}, i int) interface{} {
+	l := Len(container)
+	return Subslice(container, l - i, l - 1)
+}
+
+/*
+func PopFirst(container interface{}) interface{} {
+	return s.At(0), s.Section(1, s.Len())
+}
+
+func PopLast(container interface{}) interface{} {
+	return s.At(l), s.Section(0, l)
+}
+*/
 
 func Feed(container interface{}, c chan interface{}, f func(x interface{}) interface{}) {
 	switch container := container.(type) {

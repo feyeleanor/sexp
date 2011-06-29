@@ -191,5 +191,5 @@ func TestSliceValueEqual(t *testing.T) {
 	RefuteEqual(VSlice([]int{ 0 }), VSlice([]int{ 1 }))
 }
 
-//	Write tests for SliceValueFeed
-//	Write tests for SliceValuePipe
+//	func TestSliceValueFeed(t *testing.T) { t.Fatal() }
+//	func TestSliceValuePipe(t *testing.T) { t.Fatal() }

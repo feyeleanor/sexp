@@ -1,5 +1,6 @@
 package sexp
 
+import "github.com/feyeleanor/lists"
 import "testing"
 
 func TestEqual(t *testing.T) {
@@ -10,7 +11,7 @@ func TestEqual(t *testing.T) {
 	}
 	ConfirmEqual(0, 0)
 	ConfirmEqual("a", "a")
-	ConfirmEqual(List(0, 1, 2), List(0, 1, 2))
+	ConfirmEqual(lists.List(0, 1, 2), lists.List(0, 1, 2))
 	t.Logf("Write more tests")
 }
 
@@ -25,7 +26,7 @@ func TestLen(t *testing.T) {
 	ConfirmLen([]int{}, 0)
 	ConfirmLen([]int{0}, 1)
 	ConfirmLen([]int{0, 1, 2}, 3)
-	ConfirmLen(List(0, 1, 2), 3)
+	ConfirmLen(lists.List(0, 1, 2), 3)
 	ConfirmLen(SList(0, 1, 2), 3)
 }
 
@@ -39,17 +40,17 @@ func TestCap(t *testing.T) {
 	ConfirmCap(([]int)(nil), 0)
 	ConfirmCap([]int{}, 0)
 	ConfirmCap([]int{0}, 1)
-	ConfirmCap(List(0, 1, 2), 0)
+	ConfirmCap(lists.List(0, 1, 2), 0)
 	ConfirmCap([]int{0, 1, 2}, 3)
 	ConfirmCap(SList(0, 1, 2), 3)
 }
 
-/*
 func TestEach(t *testing.T) { t.Fatal() }
+func TestEachWithIndex(t *testing.T) { t.Fatal() }
+func TestEachWithKey(t *testing.T) { t.Fatal() }
 func TestCycle(t *testing.T) { t.Fatal() }
 func TestTransform(t *testing.T) { t.Fatal() }
 func TestCollect(t *testing.T) { t.Fatal() }
-*/
 
 func TestReduce(t *testing.T) {
 	ConfirmReduce := func(o, s, r interface{}, f func(m, x interface{}) interface{}) {
@@ -468,7 +469,7 @@ func TestReverse(t *testing.T) {
 		}
 	}
 	ConfirmReverse(SList(0, 1, 2, 3, 4, 5), SList(5, 4, 3, 2, 1, 0))
-	ConfirmReverse(List(0, 1, 2, 3, 4, 5), List(5, 4, 3, 2, 1, 0))
+	ConfirmReverse(lists.List(0, 1, 2, 3, 4, 5), lists.List(5, 4, 3, 2, 1, 0))
 	ConfirmReverse([]int{0, 1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1, 0})
 }
 
@@ -485,112 +486,112 @@ func TestDepth(t *testing.T) {
 	ConfirmDepth([]int{0, 1, 2}, 1)
 
 
-	ConfirmDepth(List(4, 3, 2, 1), 1)
-	ConfirmDepth(List(	5,
-						List(4, 3),
-						2), 2)
-	ConfirmDepth(List(	6,
-						List(	5,
-								List(4, 3, 2)),
-						1), 3)
-	ConfirmDepth(List(	7,
-						List(	6,
-								List(	5,
-										4,
-										List(3, 2),
-										1)),
+	ConfirmDepth(lists.List(4, 3, 2, 1), 1)
+	ConfirmDepth(lists.List(	5,
+								lists.List(4, 3),
+								2), 2)
+	ConfirmDepth(lists.List(	6,
+								lists.List(	5,
+									lists.List(4, 3, 2)),
+									1), 3)
+	ConfirmDepth(lists.List(	7,
+								lists.List(	6,
+											lists.List(	5,
+														4,
+														lists.List(3, 2),
+														1)),
 								0), 4)
-	ConfirmDepth(List(	8,
-						List(	7,
-								List(	6,
-										5,
-										List(4, 3),
-								2)),
-								List(	1,
-										List(0, -1))), 4)
-	ConfirmDepth(List(	9,
-						List(	8,
-								List(	7,
-										List(	6, 5)),
-										List(	4,
-												3,
-												List(2, 1),
-												0))), 4)
-	ConfirmDepth(List(	'A',
-						List(	9,
-								SList(	8,
-										SList(	7, 6 )),
-								List(	5,
-										4,
-										List(3, 2),
-										1))), 4)
-	ConfirmDepth(List(	'B',
-						List(	'A',
-								SList(	9,
-										SList(	8,
-												SList( 7, 6 ))),
-								List(	5,
-										4,
-										List(3, 2),
-										1))), 5)
+	ConfirmDepth(lists.List(	8,
+								lists.List(	7,
+											lists.List(	6,
+														5,
+														lists.List(4, 3),
+														2)),
+											lists.List(	1,
+														lists.List(0, -1))), 4)
+	ConfirmDepth(lists.List(	9,
+								lists.List(	8,
+											lists.List(	7,
+														lists.List(	6, 5)),
+											lists.List(	4,
+														3,
+														lists.List(2, 1),
+														0))), 4)
+	ConfirmDepth(lists.List(	'A',
+								lists.List(	9,
+											SList(	8,
+													SList(	7, 6 )),
+											lists.List(	5,
+														4,
+														lists.List(3, 2),
+														1))), 4)
+	ConfirmDepth(lists.List(	'B',
+								lists.List(	'A',
+											SList(	9,
+													SList(	8,
+															SList( 7, 6 ))),
+											lists.List(	5,
+														4,
+														lists.List(3, 2),
+														1))), 5)
 
-	ConfirmDepth(Loop(	4, 3, 2, 1), 1)
-	ConfirmDepth(Loop(	5,
-						Loop(4, 3),
-						2), 2)
-	ConfirmDepth(Loop(	6,
-						Loop(	5,
-								Loop(4, 3, 2)),
-						1), 3)
-	ConfirmDepth(Loop(	7,
-						Loop(	6,
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1)),
+	ConfirmDepth(lists.Loop(	4, 3, 2, 1), 1)
+	ConfirmDepth(lists.Loop(	5,
+								lists.Loop(4, 3),
+								2), 2)
+	ConfirmDepth(lists.Loop(	6,
+								lists.Loop(	5,
+											lists.Loop(4, 3, 2)),
+											1), 3)
+	ConfirmDepth(lists.Loop(	7,
+								lists.Loop(	6,
+											lists.Loop(	5,
+														4,
+														lists.Loop(3, 2),
+														1)),
 								0), 4)
-	ConfirmDepth(Loop(	8,
-						Loop(	7,
-								Loop(	6,
-										5,
-										Loop(4, 3),
-								2)),
-								Loop(	1,
-										Loop(0, -1))), 4)
-	ConfirmDepth(Loop(	9,
-						Loop(	8,
-								Loop(	7,
-										Loop(	6, 5)),
-										Loop(	4,
-												3,
-												Loop(2, 1),
-												0))), 4)
-	ConfirmDepth(Loop(	'A',
-						Loop(	9,
-								SList(	8,
-										SList(	7, 6 )),
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1))), 4)
-	ConfirmDepth(Loop(	'B',
-						Loop(	'A',
-								SList(	9,
-										SList(	8,
-												SList( 7, 6 ))),
-								Loop(	5,
-										4,
-										Loop(3, 2),
-										1))), 5)
+	ConfirmDepth(lists.Loop(	8,
+								lists.Loop(	7,
+											lists.Loop(	6,
+														5,
+														lists.Loop(4, 3),
+														2)),
+								lists.Loop(	1,
+											lists.Loop(0, -1))), 4)
+	ConfirmDepth(lists.Loop(	9,
+								lists.Loop(	8,
+											lists.Loop(	7,
+														lists.Loop(	6, 5)),
+														lists.Loop(	4,
+																	3,
+																	lists.Loop(2, 1),
+																	0))), 4)
+	ConfirmDepth(lists.Loop(	'A',
+								lists.Loop(	9,
+											SList(	8,
+													SList(	7, 6 )),
+											lists.Loop(	5,
+														4,
+														lists.Loop(3, 2),
+														1))), 4)
+	ConfirmDepth(lists.Loop(	'B',
+								lists.Loop(	'A',
+											SList(	9,
+													SList(	8,
+															SList( 7, 6 ))),
+											lists.Loop(	5,
+														4,
+														lists.Loop(3, 2),
+														1))), 5)
 }
 
-/*
 func TestFlatten(t *testing.T) { t.Fatal() }
 func TestAppend(t *testing.T) { t.Fatal() }
+func TestRepeat(t *testing.T) { t.Fatal() }
+func TestSlice(t *testing.T) { t.Fatal() }
 func TestAppendContainer(t *testing.T) { t.Fatal() }
 func TestPrepend(t *testing.T) { t.Fatal() }
 func TestPrependContainer(t *testing.T) { t.Fatal() }
-*/
 
 func TestBlockCopy(t *testing.T) {
 	ConfirmBlockCopy := func(i interface{}, d, s, n int, r interface{}) {
@@ -616,19 +617,19 @@ func TestBlockCopy(t *testing.T) {
 	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 3, 4, SList(3, 4, 5, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, 1, -1, List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, 1, 0, List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 1, 0, 0, List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 1, -1, lists.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 1, 0, lists.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 1, 0, 0, lists.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), -1, 0, 3, List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, -1, 3, List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), -1, 0, 3, lists.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, -1, 3, lists.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 3, 0, 3, List(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, 3, 3, List(3, 4, 5, 3, 4, 5))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, 0, 3, List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 3, 0, 3, lists.List(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 3, 3, lists.List(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 0, 3, lists.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 3, 0, 4, List(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(List(0, 1, 2, 3, 4, 5), 0, 3, 4, List(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 3, 0, 4, lists.List(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 3, 4, lists.List(3, 4, 5, 3, 4, 5))
 
 	//	[]int{} slices are handled using reflection
 	ConfirmBlockCopy([]int{0, 1, 2, 3, 4, 5}, 0, 1, -1, []int{0, 1, 2, 3, 4, 5})
@@ -646,6 +647,8 @@ func TestBlockCopy(t *testing.T) {
 	ConfirmBlockCopy([]int{0, 1, 2, 3, 4, 5}, 0, 3, 4, []int{3, 4, 5, 3, 4, 5})
 }
 
+func TestBlockSwap(t *testing.T) { t.Fatal() }
+
 func TestBlockClear(t *testing.T) {
 	ConfirmBlockClear := func(i interface{}, d, n int, r interface{}) {
 		BlockClear(i, d, n)
@@ -659,8 +662,8 @@ func TestBlockClear(t *testing.T) {
 	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5), 0, 3, SList(nil, nil, nil, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
-	ConfirmBlockClear(List(0, 1, 2, 3, 4, 5), 3, 3, List(0, 1, 2, nil, nil, nil))
-	ConfirmBlockClear(List(0, 1, 2, 3, 4, 5), 0, 3, List(nil, nil, nil, 3, 4, 5))
+	ConfirmBlockClear(lists.List(0, 1, 2, 3, 4, 5), 3, 3, lists.List(0, 1, 2, nil, nil, nil))
+	ConfirmBlockClear(lists.List(0, 1, 2, 3, 4, 5), 0, 3, lists.List(nil, nil, nil, 3, 4, 5))
 
 	//	[]int{} slices are handled using reflection
 	ConfirmBlockClear([]int{0, 1, 2, 3, 4, 5}, 3, 3, []int{0, 1, 2, 0, 0, 0})
@@ -701,7 +704,7 @@ func TestExpand(t *testing.T) {
 	ConfirmExpand([]int{0, 1, 2}, 3, 3, []int{0, 1, 2, 0, 0, 0})
 	ConfirmExpand([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
 
-	ConfirmExpand(List(0, 1, 2, 3, 4, 5), 1, 3, List(0, nil, nil, nil, 1, 2, 3, 4, 5))
+	ConfirmExpand(lists.List(0, 1, 2, 3, 4, 5), 1, 3, lists.List(0, nil, nil, nil, 1, 2, 3, 4, 5))
 
 
 
@@ -709,6 +712,10 @@ func TestExpand(t *testing.T) {
 
 }
 
+func TestFirst(t *testing.T) { t.Fatal() }
+func TestLast(t *testing.T) { t.Fatal() }
+func TestPopFirst(t *testing.T) { t.Fatal() }
+func TestPopLast(t *testing.T) { t.Fatal() }
 
 func TestFeed(t *testing.T) {
 	ConfirmFeed := func(c, r interface{}, f func(interface{}) interface{}) {
