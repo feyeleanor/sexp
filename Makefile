@@ -7,8 +7,6 @@ GOFILES=\
 	interfaces.go\
 	helpers.go\
 	sexp.go\
-	combine.go\
-	slice.go\
-	slice_value.go
+	combine.go
 
 include $(GOROOT)/src/Make.pkg

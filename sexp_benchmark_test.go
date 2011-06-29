@@ -1,6 +1,7 @@
 package sexp
 
 import "github.com/feyeleanor/lists"
+import "github.com/feyeleanor/slices"
 import "testing"
 
 //	Write benchmarks for Equal()
@@ -10,7 +11,7 @@ import "testing"
 //	Write benchmarks for Transform()
 
 func BenchmarkReverseReversible(b *testing.B) {
-	s := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		Reverse(s)
 	}
@@ -31,7 +32,7 @@ func BenchmarkReverseReflected(b *testing.B) {
 }
 
 func BenchmarkDepthNested(b *testing.B) {
-	l := SList(0, SList(1, SList(2, SList(3, SList(4, SList(5, SList()))))))
+	l := slices.SList(0, slices.SList(1, slices.SList(2, slices.SList(3, slices.SList(4, slices.SList(5, slices.SList()))))))
 	for i := 0; i < b.N; i++ {
 		_ = Depth(l)
 	}
@@ -51,7 +52,7 @@ func BenchmarkDepthReflected(b *testing.B) {
 //	Write benchmarks for PrependContainer()
 
 func BenchmarkBlockCopyBlitter(b *testing.B) {
-	s := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		BlockCopy(s, 0, 5, 5)
 	}
@@ -72,7 +73,7 @@ func BenchmarkBlockCopyReflected(b *testing.B) {
 }
 
 func BenchmarkBlockClearBlitter(b *testing.B) {
-	s := SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.SList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	for i := 0; i < b.N; i++ {
 		BlockClear(s, 0, 5)
 	}

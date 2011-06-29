@@ -1,6 +1,7 @@
 package sexp
 
 import "github.com/feyeleanor/lists"
+import "github.com/feyeleanor/slices"
 import "testing"
 
 func TestEqual(t *testing.T) {
@@ -27,7 +28,7 @@ func TestLen(t *testing.T) {
 	ConfirmLen([]int{0}, 1)
 	ConfirmLen([]int{0, 1, 2}, 3)
 	ConfirmLen(lists.List(0, 1, 2), 3)
-	ConfirmLen(SList(0, 1, 2), 3)
+	ConfirmLen(slices.SList(0, 1, 2), 3)
 }
 
 func TestCap(t *testing.T) {
@@ -42,7 +43,7 @@ func TestCap(t *testing.T) {
 	ConfirmCap([]int{0}, 1)
 	ConfirmCap(lists.List(0, 1, 2), 0)
 	ConfirmCap([]int{0, 1, 2}, 3)
-	ConfirmCap(SList(0, 1, 2), 3)
+	ConfirmCap(slices.SList(0, 1, 2), 3)
 }
 
 func TestEach(t *testing.T) { t.Fatal() }
@@ -468,7 +469,7 @@ func TestReverse(t *testing.T) {
 			t.Fatalf("Reverse(o) should be %v but is %v", r, o)
 		}
 	}
-	ConfirmReverse(SList(0, 1, 2, 3, 4, 5), SList(5, 4, 3, 2, 1, 0))
+	ConfirmReverse(slices.SList(0, 1, 2, 3, 4, 5), slices.SList(5, 4, 3, 2, 1, 0))
 	ConfirmReverse(lists.List(0, 1, 2, 3, 4, 5), lists.List(5, 4, 3, 2, 1, 0))
 	ConfirmReverse([]int{0, 1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1, 0})
 }
@@ -519,17 +520,17 @@ func TestDepth(t *testing.T) {
 														0))), 4)
 	ConfirmDepth(lists.List(	'A',
 								lists.List(	9,
-											SList(	8,
-													SList(	7, 6 )),
+											slices.SList(	8,
+													slices.SList(	7, 6 )),
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.List(	'B',
 								lists.List(	'A',
-											SList(	9,
-													SList(	8,
-															SList( 7, 6 ))),
+											slices.SList(	9,
+													slices.SList(	8,
+															slices.SList( 7, 6 ))),
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
@@ -568,17 +569,17 @@ func TestDepth(t *testing.T) {
 																	0))), 4)
 	ConfirmDepth(lists.Loop(	'A',
 								lists.Loop(	9,
-											SList(	8,
-													SList(	7, 6 )),
+											slices.SList(	8,
+													slices.SList(	7, 6 )),
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.Loop(	'B',
 								lists.Loop(	'A',
-											SList(	9,
-													SList(	8,
-															SList( 7, 6 ))),
+											slices.SList(	9,
+													slices.SList(	8,
+															slices.SList( 7, 6 ))),
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
@@ -601,20 +602,20 @@ func TestBlockCopy(t *testing.T) {
 		}
 	}
 
-	//	SList() returns a Slice which supports the Blitter interface
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 1, -1, SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 1, 0, SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 1, 0, 0, SList(0, 1, 2, 3, 4, 5))
+	//	slices.SList() returns a Slice which supports the Blitter interface
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 1, -1, slices.SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 1, 0, slices.SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 1, 0, 0, slices.SList(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), -1, 0, 3, SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, -1, 3, SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), -1, 0, 3, slices.SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, -1, 3, slices.SList(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 3, 0, 3, SList(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 3, 3, SList(3, 4, 5, 3, 4, 5))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 0, 3, SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 3, 0, 3, slices.SList(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, 3, slices.SList(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 0, 3, slices.SList(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 3, 0, 4, SList(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(SList(0, 1, 2, 3, 4, 5), 0, 3, 4, SList(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 3, 0, 4, slices.SList(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, 4, slices.SList(3, 4, 5, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 1, -1, lists.List(0, 1, 2, 3, 4, 5))
@@ -657,9 +658,9 @@ func TestBlockClear(t *testing.T) {
 		}
 	}
 
-	//	SList() returns a Slice which supports the Blitter interface
-	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5), 3, 3, SList(0, 1, 2, nil, nil, nil))
-	ConfirmBlockClear(SList(0, 1, 2, 3, 4, 5), 0, 3, SList(nil, nil, nil, 3, 4, 5))
+	//	slices.SList() returns a Slice which supports the Blitter interface
+	ConfirmBlockClear(slices.SList(0, 1, 2, 3, 4, 5), 3, 3, slices.SList(0, 1, 2, nil, nil, nil))
+	ConfirmBlockClear(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, slices.SList(nil, nil, nil, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockClear(lists.List(0, 1, 2, 3, 4, 5), 3, 3, lists.List(0, 1, 2, nil, nil, nil))
@@ -681,10 +682,10 @@ func TestReallocate(t *testing.T) {
 	ConfirmReallocate([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
 	ConfirmReallocate([]int{0, 1, 2}, 4, 4, []int{0, 1, 2, 0})
 
-	ConfirmReallocate(SList(0, 1, 2), 2, 3, SList(0, 1))
-	ConfirmReallocate(SList(0, 1, 2), 3, 3, SList(0, 1, 2))
-	ConfirmReallocate(SList(0, 1, 2), 3, 4, SList(0, 1, 2))
-	ConfirmReallocate(SList(0, 1, 2), 4, 4, SList(0, 1, 2, nil))
+	ConfirmReallocate(slices.SList(0, 1, 2), 2, 3, slices.SList(0, 1))
+	ConfirmReallocate(slices.SList(0, 1, 2), 3, 3, slices.SList(0, 1, 2))
+	ConfirmReallocate(slices.SList(0, 1, 2), 3, 4, slices.SList(0, 1, 2))
+	ConfirmReallocate(slices.SList(0, 1, 2), 4, 4, slices.SList(0, 1, 2, nil))
 }
 
 func TestExpand(t *testing.T) {
@@ -708,7 +709,7 @@ func TestExpand(t *testing.T) {
 
 
 
-//	ConfirmExpand(SList(0, 1, 2, 3, 4, 5), 1, 3, SList(0, nil, nil, nil, 1, 2, 3, 4, 5))
+//	ConfirmExpand(slices.SList(0, 1, 2, 3, 4, 5), 1, 3, slices.SList(0, nil, nil, nil, 1, 2, 3, 4, 5))
 
 }
 
