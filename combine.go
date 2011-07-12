@@ -76,7 +76,8 @@ func combineIndexable(left Indexable, right interface{}, f func(interface{}, int
 	default:			switch right := reflect.ValueOf(right); right.Kind() {
 						case reflect.Slice:		makeSlice := func(length int) (r reflect.Value) {
 													raw.CatchAll(func() {
-														r = reflect.ValueOf(Reallocate(left, length, length))
+														Reallocate(left, length, length)
+														r = reflect.ValueOf(left)
 													})
 													return 
 												}
@@ -134,12 +135,15 @@ func combineIndexable(left Indexable, right interface{}, f func(interface{}, int
 	return
 }
 
-func combineValue(left, right interface{}, f func(interface{}, interface{}) interface{}) (result interface{}) {
-	switch left := reflect.ValueOf(left); left.Kind() {
-	case reflect.Slice:		switch right := right.(type) {
+func combineValue(Left, Right interface{}, f func(interface{}, interface{}) interface{}) (result interface{}) {
+	left := reflect.ValueOf(Left)
+	blank := reflect.Zero(left.Type().Elem())
+	switch left.Kind() {
+	case reflect.Slice:		switch right := Right.(type) {
 							case Indexable:			makeSlice := func(length int) (r reflect.Value) {
 														raw.CatchAll(func() {
-															r = reflect.ValueOf(Reallocate(left, length, length))
+															Reallocate(left, length, length)
+															r = reflect.ValueOf(left)
 															})
 														return 
 													}
@@ -160,7 +164,6 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 																			for i := 0; i < r; i++ {
 																				CombineAndSet(i, left.Index(i), right.At(i))
 																			}
-																			blank := reflect.Zero(left.Type().Elem()).Interface()
 																			for i := r; i < l; i++ {
 																				CombineAndSet(i, left.Index(i), blank)
 																			}
@@ -170,7 +173,6 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 																			for i := 0; i < l; i++ {
 																				CombineAndSet(i, left.Index(i), right.At(i))
 																			}
-																			blank := reflect.Zero(left.Type().Elem())
 																			for i := l; i < r; i++ {
 																				CombineAndSet(i, blank, right.At(i))
 																			}
@@ -199,7 +201,6 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 																									for i := 0; i < r; i++ {
 																										CombineAndSet(i, left.Index(i), right.Index(i))
 																									}
-																									blank := reflect.Zero(left.Type().Elem())
 																									for i := r; i < l; i++ {
 																										CombineAndSet(i, left.Index(i), blank)
 																									}
@@ -209,16 +210,23 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 																									for i := 0; i < l; i++ {
 																										CombineAndSet(i, left.Index(i), right.Index(i))
 																									}
-																									blank := reflect.Zero(left.Type().Elem())
 																									for i := l; i < r; i++ {
 																										CombineAndSet(i, blank, right.Index(i))
 																									}
 																								}
 																			}
 																			result = s.Interface()
+
+													case reflect.Map:		if map_type := right.Type(); map_type.Key().Kind() == reflect.Int {
+																				n := reflect.MakeMap(map_type)
+																				for i := 0; i < left.Len(); i++ {
+																					n.SetMapIndex(reflect.ValueOf(i), left.Index(i))
+																				}
+																				result = combineValue(n.Interface(), Right, f)
+																			}
 													}
 							}
-	case reflect.Map:		switch right := right.(type) {
+	case reflect.Map:		switch right := Right.(type) {
 							case Map:				m := reflect.MakeMap(left.Type())
 													CombineAndSet := func(k interface{}, l reflect.Value, r interface{}) {
 														m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(f(l.Interface(), r)))
@@ -250,7 +258,20 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 							default:				switch right := reflect.ValueOf(right); right.Kind() {
 													case reflect.Map:		m := reflect.MakeMap(left.Type())
 																			CombineAndSet := func(k reflect.Value) {
-																				m.SetMapIndex(k, reflect.ValueOf(f(left.MapIndex(k).Interface(), right.MapIndex(k).Interface())))
+																				lv := left.MapIndex(k)
+																				rv := right.MapIndex(k)
+
+																				var x interface{}
+																				if lv.IsValid() {
+																					if rv.IsValid() {
+																						x = f(lv.Interface(), rv.Interface())																						
+																					} else {
+																						x = f(lv.Interface(), blank.Interface())
+																					}
+																				} else {
+																					x = f(blank.Interface(), rv.Interface())
+																				}
+																				m.SetMapIndex(k, reflect.ValueOf(x))
 																			}
 
 																			for _, k := range left.MapKeys() {
@@ -258,11 +279,17 @@ func combineValue(left, right interface{}, f func(interface{}, interface{}) inte
 																			}
 
 																			for _, k := range right.MapKeys() {
-																				if !m.MapIndex(k).IsValid() {
-																					CombineAndSet(k)
-																				}
+																				CombineAndSet(k)
 																			}
 																			result = m.Interface()
+
+													case reflect.Slice:		if map_type := left.Type(); map_type.Key().Kind() == reflect.Int {
+																				n := reflect.MakeMap(map_type)
+																				for i := 0; i < right.Len(); i++ {
+																					n.SetMapIndex(reflect.ValueOf(i), right.Index(i))
+																				}
+																				result = combineValue(Left, n.Interface(), f)
+																			}
 													}
 							}
 	}
