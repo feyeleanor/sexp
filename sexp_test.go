@@ -28,7 +28,7 @@ func TestLen(t *testing.T) {
 	ConfirmLen([]int{0}, 1)
 	ConfirmLen([]int{0, 1, 2}, 3)
 	ConfirmLen(lists.List(0, 1, 2), 3)
-	ConfirmLen(slices.SList(0, 1, 2), 3)
+	ConfirmLen(slices.List(0, 1, 2), 3)
 }
 
 func TestCap(t *testing.T) {
@@ -43,7 +43,7 @@ func TestCap(t *testing.T) {
 	ConfirmCap([]int{0}, 1)
 	ConfirmCap(lists.List(0, 1, 2), 0)
 	ConfirmCap([]int{0, 1, 2}, 3)
-	ConfirmCap(slices.SList(0, 1, 2), 3)
+	ConfirmCap(slices.List(0, 1, 2), 3)
 }
 
 func TestEach(t *testing.T) { t.Fatal() }
@@ -469,7 +469,7 @@ func TestReverse(t *testing.T) {
 			t.Fatalf("Reverse(o) should be %v but is %v", r, o)
 		}
 	}
-	ConfirmReverse(slices.SList(0, 1, 2, 3, 4, 5), slices.SList(5, 4, 3, 2, 1, 0))
+	ConfirmReverse(slices.List(0, 1, 2, 3, 4, 5), slices.List(5, 4, 3, 2, 1, 0))
 	ConfirmReverse(lists.List(0, 1, 2, 3, 4, 5), lists.List(5, 4, 3, 2, 1, 0))
 	ConfirmReverse([]int{0, 1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1, 0})
 }
@@ -520,17 +520,17 @@ func TestDepth(t *testing.T) {
 														0))), 4)
 	ConfirmDepth(lists.List(	'A',
 								lists.List(	9,
-											slices.SList(	8,
-													slices.SList(	7, 6 )),
+											slices.List(	8,
+													slices.List(	7, 6 )),
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.List(	'B',
 								lists.List(	'A',
-											slices.SList(	9,
-													slices.SList(	8,
-															slices.SList( 7, 6 ))),
+											slices.List(	9,
+													slices.List(	8,
+															slices.List( 7, 6 ))),
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
@@ -569,17 +569,17 @@ func TestDepth(t *testing.T) {
 																	0))), 4)
 	ConfirmDepth(lists.Loop(	'A',
 								lists.Loop(	9,
-											slices.SList(	8,
-													slices.SList(	7, 6 )),
+											slices.List(	8,
+													slices.List(	7, 6 )),
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.Loop(	'B',
 								lists.Loop(	'A',
-											slices.SList(	9,
-													slices.SList(	8,
-															slices.SList( 7, 6 ))),
+											slices.List(	9,
+													slices.List(	8,
+															slices.List( 7, 6 ))),
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
@@ -602,20 +602,20 @@ func TestBlockCopy(t *testing.T) {
 		}
 	}
 
-	//	slices.SList() returns a Slice which supports the Blitter interface
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 1, -1, slices.SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 1, 0, slices.SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 1, 0, 0, slices.SList(0, 1, 2, 3, 4, 5))
+	//	slices.List() returns a Slice which supports the Blitter interface
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 1, -1, slices.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 1, 0, slices.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 1, 0, 0, slices.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), -1, 0, 3, slices.SList(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, -1, 3, slices.SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), -1, 0, 3, slices.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, -1, 3, slices.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 3, 0, 3, slices.SList(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, 3, slices.SList(3, 4, 5, 3, 4, 5))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 0, 3, slices.SList(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 3, 0, 3, slices.List(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 3, 3, slices.List(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 0, 3, slices.List(0, 1, 2, 3, 4, 5))
 
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 3, 0, 4, slices.SList(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, 4, slices.SList(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 3, 0, 4, slices.List(0, 1, 2, 0, 1, 2))
+	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 3, 4, slices.List(3, 4, 5, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 1, -1, lists.List(0, 1, 2, 3, 4, 5))
@@ -658,9 +658,9 @@ func TestBlockClear(t *testing.T) {
 		}
 	}
 
-	//	slices.SList() returns a Slice which supports the Blitter interface
-	ConfirmBlockClear(slices.SList(0, 1, 2, 3, 4, 5), 3, 3, slices.SList(0, 1, 2, nil, nil, nil))
-	ConfirmBlockClear(slices.SList(0, 1, 2, 3, 4, 5), 0, 3, slices.SList(nil, nil, nil, 3, 4, 5))
+	//	slices.List() returns a Slice which supports the Blitter interface
+	ConfirmBlockClear(slices.List(0, 1, 2, 3, 4, 5), 3, 3, slices.List(0, 1, 2, nil, nil, nil))
+	ConfirmBlockClear(slices.List(0, 1, 2, 3, 4, 5), 0, 3, slices.List(nil, nil, nil, 3, 4, 5))
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockClear(lists.List(0, 1, 2, 3, 4, 5), 3, 3, lists.List(0, 1, 2, nil, nil, nil))
@@ -682,10 +682,10 @@ func TestReallocate(t *testing.T) {
 	ConfirmReallocate([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
 	ConfirmReallocate([]int{0, 1, 2}, 4, 4, []int{0, 1, 2, 0})
 
-	ConfirmReallocate(slices.SList(0, 1, 2), 2, 3, slices.SList(0, 1))
-	ConfirmReallocate(slices.SList(0, 1, 2), 3, 3, slices.SList(0, 1, 2))
-	ConfirmReallocate(slices.SList(0, 1, 2), 3, 4, slices.SList(0, 1, 2))
-	ConfirmReallocate(slices.SList(0, 1, 2), 4, 4, slices.SList(0, 1, 2, nil))
+	ConfirmReallocate(slices.List(0, 1, 2), 2, 3, slices.List(0, 1))
+	ConfirmReallocate(slices.List(0, 1, 2), 3, 3, slices.List(0, 1, 2))
+	ConfirmReallocate(slices.List(0, 1, 2), 3, 4, slices.List(0, 1, 2))
+	ConfirmReallocate(slices.List(0, 1, 2), 4, 4, slices.List(0, 1, 2, nil))
 }
 
 func TestExpand(t *testing.T) {
@@ -709,7 +709,7 @@ func TestExpand(t *testing.T) {
 
 
 
-//	ConfirmExpand(slices.SList(0, 1, 2, 3, 4, 5), 1, 3, slices.SList(0, nil, nil, nil, 1, 2, 3, 4, 5))
+//	ConfirmExpand(slices.List(0, 1, 2, 3, 4, 5), 1, 3, slices.List(0, nil, nil, nil, 1, 2, 3, 4, 5))
 
 }
 
@@ -719,21 +719,20 @@ func TestPopFirst(t *testing.T) { t.Fatal() }
 func TestPopLast(t *testing.T) { t.Fatal() }
 
 func TestFeed(t *testing.T) {
-	ConfirmFeed := func(c, r interface{}, f func(interface{}) interface{}) {
+	ConfirmFeed := func(c interface{}, r Equatable, f func(interface{}) interface{}) {
 		channel := make(chan interface{})
 		Feed(c, channel, f)
 		o := make([]interface{}, 0, 0)
 		for i := Len(c); i > 0; i-- {
 			o = append(o, <-channel)
 		}
-		switch {
-		case Len(o) != Len(r):			t.Fatalf("Feed(%v, <-, f()) expected %v results but got %v results", c, Len(r), Len(o))
-		case !Equal(o, r):				t.Fatalf("Feed(%v, <-, f()) should generate %v but generated %v", c, r, o)
+		if !r.Equal(o) {
+			t.Fatalf("Feed(%v, <-, f()) should generate %v but generated %v", c, r, o)
 		}
 	}
 
 	i := 0
-	ConfirmFeed([]int{0, 1, 2}, []int{0, 1, 4}, func(x interface{}) (r interface{}) {
+	ConfirmFeed(slices.List(0, 1, 2), slices.List(0, 1, 4), func(x interface{}) (r interface{}) {
 		r = i * x.(int)
 		i++
 		return
@@ -743,19 +742,18 @@ func TestFeed(t *testing.T) {
 }
 
 func TestPipe(t *testing.T) {
-	ConfirmPipe := func(c, r interface{}, f func(interface{}) interface{}) {
+	ConfirmPipe := func(c interface{}, r Equatable, f func(interface{}) interface{}) {
 		o := make([]interface{}, 0, 0)
 		for x := range Pipe(c, f) {
 			o = append(o, x)
 		}
-		switch {
-		case Len(o) != Len(r):			t.Fatalf("Pipe(%v, <-, f()) expected %v results but got %v results", c, Len(r), Len(o))
-		case !Equal(o, r):				t.Fatalf("Pipe(%v, <-, f()) should generate %v but generated %v", c, r, o)
+		if !r.Equal(o) {
+			t.Fatalf("Pipe(%v, <-, f()) should generate %v but generated %v", c, r, o)
 		}
 	}
 
 	i := 0
-	ConfirmPipe([]int{0, 1, 2}, []int{0, 1, 4}, func(x interface{}) (r interface{}) {
+	ConfirmPipe(slices.List(0, 1, 2), slices.List(0, 1, 4), func(x interface{}) (r interface{}) {
 		r = i * x.(int)
 		i++
 		return
