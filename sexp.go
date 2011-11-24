@@ -1,9 +1,7 @@
 package sexp
 
 import (
-	"fmt"
 	"github.com/feyeleanor/raw"
-	"github.com/feyeleanor/slices"
 	"reflect"
 )
 
@@ -25,139 +23,6 @@ func Cap(container interface{}) (l int) {
 							case reflect.Slice:		fallthrough
 							case reflect.Map:		l = v.Cap()
 							}
-	}
-	return
-}
-
-func Each(container, f interface{}) {
-	switch container := container.(type) {
-	case Iterable:			container.Each(f)
-
-	case IndexedReader:		end := container.Len()
-							switch f := f.(type) {
-							case func(interface{}):					for i := 0; i < end; i++ {
-																		f(container.At(i))
-																	}
-
-							case func(int, interface{}):			for i := 0; i < end; i++ {
-																		f(i, container.At(i))
-																	}
-
-							case func(interface{}, interface{}):	for i := 0; i < end; i++ {
-																		f(i, container.At(i))
-																	}
-
-							default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-																		switch f.Type().NumIn() {
-																		case 1:				for i := 0; i < end; i++ {
-																								f.Call(slices.VList(container.At(i)))
-																							}
-
-																		case 2:				for i := 0; i < end; i++ {
-																								f.Call(slices.VList(i, container.At(i)))
-																							}
-
-																		default:			panic(f)
-																		}
-																	} else {
-																		panic(f)
-																	}
-							}
-
-	case MappedReader:		switch f := f.(type) {
-							case func(interface{}):					for _, v := range container.Keys() {
-																		f(container.At(v))
-																	}
-
-							case func(interface{}, interface{}):	for _, v := range container.Keys() {
-																		f(v, container.At(v))
-																	}
-
-							default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-																		switch f.Type().NumIn() {
-																		case 1:				for _, v := range container.Keys() {
-																								f.Call(slices.VList(container.At(v)))
-																							}
-
-																		case 2:				for _, v := range container.Keys() {
-																								f.Call(slices.VList(v, container.At(v)))
-																							}
-
-																		default:			panic(f)
-																		}
-																	} else {
-																		panic(f)
-																	}
-							}
-
-
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		end := c.Len()
-													switch f := f.(type) {
-													case func(interface{}):					for i := 0; i < end; i++ {
-																								f(c.Index(i).Interface())
-																							}
-
-
-													case func(int, interface{}):			for i := 0; i < end; i++ {
-																								f(i, c.Index(i).Interface())
-																							}
-
-
-													case func(interface{}, interface{}):	for i := 0; i < end; i++ {
-																								f(i, c.Index(i).Interface())
-																							}
-
-													default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-																								switch f.Type().NumIn() {
-																								case 1:				for i := 0; i < end; i++ {
-																														f.Call([]reflect.Value{ c.Index(i) })
-																													}
-
-																								case 2:				for i := 0; i < end; i++ {
-																														f.Call([]reflect.Value{ reflect.ValueOf(i), c.Index(i) })
-																													}
-
-																								default:			panic(f)
-																								}
-																							} else {
-																								panic(f)
-																							}
-													}
-													
-							case reflect.Map:		switch f := f.(type) {
-													case func(interface{}):					for _, key := range c.MapKeys() {
-																								f(c.MapIndex(key).Interface())
-																							}
-
-													case func(interface{}, interface{}):	for _, key := range c.MapKeys() {
-																								f(key.Interface(), c.MapIndex(key).Interface())
-																							}
-
-													default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-																								switch f.Type().NumIn() {
-																								case 1:				for _, key := range c.MapKeys() {
-																														f.Call([]reflect.Value{ c.MapIndex(key) })
-																													}
-
-																								case 2:				for _, key := range c.MapKeys() {
-																														f.Call([]reflect.Value{ key, c.MapIndex(key) })
-																													}
-
-																								default:			panic(f)
-																								}
-																							} else {
-																								panic(f)
-																							}
-													}
-							}
-	}
-}
-
-func Cycle(container interface{}, count int, f func(interface{})) (i int) {
-	switch {
-	case count == 0:	for ; ; i++ { Each(container, f) }
-	default:			for ; i < count; i++ { Each(container, f) }
 	}
 	return
 }
@@ -518,16 +383,11 @@ func Reallocate(container interface{}, length, capacity int) (r interface{}) {
 	case Resizeable:			c.Reallocate(length, capacity)
 								r = c
 
-	default:					println("not resizeable")
-								if c := reflect.ValueOf(container); c.Kind() == reflect.Slice {
-println("so brute-force slice reallocation")
-fmt.Printf("container = %v\n", container)
+	default:					if c := reflect.ValueOf(container); c.Kind() == reflect.Slice {
 									if length > capacity {
 										length = capacity
 									}
-fmt.Printf("desired: length = %v, capacity = %v\n", length, capacity)
 									if c.Cap() != capacity {
-fmt.Printf("creating new %v slice\n", c.Type())
 										n := reflect.MakeSlice(c.Type(), length, capacity)
 										reflect.Copy(n, c)
 										c = n
@@ -537,7 +397,6 @@ fmt.Printf("creating new %v slice\n", c.Type())
 										c = makeAddressable(c)
 										c.SetLen(length)
 									}
-fmt.Printf("c = %v\n", c.Interface())
 
 									r = c.Interface()
 								}
@@ -573,11 +432,8 @@ func Resize(container interface{}, x, n int) (r interface{}) {
 												Reallocate(container, length, length)
 												r = container
 											}
-fmt.Printf("container = %v, x = %v, n = %v\n", container, x, n)
 											BlockCopy(container, x + n, x, n)
-fmt.Printf("container = %v, x = %v, n = %v\n", container, x, n)
 											BlockClear(container, x, n)
-fmt.Printf("container = %v\n", container)
 										}
 									}
 		}

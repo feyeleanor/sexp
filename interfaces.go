@@ -86,15 +86,7 @@ type Flattenable interface {
 type Iterable interface {
 	Each(interface{})
 }
-/*
-type Sequence interface {
-	EachWithIndex(func(int, interface{}))
-}
 
-type Map interface {
-	EachWithKey(func(key, value interface{}))
-}
-*/
 type Sliceable interface {
 	Subslice(start, end int) interface{}
 }

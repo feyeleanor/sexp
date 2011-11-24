@@ -5,6 +5,7 @@ TARG=sexp
 GOFILES=\
 	interfaces.go\
 	helpers.go\
+	iterate.go\
 	sexp.go\
 	combine.go
 
