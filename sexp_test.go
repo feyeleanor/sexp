@@ -28,7 +28,7 @@ func TestLen(t *testing.T) {
 	ConfirmLen([]int{0}, 1)
 	ConfirmLen([]int{0, 1, 2}, 3)
 	ConfirmLen(lists.List(0, 1, 2), 3)
-	ConfirmLen(slices.List(0, 1, 2), 3)
+	ConfirmLen(slices.Slice{0, 1, 2}, 3)
 }
 
 func TestCap(t *testing.T) {
@@ -43,12 +43,152 @@ func TestCap(t *testing.T) {
 	ConfirmCap([]int{0}, 1)
 	ConfirmCap(lists.List(0, 1, 2), 0)
 	ConfirmCap([]int{0, 1, 2}, 3)
-	ConfirmCap(slices.List(0, 1, 2), 3)
+	ConfirmCap(slices.Slice{0, 1, 2}, 3)
 }
 
-func TestEach(t *testing.T) { t.Fatal() }
-func TestEachWithIndex(t *testing.T) { t.Fatal() }
-func TestEachWithKey(t *testing.T) { t.Fatal() }
+func TestEach(t *testing.T) {
+	count := 0
+	S := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	Each(S, func(i interface{}) {
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
+		count++
+	})
+
+	count = 0
+	Each(S, func(i int, v interface{}) {
+		if i != count {
+			t.Fatalf("index %v erroneously reported as %v", count, i)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(S, func(k, v interface{}) {
+		if k != count {
+			t.Fatalf("index %v erroneously reported as %v", count, k)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(S, func(i interface{}) {
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
+		count++
+	})
+
+	count = 0
+	Each(S, func(i int, v interface{}) {
+		if i != count {
+			t.Fatalf("index %v erroneously reported as %v", count, i)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(S, func(k, v interface{}) {
+		if k != count {
+			t.Fatalf("index %v erroneously reported as %v", count, k)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	I := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	Each(I, func(i interface{}) {
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
+		count++
+	})
+
+	count = 0
+	Each(I, func(i int, v interface{}) {
+		if i != count {
+			t.Fatalf("index %v erroneously reported as %v", count, i)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(I, func(k, v interface{}) {
+		if k != count {
+			t.Fatalf("index %v erroneously reported as %v", count, k)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(I, func(i int, v int) {
+		if i != count {
+			t.Fatalf("index %v erroneously reported as %v", count, i)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(I, func(k, v int) {
+		if k != count {
+			t.Fatalf("index %v erroneously reported as %v", count, k)
+		}
+		if v != count {
+			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	M := map[int]int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	Each(M, func(i int, v interface{}) {
+		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	Each(M, func(k, v interface{}) {
+		if k != v {
+			t.Fatalf("index %v erroneously reported as %v", k, v)
+		}
+	})
+
+	count = 0
+	Each(M, func(k, v int) {
+		if k != v {
+			t.Fatalf("index %v erroneously reported as %v", k, v)
+		}
+	})
+
+	count = 0
+	Each(M, func(k interface{}, v int) {
+		if k != v {
+			t.Fatalf("index %v erroneously reported as %v", k, v)
+		}
+	})
+}
+
 func TestCycle(t *testing.T) { t.Fatal() }
 func TestTransform(t *testing.T) { t.Fatal() }
 func TestCollect(t *testing.T) { t.Fatal() }
@@ -469,7 +609,7 @@ func TestReverse(t *testing.T) {
 			t.Fatalf("Reverse(o) should be %v but is %v", r, o)
 		}
 	}
-	ConfirmReverse(slices.List(0, 1, 2, 3, 4, 5), slices.List(5, 4, 3, 2, 1, 0))
+	ConfirmReverse(slices.Slice{0, 1, 2, 3, 4, 5}, slices.Slice{5, 4, 3, 2, 1, 0})
 	ConfirmReverse(lists.List(0, 1, 2, 3, 4, 5), lists.List(5, 4, 3, 2, 1, 0))
 	ConfirmReverse([]int{0, 1, 2, 3, 4, 5}, []int{5, 4, 3, 2, 1, 0})
 }
@@ -520,17 +660,17 @@ func TestDepth(t *testing.T) {
 														0))), 4)
 	ConfirmDepth(lists.List(	'A',
 								lists.List(	9,
-											slices.List(	8,
-													slices.List(	7, 6 )),
+											slices.Slice{	8,
+													slices.Slice{	7, 6 }},
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.List(	'B',
 								lists.List(	'A',
-											slices.List(	9,
-													slices.List(	8,
-															slices.List( 7, 6 ))),
+											slices.Slice{	9,
+													slices.Slice{	8,
+															slices.Slice{ 7, 6 }}},
 											lists.List(	5,
 														4,
 														lists.List(3, 2),
@@ -569,17 +709,17 @@ func TestDepth(t *testing.T) {
 																	0))), 4)
 	ConfirmDepth(lists.Loop(	'A',
 								lists.Loop(	9,
-											slices.List(	8,
-													slices.List(	7, 6 )),
+											slices.Slice{	8,
+													slices.Slice{	7, 6 }},
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
 														1))), 4)
 	ConfirmDepth(lists.Loop(	'B',
 								lists.Loop(	'A',
-											slices.List(	9,
-													slices.List(	8,
-															slices.List( 7, 6 ))),
+											slices.Slice{	9,
+													slices.Slice{	8,
+															slices.Slice{	7, 6 }}},
 											lists.Loop(	5,
 														4,
 														lists.Loop(3, 2),
@@ -602,20 +742,20 @@ func TestBlockCopy(t *testing.T) {
 		}
 	}
 
-	//	slices.List() returns a Slice which supports the Blitter interface
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 1, -1, slices.List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 1, 0, slices.List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 1, 0, 0, slices.List(0, 1, 2, 3, 4, 5))
+	//	slices.Slice is a type which supports the Blitter interface
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 1, -1, slices.Slice{0, 1, 2, 3, 4, 5})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 1, 0, slices.Slice{0, 1, 2, 3, 4, 5})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 1, 0, 0, slices.Slice{0, 1, 2, 3, 4, 5})
 
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), -1, 0, 3, slices.List(0, 1, 2, 3, 4, 5))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, -1, 3, slices.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, -1, 0, 3, slices.Slice{0, 1, 2, 3, 4, 5})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, -1, 3, slices.Slice{0, 1, 2, 3, 4, 5})
 
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 3, 0, 3, slices.List(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 3, 3, slices.List(3, 4, 5, 3, 4, 5))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 0, 3, slices.List(0, 1, 2, 3, 4, 5))
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 3, 0, 3, slices.Slice{0, 1, 2, 0, 1, 2})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 3, 3, slices.Slice{3, 4, 5, 3, 4, 5})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 0, 3, slices.Slice{0, 1, 2, 3, 4, 5})
 
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 3, 0, 4, slices.List(0, 1, 2, 0, 1, 2))
-	ConfirmBlockCopy(slices.List(0, 1, 2, 3, 4, 5), 0, 3, 4, slices.List(3, 4, 5, 3, 4, 5))
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 3, 0, 4, slices.Slice{0, 1, 2, 0, 1, 2})
+	ConfirmBlockCopy(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 3, 4, slices.Slice{3, 4, 5, 3, 4, 5})
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockCopy(lists.List(0, 1, 2, 3, 4, 5), 0, 1, -1, lists.List(0, 1, 2, 3, 4, 5))
@@ -658,9 +798,9 @@ func TestBlockClear(t *testing.T) {
 		}
 	}
 
-	//	slices.List() returns a Slice which supports the Blitter interface
-	ConfirmBlockClear(slices.List(0, 1, 2, 3, 4, 5), 3, 3, slices.List(0, 1, 2, nil, nil, nil))
-	ConfirmBlockClear(slices.List(0, 1, 2, 3, 4, 5), 0, 3, slices.List(nil, nil, nil, 3, 4, 5))
+	//	slices.Slice{} is a type which supports the Blitter interface
+	ConfirmBlockClear(slices.Slice{0, 1, 2, 3, 4, 5}, 3, 3, slices.Slice{0, 1, 2, nil, nil, nil})
+	ConfirmBlockClear(slices.Slice{0, 1, 2, 3, 4, 5}, 0, 3, slices.Slice{nil, nil, nil, 3, 4, 5})
 
 	//	List() returns a LinearList which supports the Indexable interface
 	ConfirmBlockClear(lists.List(0, 1, 2, 3, 4, 5), 3, 3, lists.List(0, 1, 2, nil, nil, nil))
@@ -673,7 +813,7 @@ func TestBlockClear(t *testing.T) {
 
 func TestReallocate(t *testing.T) {
 	ConfirmReallocate := func(i interface{}, l, c int, r interface{}) {
-		if x := Reallocate(i, l, c); !Equal(x, r) {
+		if x := Reallocate(i, l, c); !Equal(r, x) {
 			t.Fatalf("Reallocate(%v, %v, %v) should be %v but is %v", i, l, c, r, x)
 		}
 	}
@@ -682,34 +822,39 @@ func TestReallocate(t *testing.T) {
 	ConfirmReallocate([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
 	ConfirmReallocate([]int{0, 1, 2}, 4, 4, []int{0, 1, 2, 0})
 
-	ConfirmReallocate(slices.List(0, 1, 2), 2, 3, slices.List(0, 1))
-	ConfirmReallocate(slices.List(0, 1, 2), 3, 3, slices.List(0, 1, 2))
-	ConfirmReallocate(slices.List(0, 1, 2), 3, 4, slices.List(0, 1, 2))
-	ConfirmReallocate(slices.List(0, 1, 2), 4, 4, slices.List(0, 1, 2, nil))
+	ConfirmReallocate(slices.Slice{0, 1, 2}, 2, 3, slices.Slice{0, 1})
+	ConfirmReallocate(slices.Slice{0, 1, 2}, 3, 3, slices.Slice{0, 1, 2})
+	ConfirmReallocate(slices.Slice{0, 1, 2}, 3, 4, slices.Slice{0, 1, 2})
+	ConfirmReallocate(slices.Slice{0, 1, 2}, 4, 4, slices.Slice{0, 1, 2, nil})
 }
 
-func TestExpand(t *testing.T) {
-	ConfirmExpand := func(i interface{}, x, n int, r interface{}) {
-		if y := Expand(i, x, n); !Equal(y, r) {
-			t.Fatalf("Expand(%v, %v, %v) should be %v but is %v", i, x, n, r, y)
+func TestResize(t *testing.T) {
+	ConfirmResize := func(i interface{}, x, n int, r interface{}) {
+		if y := Resize(i, x, n); !Equal(y, r) {
+			t.Fatalf("Resize(%v, %v, %v) should be %v but is %v", i, x, n, r, y)
 		}
 	}
 
-	ConfirmExpand([]int{}, 0, -1, []int{})
+/*
+	ConfirmResize([]int{}, 0, -1, []int{})
 
-	ConfirmExpand([]int{}, -1, 1, []int{})
-	ConfirmExpand([]int{}, 0, 1, []int{0})
-	ConfirmExpand([]int{}, 1, 1, []int{})
+	ConfirmResize([]int{}, -1, 1, []int{})
+	ConfirmResize([]int{}, 0, 1, []int{0})
+	ConfirmResize([]int{}, 1, 1, []int{})
 
-	ConfirmExpand([]int{0, 1, 2}, 1, 3, []int{0, 0, 0, 0, 1, 2})
-	ConfirmExpand([]int{0, 1, 2}, 3, 3, []int{0, 1, 2, 0, 0, 0})
-	ConfirmExpand([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
+	ConfirmResize([]int{0, 1, 2}, 1, 3, []int{0, 0, 0, 0, 1, 2})
+	ConfirmResize([]int{0, 1, 2}, 3, 3, []int{0, 1, 2, 0, 0, 0})
+	ConfirmResize([]int{0, 1, 2}, 4, 3, []int{0, 1, 2})
+*/
 
-	ConfirmExpand(lists.List(0, 1, 2, 3, 4, 5), 1, 3, lists.List(0, nil, nil, nil, 1, 2, 3, 4, 5))
+	ConfirmResize(slices.Slice{}, 0, 3, slices.Slice{nil, nil, nil})
+	ConfirmResize(slices.RList(), 0, 3, slices.RList(0, 0, 0))
+
+	ConfirmResize(slices.Slice{0, 1, 2, 3, 4, 5}, 1, 3, slices.Slice{0, nil, nil, nil, 1, 2, 3, 4, 5})
 
 
 
-//	ConfirmExpand(slices.List(0, 1, 2, 3, 4, 5), 1, 3, slices.List(0, nil, nil, nil, 1, 2, 3, 4, 5))
+//	ConfirmResize(slices.Slice{0, 1, 2, 3, 4, 5}, 1, 3, slices.Slice{0, nil, nil, nil, 1, 2, 3, 4, 5})
 
 }
 
@@ -719,20 +864,20 @@ func TestPopFirst(t *testing.T) { t.Fatal() }
 func TestPopLast(t *testing.T) { t.Fatal() }
 
 func TestFeed(t *testing.T) {
-	ConfirmFeed := func(c interface{}, r Equatable, f func(interface{}) interface{}) {
+	ConfirmFeed := func(c, r interface{}, f func(interface{}) interface{}) {
 		channel := make(chan interface{})
 		Feed(c, channel, f)
 		o := make([]interface{}, 0, 0)
 		for i := Len(c); i > 0; i-- {
 			o = append(o, <-channel)
 		}
-		if !r.Equal(o) {
+		if !Equal(r, o) {
 			t.Fatalf("Feed(%v, <-, f()) should generate %v but generated %v", c, r, o)
 		}
 	}
 
 	i := 0
-	ConfirmFeed(slices.List(0, 1, 2), slices.List(0, 1, 4), func(x interface{}) (r interface{}) {
+	ConfirmFeed(slices.Slice{0, 1, 2}, slices.Slice{0, 1, 4}, func(x interface{}) (r interface{}) {
 		r = i * x.(int)
 		i++
 		return
@@ -742,18 +887,18 @@ func TestFeed(t *testing.T) {
 }
 
 func TestPipe(t *testing.T) {
-	ConfirmPipe := func(c interface{}, r Equatable, f func(interface{}) interface{}) {
+	ConfirmPipe := func(c, r interface{}, f func(interface{}) interface{}) {
 		o := make([]interface{}, 0, 0)
 		for x := range Pipe(c, f) {
 			o = append(o, x)
 		}
-		if !r.Equal(o) {
+		if !Equal(r, o) {
 			t.Fatalf("Pipe(%v, <-, f()) should generate %v but generated %v", c, r, o)
 		}
 	}
 
 	i := 0
-	ConfirmPipe(slices.List(0, 1, 2), slices.List(0, 1, 4), func(x interface{}) (r interface{}) {
+	ConfirmPipe(slices.Slice{0, 1, 2}, slices.Slice{0, 1, 4}, func(x interface{}) (r interface{}) {
 		r = i * x.(int)
 		i++
 		return

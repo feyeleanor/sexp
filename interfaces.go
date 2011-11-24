@@ -21,6 +21,7 @@ type Linear interface {
 }
 
 type IndexedReader interface {
+	Linear
 	At(index int) interface{}
 }
 
@@ -30,13 +31,13 @@ type IndexedWriter interface {
 }
 
 type Indexable interface {
-	Linear
 	IndexedReader
 	IndexedWriter
 }
 
 type MappedReader interface {
 	At(key interface{}) interface{}
+	Keys() []interface{}
 }
 
 type MappedWriter interface {
@@ -58,11 +59,6 @@ type Repeatable interface {
 	Repeat(count int)
 }
 
-type Expandable interface {
-	Indexable
-	Expand(i, n int)
-}
-
 type Appendable interface {
 	Append(interface{})
 }
@@ -74,6 +70,8 @@ type FixedSize interface {
 
 type Resizeable interface {
 	FixedSize
+	At(index int) interface{}
+	Set(index int, value interface{})
 	Reallocate(l, c int)
 }
 
@@ -86,9 +84,9 @@ type Flattenable interface {
 }
 
 type Iterable interface {
-	Each(func(interface{}))
+	Each(interface{})
 }
-
+/*
 type Sequence interface {
 	EachWithIndex(func(int, interface{}))
 }
@@ -96,7 +94,7 @@ type Sequence interface {
 type Map interface {
 	EachWithKey(func(key, value interface{}))
 }
-
+*/
 type Sliceable interface {
 	Subslice(start, end int) interface{}
 }

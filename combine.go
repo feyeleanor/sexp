@@ -227,7 +227,7 @@ func combineValue(Left, Right interface{}, f func(interface{}, interface{}) inte
 													}
 							}
 	case reflect.Map:		switch right := Right.(type) {
-							case Map:				m := reflect.MakeMap(left.Type())
+/*							case Map:				m := reflect.MakeMap(left.Type())
 													CombineAndSet := func(k interface{}, l reflect.Value, r interface{}) {
 														m.SetMapIndex(reflect.ValueOf(k), reflect.ValueOf(f(l.Interface(), r)))
 													}
@@ -237,7 +237,7 @@ func combineValue(Left, Right interface{}, f func(interface{}, interface{}) inte
 															CombineAndSet(k, l, r)
 														}
 													})
-
+*/
 							case Indexable:			m := reflect.MakeMap(left.Type())
 													CombineAndSet := func(i int, l reflect.Value, r interface{}) {
 														m.SetMapIndex(reflect.ValueOf(i), reflect.ValueOf(f(l.Interface(), r)))

@@ -11,7 +11,7 @@ import "testing"
 //	Write benchmarks for Transform()
 
 func BenchmarkReverseReversible(b *testing.B) {
-	s := slices.List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for i := 0; i < b.N; i++ {
 		Reverse(s)
 	}
@@ -32,7 +32,7 @@ func BenchmarkReverseReflected(b *testing.B) {
 }
 
 func BenchmarkDepthNested(b *testing.B) {
-	l := slices.List(0, slices.List(1, slices.List(2, slices.List(3, slices.List(4, slices.List(5, slices.List()))))))
+	l := slices.Slice{0, slices.Slice{1, slices.Slice{2, slices.Slice{3, slices.Slice{4, slices.Slice{5, slices.Slice{}}}}}}}
 	for i := 0; i < b.N; i++ {
 		_ = Depth(l)
 	}
@@ -52,7 +52,7 @@ func BenchmarkDepthReflected(b *testing.B) {
 //	Write benchmarks for PrependContainer()
 
 func BenchmarkBlockCopyBlitter(b *testing.B) {
-	s := slices.List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for i := 0; i < b.N; i++ {
 		BlockCopy(s, 0, 5, 5)
 	}
@@ -73,7 +73,7 @@ func BenchmarkBlockCopyReflected(b *testing.B) {
 }
 
 func BenchmarkBlockClearBlitter(b *testing.B) {
-	s := slices.List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for i := 0; i < b.N; i++ {
 		BlockClear(s, 0, 5)
 	}
@@ -94,6 +94,6 @@ func BenchmarkBlockClearReflected(b *testing.B) {
 }
 
 //	Write benchmarks for Reallocate()
-//	Write benchmarks for Expand()
+//	Write benchmarks for Resize()
 //	Write benchmarks for Feed()
 //	Write benchmarks for Pipe()
