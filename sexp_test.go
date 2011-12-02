@@ -46,7 +46,6 @@ func TestCap(t *testing.T) {
 	ConfirmCap(slices.Slice{0, 1, 2}, 3)
 }
 
-func TestTransform(t *testing.T) { t.Fatal() }
 func TestCollect(t *testing.T) { t.Fatal() }
 
 func TestReduce(t *testing.T) {
@@ -716,8 +715,6 @@ func TestResize(t *testing.T) {
 
 func TestFirst(t *testing.T) { t.Fatal() }
 func TestLast(t *testing.T) { t.Fatal() }
-func TestPopFirst(t *testing.T) { t.Fatal() }
-func TestPopLast(t *testing.T) { t.Fatal() }
 
 func TestFeed(t *testing.T) {
 	ConfirmFeed := func(c, r interface{}, f func(interface{}) interface{}) {

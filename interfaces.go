@@ -41,11 +41,11 @@ type MappedReader interface {
 }
 
 type MappedWriter interface {
-	Set(key interface{}) interface{}
+	Set(key interface{}, value interface{})
 	Clear(key interface{})
 }
 
-type Mapable interface {
+type Mappable interface {
 	Linear
 	MappedReader
 	MappedWriter
@@ -83,20 +83,12 @@ type Flattenable interface {
 	Flatten()
 }
 
-type Iterable interface {
-	Each(interface{})
-}
-
 type Sliceable interface {
 	Subslice(start, end int) interface{}
 }
 
 type Overwriteable interface {
 	Overwrite(offset interface{}, container interface{})
-}
-
-type Transformable interface {
-	Transform(func(interface{}) interface{})
 }
 
 type Collectable interface {

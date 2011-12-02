@@ -6,6 +6,7 @@ GOFILES=\
 	interfaces.go\
 	helpers.go\
 	iterate.go\
+	transform.go\
 	sexp.go\
 	combine.go
 

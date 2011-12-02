@@ -8,6 +8,7 @@ import (
 func Len(container interface{}) (l int) {
 	switch container := container.(type) {
 	case Linear:			l = container.Len()
+
 	default:				switch v := reflect.ValueOf(container); v.Kind() {
 							case reflect.Slice:		fallthrough
 							case reflect.Map:		l = v.Len()
@@ -19,6 +20,7 @@ func Len(container interface{}) (l int) {
 func Cap(container interface{}) (l int) {
 	switch container := container.(type) {
 	case FixedSize:			l = container.Cap()
+
 	default:				switch v := reflect.ValueOf(container); v.Kind() {
 							case reflect.Slice:		fallthrough
 							case reflect.Map:		l = v.Cap()
@@ -27,30 +29,10 @@ func Cap(container interface{}) (l int) {
 	return
 }
 
-func Transform(container interface{}, f func(interface{}) interface{}) {
-	switch container := container.(type) {
-	case Transformable:		container.Transform(f)
-	case Indexable:			end := container.Len()
-							for i := 0; i < end; i++ {
-								container.Set(i, f(container.At(i)))
-							}
-
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		end := c.Len()
-													for i := 0; i < end; i++ {
-														v := c.Index(i)
-														v.Set(reflect.ValueOf(f(v.Interface())))
-													}
-							case reflect.Map:		for _, key := range c.MapKeys() {
-														c.SetMapIndex(key, reflect.ValueOf(f(c.MapIndex(key))))
-													}
-							}
-	}
-}
-
 func Collect(container interface{}, f func(interface{}) interface{}) (r interface{}) {
 	switch container := container.(type) {
 	case Collectable:		r = container.Collect(f)
+
 	default:				switch c := reflect.ValueOf(container); c.Kind() {
 							case reflect.Slice:		end := c.Len()
 													s := reflect.MakeSlice(c.Type(), end, end)
@@ -167,6 +149,7 @@ func Most(container interface{}, t float64, f func(interface{}) bool) bool {
 func Reverse(container interface{}) {
 	switch container := container.(type) {
 	case Reversible:		container.Reverse()
+
 	case Indexable:			end := container.Len() - 1
 							for i := 0; i < end; i++ {
 								x, y := container.At(i), container.At(end)
@@ -174,6 +157,7 @@ func Reverse(container interface{}) {
 								container.Set(end, x)
 								end--
 							}
+
 	case reflect.Value:		switch container.Kind() {
 							case reflect.Slice:		end := container.Len() - 1
 													for i := 0; i < end; i++ {
@@ -189,7 +173,7 @@ func Reverse(container interface{}) {
 }
 
 /*
-	Calculated the depth of nesting of a container.
+	Calculate the depth of nesting of a container.
 	A scalar value and an empty container will both return a depth of zero.
 	All other containers will return a depth of 1+.
 */
@@ -198,6 +182,7 @@ func Depth(container interface{}) (d int) {
 	case Nested:			if r := container.Depth() + 1; r > d {
 								d = r
 							}
+
 	default:				Each(container, func(v interface{}) {
 								if r := Depth(v) + 1; r > d {
 									d = r
@@ -210,6 +195,7 @@ func Depth(container interface{}) (d int) {
 func Flatten(container interface{}) {
 	switch container := container.(type) {
 	case Flattenable:		container.Flatten()
+
 	default:				Transform(container, func(v interface{}) interface{} {
 								Flatten(v)
 								return v
@@ -220,10 +206,12 @@ func Flatten(container interface{}) {
 func Append(container, value interface{}) {
 	switch container := container.(type) {
 	case Appendable:		container.Append(value)
+
 	case Resizeable:		length := container.Len() + 1
 							Resize(container, length, length)
 							length--
 							container.(Indexable).Set(length, value)
+
 	case reflect.Value:		switch container.Kind() {
 							case reflect.Slice:		container.Set(reflect.Append(container, reflect.ValueOf(value)))
 													
@@ -236,6 +224,7 @@ func Repeat(container interface{}, count int) {
 	if count > 0 {
 		switch container := container.(type) {
 		case Repeatable:		container.Repeat(count)
+
 		case Resizeable:		length := container.Len()
 								Resize(container, length, length * count)
 								for start := length; count > 1; count-- {
@@ -252,6 +241,7 @@ func Subslice(container interface{}, start, end int) (r interface{}) {
 	}
 	switch container := container.(type) {
 	case Sliceable:				r = container.Subslice(start, end)
+
 	case Indexable:				LastIndex := container.Len() - 1
 								if end > LastIndex {
 									end = LastIndex
@@ -272,6 +262,7 @@ func Subslice(container interface{}, start, end int) (r interface{}) {
 									}
 									r = s
 								}
+
 	default:					switch container := reflect.ValueOf(container); container.Kind() {
 								case reflect.Slice:			LastIndex := container.Len() - 1
 															if end > LastIndex {
@@ -292,6 +283,7 @@ func Subslice(container interface{}, start, end int) (r interface{}) {
 func Overwrite(destination interface{}, offset int, source interface{}) {
 	switch destination := destination.(type) {
 	case Overwriteable:			destination.Overwrite(offset, source)
+
 	default:					switch d := reflect.ValueOf(destination); d.Kind() {
 								case reflect.Slice:			switch s := reflect.ValueOf(source); s.Kind() {
 															case reflect.Slice:			reflect.Copy(d.Slice(offset, d.Len() - 1), s)
@@ -304,6 +296,7 @@ func BlockCopy(container interface{}, d, s, n int) {
 	if d > -1 && s > -1 && d != s && n > 0 {
 		switch container := container.(type) {
 		case Blitter:			container.BlockCopy(d, s, n)
+
 		case Indexable:			switch {
 								case d > s:		n = boundOffset(container, d, n)
 												s += n
@@ -449,16 +442,6 @@ func Last(container interface{}, i int) interface{} {
 	l := Len(container)
 	return Subslice(container, l - i, l - 1)
 }
-
-/*
-func PopFirst(container interface{}) interface{} {
-	return s.At(0), s.Section(1, s.Len())
-}
-
-func PopLast(container interface{}) interface{} {
-	return s.At(l), s.Section(0, l)
-}
-*/
 
 func Feed(container interface{}, c chan interface{}, f func(x interface{}) interface{}) {
 	switch container := container.(type) {

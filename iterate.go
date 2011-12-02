@@ -5,7 +5,12 @@ import(
 	"reflect"
 )
 
-func eachIndexedReader(container IndexedReader, f interface{}) {
+type Iterable interface {
+	Each(interface{})
+}
+
+
+func rangeIndexedReader(container IndexedReader, f interface{}) {
 	end := container.Len()
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
@@ -38,7 +43,7 @@ func eachIndexedReader(container IndexedReader, f interface{}) {
 	}
 }
 
-func eachMappedReader(container MappedReader, f interface{}) {
+func rangeMappedReader(container MappedReader, f interface{}) {
 	switch f := f.(type) {
 	case func(interface{}):					for _, v := range container.Keys() {
 												f(container.At(v))
@@ -102,6 +107,85 @@ func rangeMap(m reflect.Value, f interface{}) (ok bool) {
 	return
 }
 
+func rangeChannel(c reflect.Value, f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(interface{}):					for {
+												if v, open := c.Recv(); open {
+													f(v.Interface())
+												} else {
+													break
+												}
+											}
+											ok = true
+
+	case func(int, interface{}):			for count := 0; ; count++ {
+												if v, open := c.Recv(); open {
+													f(count, v.Interface())
+												} else {
+													break
+												}
+											}
+											ok = true
+
+	case func(interface{}, interface{}):	for count := 0; ; count++ {
+												if v, open := c.Recv(); open {
+													f(count, v.Interface())
+												} else {
+													break
+												}
+											}
+											ok = true
+	}
+	return
+}
+
+func rangeGenerator(p reflect.Value, f interface{}) (ok bool) {
+	if t := p.Type(); t.NumOut() > 0 {
+		switch t.NumIn() {
+		case 0:			switch f := f.(type) {
+						case func(interface{}):					for v := p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+																	f(v[0].Interface())
+																}
+																ok = true
+
+						case func(int, interface{}):			for count, v := 0, p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+																	f(count, v[0].Interface())
+																	count++
+																} 
+																ok = true
+
+						case func(interface{}, interface{}):	for count, v := 0, p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+																	f(count, v[0].Interface())
+																	count++
+																}
+																ok = true
+						}
+
+		case 1:			count := 0
+						switch f := f.(type) {
+						case func(interface{}):					for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
+																	f(v[0].Interface())
+																	count++
+																}
+																ok = true
+
+						case func(int, interface{}):			for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
+																	f(count, v[0].Interface())
+																	count++
+																}
+																ok = true
+
+						case func(interface{}, interface{}):	for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
+																	f(count, v[0].Interface())
+																	count++
+																}
+																ok = true
+						}
+		}
+	}
+	return
+}
+
 func each(container, f interface{}) {
 	switch c := reflect.ValueOf(container); c.Kind() {
 	case reflect.Slice:		if !rangeSlice(c, f) {
@@ -140,6 +224,33 @@ func each(container, f interface{}) {
 									panic(f)
 								}
 							}
+
+	case reflect.Chan:		if !rangeChannel(c, f) {
+								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+									switch f.Type().NumIn() {
+									case 1:				for {
+															if v, done := c.Recv(); !done {
+																f.Call([]reflect.Value{ v })
+															} else {
+																break
+															}
+														}
+
+									case 2:				for count := 0; ; count++ {
+															if v, done := c.Recv(); !done {
+																f.Call([]reflect.Value{ reflect.ValueOf(count), v })
+															} else {
+																break
+															}
+														}
+
+									default:
+									}
+								}
+							}
+
+	case reflect.Func:		if !rangeGenerator(c, f) {
+							}
 	}
 }
 
@@ -147,9 +258,9 @@ func Each(container, f interface{}) {
 	switch container := container.(type) {
 	case Iterable:			container.Each(f)
 
-	case IndexedReader:		eachIndexedReader(container, f)
+	case IndexedReader:		rangeIndexedReader(container, f)
 
-	case MappedReader:		eachMappedReader(container, f)
+	case MappedReader:		rangeMappedReader(container, f)
 
 	default:				each(container, f)
 							
