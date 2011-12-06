@@ -46,8 +46,6 @@ func TestCap(t *testing.T) {
 	ConfirmCap(slices.Slice{0, 1, 2}, 3)
 }
 
-func TestCollect(t *testing.T) { t.Fatal() }
-
 func TestReduce(t *testing.T) {
 	ConfirmReduce := func(o, s, r interface{}, f func(m, x interface{}) interface{}) {
 		if x := Reduce(o, s, f); !Equal(x, r) {

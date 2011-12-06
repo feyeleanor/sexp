@@ -91,10 +91,6 @@ type Overwriteable interface {
 	Overwrite(offset interface{}, container interface{})
 }
 
-type Collectable interface {
-	Collect(func(interface{}) interface{}) interface{}
-}
-
 type Combinable interface {
 	Combine(interface{}, func(interface{}, interface{}) interface{}) interface{}
 }

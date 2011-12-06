@@ -7,6 +7,7 @@ GOFILES=\
 	helpers.go\
 	iterate.go\
 	transform.go\
+	collect.go\
 	sexp.go\
 	combine.go
 

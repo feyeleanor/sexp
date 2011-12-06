@@ -11,9 +11,8 @@ func TestTransformSlice(t *testing.T) {
 	ConfirmTransform := func(s, r, f interface{}) {
 		count = 0
 		Transform(s, f)
-		switch {
-		case count != Len(s):			t.Fatalf("total iterations should be %v but is %v", Len(s), count)
-		case !Equal(s, r):				t.Fatalf("transformed slice should be %v but is %v", r, s)
+		if !Equal(s, r) {
+			t.Fatalf("transformed slice should be %v but is %v", r, s)
 		}
 	}
 
@@ -88,104 +87,70 @@ func TestTransformSlice(t *testing.T) {
 }
 
 func TestTransformIntSlice(t *testing.T) {
-	var count	int
-
-	ConfirmTransform := func(s []int, f interface{}) {
-		count = 0
-		Each(s, f)
-		if count != len(s) {
-			t.Fatalf("total iterations should be %v but is %v", len(s), count)
+	ConfirmTransform := func(s, r []int, f interface{}) {
+		if Transform(s, f); !Equal(s, r) {
+			t.Fatalf("transformed slice should be %v but is %v", r, s)
 		}
 	}
 
 	I := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	ConfirmTransform(I, func(i interface{}) interface{} {
-		if i != count {
-			t.Fatalf("element %v erroneously reported as %v", count, i)
-		}
-		count++
-		return count
+	R := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	ConfirmTransform(I, R, func(i interface{}) interface{} {
+		return i.(int) + 1
 	})
 
-	ConfirmTransform(I, func(i int, v interface{}) interface{} {
-		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-		return count
+	I = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmTransform(I, R, func(i int, v interface{}) interface{} {
+		return v.(int) + 1
 	})
 
-	ConfirmTransform(I, func(k, v interface{}) interface{} {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-		return count
+	I = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmTransform(I, R, func(k, v interface{}) interface{} {
+		return v.(int) + 1
 	})
 
-	ConfirmTransform(I, func(i int, v int) interface{} {
-		switch {
-		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-		return count
-	})
-
-	ConfirmTransform(I, func(k, v int) interface{} {
-		switch {
-		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
-		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
-		}
-		count++
-		return count
+	I = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmTransform(I, R, func(i, v int) int {
+		return v + 1
 	})
 }
 
 func TestTransformMap(t *testing.T) {
+	ConfirmTransform := func(m, r, f interface{}) {
+		if Transform(m, f); !Equal(m, r) {
+			t.Fatalf("transformed map should be %v but is %v", r, m)
+		}
+	}
+
 	M1 := map[int] int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	Transform(M1, func(k, v int) int {
-		if k != v {
-			t.Fatalf("index %v erroneously reported as %v", k, v)
-		}
-		return k
+	R1 := map[int] int{0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10}
+	ConfirmTransform(M1, R1, func(k, v int) int {
+		return v + 1
 	})
 
-	Transform(M1, func(i int, v interface{}) int {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-		return i
+	M1 = map[int] int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	ConfirmTransform(M1, R1, func(i int, v interface{}) int {
+		return v.(int) + 1
 	})
 
-	Transform(M1, func(k, v interface{}) int {
-		if k != v {
-			t.Fatalf("index %v erroneously reported as %v", k, v)
-		}
-		return k.(int)
+	M1 = map[int] int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	ConfirmTransform(M1, R1, func(k, v interface{}) int {
+		return v.(int) + 1
 	})
 
-	Transform(M1, func(k interface{}, v int) int {
-		if k != v {
-			t.Fatalf("index %v erroneously reported as %v", k, v)
-		}
-		return k.(int)
+	M1 = map[int] int{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	ConfirmTransform(M1, R1, func(k interface{}, v int) int {
+		return v + 1
 	})
 
 	M2 := map[int] interface{}{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
-	Transform(M2, func(i int, v interface{}) interface{} {
-		if i != v {
-			t.Fatalf("index %v erroneously reported as %v", i, v)
-		}
-		return i
+	R2 := map[int] interface{}{0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10}
+	ConfirmTransform(M2, R2, func(i int, v interface{}) interface{} {
+		return v.(int) + 1
 	})
 
-	Transform(M2, func(k, v interface{}) interface{} {
-		if k != v {
-			t.Fatalf("index %v erroneously reported as %v", k, v)
-		}
-		return k
+	M2 = map[int] interface{}{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}
+	ConfirmTransform(M2, R2, func(k, v interface{}) interface{} {
+		return v.(int) + 1
 	})
 }

@@ -29,27 +29,6 @@ func Cap(container interface{}) (l int) {
 	return
 }
 
-func Collect(container interface{}, f func(interface{}) interface{}) (r interface{}) {
-	switch container := container.(type) {
-	case Collectable:		r = container.Collect(f)
-
-	default:				switch c := reflect.ValueOf(container); c.Kind() {
-							case reflect.Slice:		end := c.Len()
-													s := reflect.MakeSlice(c.Type(), end, end)
-													for i := 0; i < end; i++ {
-														s.Index(i).Set(reflect.ValueOf(f(c.Index(i).Interface())))
-													}
-													r = s
-							case reflect.Map:		m := reflect.MakeMap(c.Type())
-													for _, key := range c.MapKeys() {
-														m.SetMapIndex(key, reflect.ValueOf(f(c.MapIndex(key))))
-													}
-													r = m
-							}
-	}
-	return
-}
-
 func Reduce(container, seed interface{}, f func(interface{}, interface{}) interface{}) (r interface{}) {
 	r = seed
 	Each(container, func(x interface{}) {

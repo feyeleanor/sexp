@@ -9,7 +9,6 @@ type Transformable interface {
 	Transform(interface{})
 }
 
-
 func transformIndexable(container Indexable, t interface{}) {
 	end := container.Len()
 	switch t := t.(type) {
