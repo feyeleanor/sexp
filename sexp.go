@@ -29,14 +29,6 @@ func Cap(container interface{}) (l int) {
 	return
 }
 
-func Reduce(container, seed interface{}, f func(interface{}, interface{}) interface{}) (r interface{}) {
-	r = seed
-	Each(container, func(x interface{}) {
-		r = f(r, x)
-	})
-	return
-}
-
 //	While processes values from a container whilst a condition is true or until the end of the container is reached.
 //	Returns the count of items which pass the test.
 func While(container interface{}, f func(interface{}) bool) (i int) {

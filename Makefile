@@ -8,7 +8,8 @@ GOFILES=\
 	iterate.go\
 	transform.go\
 	collect.go\
-	sexp.go\
-	combine.go
+	reduce.go\
+	combine.go\
+	sexp.go
 
 include $(GOROOT)/src/Make.pkg

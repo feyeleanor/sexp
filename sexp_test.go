@@ -46,26 +46,6 @@ func TestCap(t *testing.T) {
 	ConfirmCap(slices.Slice{0, 1, 2}, 3)
 }
 
-func TestReduce(t *testing.T) {
-	ConfirmReduce := func(o, s, r interface{}, f func(m, x interface{}) interface{}) {
-		if x := Reduce(o, s, f); !Equal(x, r) {
-			t.Fatalf("Reduce(%v, %v, f) should be %v but is %v", o, s, r, x)
-		}
-	}
-
-	Sum := func(memo, x interface{}) interface{} {
-		return memo.(int) + x.(int)
-	}
-
-	ConfirmReduce(nil, nil, nil, Sum)
-	ConfirmReduce(nil, 0, 0, Sum)
-	ConfirmReduce([]int{0}, 0, 0, Sum)
-	ConfirmReduce([]int{0, 1}, 0, 1, Sum)
-	ConfirmReduce([]int{0, 1, 2}, 0, 3, Sum)
-	ConfirmReduce([]int{0, 1, 2, 3}, 0, 6, Sum)
-	ConfirmReduce([]int{0, 1, 2, 3, 4}, 0, 10, Sum)
-}
-
 func TestWhile(t *testing.T) {
 	ConfirmWhile := func(o interface{}, r int, f func(i interface{}) bool) {
 		if x := While(o, f); x != r {

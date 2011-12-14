@@ -2,6 +2,7 @@ package sexp
 
 import(
 	"github.com/feyeleanor/slices"
+	"strconv"
 	"testing"
 )
 
@@ -183,29 +184,108 @@ func TestEachChannel(t *testing.T) {
 }
 
 func TestEachFunction(t *testing.T) {
-	F := func(v interface{}) (r interface{}) {
+	F1 := func(v interface{}) (r interface{}, ok bool) {
 		if v.(int) < 10 {
 			r = v
+			ok = true
 		}
 		return
 	}
 
 	count := 0
-	Each(F, func(v interface{}) {
+	Each(F1, func(v interface{}) {
 		if v != count {
 			t.Fatalf("index %v erroneously reported as %v", count, v)
 		}
 		count++
 	})
 
-	Each(F, func(i interface{}, v interface{}) {
+	Each(F1, func(i interface{}, v interface{}) {
 		if i != v {
 			t.Fatalf("index %v erroneously reported as %v", i, v)
 		}
 	})
 
-	Each(F, func(i int, v interface{}) {
+	Each(F1, func(i int, v interface{}) {
 		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	F2 := func(v int) (r int, ok bool) {
+		if v < 10 {
+			r = v
+			ok = true
+		}
+		return
+	}
+
+	count = 0
+	Each(F2, func(v int) {
+		if v != count {
+			t.Fatalf("index %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(F2, func(v interface{}) {
+		if v != count {
+			t.Fatalf("index %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	Each(F2, func(i interface{}, v int) {
+		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	Each(F2, func(i int, v interface{}) {
+		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	Each(F2, func(i int, v int) {
+		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	F3 := func(v int) (r string, ok bool) {
+		if v < 10 {
+			r = strconv.Itoa(v)
+			ok = true
+		}
+		return
+	}
+	
+	count = 0
+	Each(F3, func(v string) {
+		if v != strconv.Itoa(count) {
+			t.Fatalf("index %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	count = 0
+	Each(F3, func(v interface{}) {
+		if v != strconv.Itoa(count) {
+			t.Fatalf("index %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+	
+	Each(F3, func(i interface{}, v string) {
+		if i != v {
+			t.Fatalf("index %v erroneously reported as %v", i, v)
+		}
+	})
+
+	Each(F3, func(i int, v string) {
+		if strconv.Itoa(i) != v {
 			t.Fatalf("index %v erroneously reported as %v", i, v)
 		}
 	})

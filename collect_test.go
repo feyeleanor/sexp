@@ -7,7 +7,7 @@ import(
 
 func TestCollectSlice(t *testing.T) {
 	ConfirmCollect := func(s, r, f interface{}) {
-		if x := Collect(s, f); !Equal(x, r) {
+		if x, _ := Collect(s, f); !Equal(x, r) {
 			t.Fatalf("collected slice should be %v but is %v", r, x)
 		}
 	}
@@ -17,13 +17,13 @@ func TestCollectSlice(t *testing.T) {
 	ConfirmCollect(S, R, func(i interface{}) interface{} {
 		return i
 	})
-/*
+
 	R = slices.Slice{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	ConfirmCollect(S, R, func(i int, v interface{}) interface{} {
 		return v.(int) + 1
 	})
 
-	R = slices.Slice{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}
+	R = slices.Slice{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
 	ConfirmCollect(S, R, func(k, v interface{}) interface{} {
 		return v.(int) * 2
 	})
@@ -50,7 +50,6 @@ func TestCollectSlice(t *testing.T) {
 		}
 		return
 	})
-*/
 }
 
 func TestCollectIntSlice(t *testing.T) {
@@ -58,7 +57,7 @@ func TestCollectIntSlice(t *testing.T) {
 
 	ConfirmCollect := func(s, r []int, f interface{}) {
 		count = 0
-		if x := Collect(s, f); !Equal(x, r) {
+		if x, _ := Collect(s, f); !Equal(x, r) {
 			t.Fatalf("collected slice should be %v but is %v", r, x)
 		}
 	}
@@ -103,7 +102,7 @@ func TestCollectIntSlice(t *testing.T) {
 
 func TestCollectMap(t *testing.T) {
 	ConfirmCollect := func(m, r, f interface{}) {
-		if x := Collect(m, f); !Equal(x, r) {
+		if x, _ := Collect(m, f); !Equal(x, r) {
 			t.Fatalf("collected map should be %v [%T] but is %v [%T]", r, r, x, x)
 		}
 	}

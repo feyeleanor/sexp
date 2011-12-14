@@ -6,69 +6,72 @@ import(
 )
 
 type Iterable interface {
-	Each(interface{})
+	Each(interface{}) bool
 }
 
 
-func rangeIndexedReader(container IndexedReader, f interface{}) {
+func rangeIndexedReader(container IndexedReader, f interface{}) (ok bool) {
 	end := container.Len()
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
 												f(container.At(i))
 											}
+											ok = true
 
 	case func(int, interface{}):			for i := 0; i < end; i++ {
 												f(i, container.At(i))
 											}
+											ok = true
 
 	case func(interface{}, interface{}):	for i := 0; i < end; i++ {
 												f(i, container.At(i))
 											}
+											ok = true
 
 	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 												switch f.Type().NumIn() {
 												case 1:				for i := 0; i < end; i++ {
 																		f.Call(slices.VList(container.At(i)))
 																	}
+																	ok = true
 
 												case 2:				for i := 0; i < end; i++ {
 																		f.Call(slices.VList(i, container.At(i)))
 																	}
-
-												default:			panic(f)
+																	ok = true
 												}
-											} else {
-												panic(f)
 											}
 	}
+	return
 }
 
-func rangeMappedReader(container MappedReader, f interface{}) {
+func rangeMappedReader(container MappedReader, f interface{}) (ok bool) {
 	switch f := f.(type) {
 	case func(interface{}):					for _, v := range container.Keys() {
 												f(container.At(v))
 											}
+											ok = true
 
 	case func(interface{}, interface{}):	for _, v := range container.Keys() {
 												f(v, container.At(v))
 											}
+											ok = true
 
 	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 												switch f.Type().NumIn() {
 												case 1:				for _, v := range container.Keys() {
 																		f.Call(slices.VList(container.At(v)))
 																	}
+																	ok = true
 
 												case 2:				for _, v := range container.Keys() {
 																		f.Call(slices.VList(v, container.At(v)))
 																	}
-
-												default:			panic(f)
+																	ok = true
 												}
-											} else {
-												panic(f)
 											}
 	}
+	return
 }
 
 func rangeSlice(s reflect.Value, f interface{}) (ok bool) {
@@ -88,6 +91,21 @@ func rangeSlice(s reflect.Value, f interface{}) (ok bool) {
 												f(i, s.Index(i).Interface())
 											}
 											ok = true
+
+	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+												end := s.Len()
+												switch f.Type().NumIn() {
+												case 1:				for i := 0; i < end; i++ {
+																		f.Call([]reflect.Value{ s.Index(i) })
+																	}
+																	ok = true
+
+												case 2:				for i := 0; i < end; i++ {
+																		f.Call([]reflect.Value{ reflect.ValueOf(i), s.Index(i) })
+																	}
+																	ok = true
+												}
+											}
 	}
 	return
 }
@@ -103,6 +121,20 @@ func rangeMap(m reflect.Value, f interface{}) (ok bool) {
 												f(key.Interface(), m.MapIndex(key).Interface())
 											}
 											ok = true
+
+	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+												switch f.Type().NumIn() {
+												case 1:				for _, key := range m.MapKeys() {
+																		f.Call([]reflect.Value{ m.MapIndex(key) })
+																	}
+																	ok = true
+
+												case 2:				for _, key := range m.MapKeys() {
+																		f.Call([]reflect.Value{ key, m.MapIndex(key) })
+																	}
+																	ok = true
+												}
+											}
 	}
 	return
 }
@@ -135,48 +167,124 @@ func rangeChannel(c reflect.Value, f interface{}) (ok bool) {
 												}
 											}
 											ok = true
+
+	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+												switch f.Type().NumIn() {
+												case 1:				for {
+																		if v, open := c.Recv(); open {
+																			f.Call([]reflect.Value{ v })
+																		} else {
+																			break
+																		}
+																	}
+																	ok = true
+
+												case 2:				for count := 0; ; count++ {
+																		if v, open := c.Recv(); open {
+																			f.Call([]reflect.Value{ reflect.ValueOf(count), v })
+																		} else {
+																			break
+																		}
+																	}
+																	ok = true
+												}
+											}
 	}
 	return
 }
 
-func rangeGenerator(p reflect.Value, f interface{}) (ok bool) {
-	if t := p.Type(); t.NumOut() > 0 {
-		switch t.NumIn() {
+func rangeGenericGenerator(g, f reflect.Value) (ok bool) {
+	switch tg := g.Type(); tg.NumIn() {
+	case 0:			if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+						switch tf := f.Type(); tf.NumIn() {
+						case 1:			if tf.In(0) == tg.Out(0) {
+											for v := g.Call([]reflect.Value{}); !v[1].Bool(); v = g.Call([]reflect.Value{}) {
+												f.Call([]reflect.Value{v[0]})
+											}
+											ok = true
+										}
+
+						case 2:			if tf.In(1) == tg.Out(0) {
+											i := 0
+											for v := g.Call([]reflect.Value{}); !v[1].Bool(); v = g.Call([]reflect.Value{}) {
+												f.Call([]reflect.Value{reflect.ValueOf(i), v[0]})
+												i++
+											}
+											ok = true
+										}
+						}
+					}
+
+	case 1:			if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
+						switch tf := f.Type(); tf.NumIn() {
+						case 1:			if tf.In(0) == tg.Out(0) {
+											i := 0
+											for v := g.Call([]reflect.Value{reflect.ValueOf(i)}); !v[1].Bool(); v = g.Call([]reflect.Value{reflect.ValueOf(i)}) {
+												f.Call([]reflect.Value{v[0]})
+												i++
+											}
+											ok = true
+										}
+
+
+						case 2:			if tf.In(1) == tg.Out(0) {
+											i := 0
+											for v := g.Call([]reflect.Value{reflect.ValueOf(i)}); !v[1].Bool(); v = g.Call([]reflect.Value{reflect.ValueOf(i)}) {
+												f.Call([]reflect.Value{reflect.ValueOf(i), v[0]})
+												i++
+											}
+											ok = true
+										}
+						}
+					}			
+	}
+	return
+}
+
+/*
+	A Generator is a function which when passed an index returns a resulting value generated from it, along with a boolean flag indicating
+	whether or not the generator has completed its work.
+*/
+func rangeGenerator(g reflect.Value, f interface{}) (ok bool) {
+	if tg := g.Type(); tg.NumOut() == 2 {
+		switch tg.NumIn() {
 		case 0:			switch f := f.(type) {
-						case func(interface{}):					for v := p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+						case func(interface{}):					for v := g.Call([]reflect.Value{}); !v[1].Bool(); v = g.Call([]reflect.Value{}) {
 																	f(v[0].Interface())
 																}
 																ok = true
 
-						case func(int, interface{}):			for count, v := 0, p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+						case func(int, interface{}):			for count, v := 0, g.Call([]reflect.Value{}); !v[1].Bool(); v = g.Call([]reflect.Value{}) {
 																	f(count, v[0].Interface())
 																	count++
 																} 
 																ok = true
 
-						case func(interface{}, interface{}):	for count, v := 0, p.Call([]reflect.Value{}); !v[0].IsNil(); v = p.Call([]reflect.Value{}) {
+						case func(interface{}, interface{}):	for count, v := 0, g.Call([]reflect.Value{}); !v[1].Bool(); v = g.Call([]reflect.Value{}) {
 																	f(count, v[0].Interface())
 																	count++
 																}
 																ok = true
+
+						default:								rangeGenericGenerator(g, reflect.ValueOf(f))
 						}
 
 		case 1:			count := 0
 						switch f := f.(type) {
-						case func(interface{}):					for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
+						case func(interface{}):					for v := g.Call(slices.VList(count)); !v[1].Bool(); v = g.Call(slices.VList(count)) {
 																	f(v[0].Interface())
 																	count++
 																}
 																ok = true
 
-						case func(int, interface{}):			for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
+						case func(int, interface{}):			for v := g.Call(slices.VList(count)); !v[1].Bool(); v = g.Call(slices.VList(count)) {
 																	f(count, v[0].Interface())
 																	count++
 																}
 																ok = true
 
-						case func(interface{}, interface{}):	for v := p.Call(slices.VList(count)); !v[0].IsNil(); v = p.Call(slices.VList(count)) {
-																	f(count, v[0].Interface())
+						case func(interface{}, interface{}):	for v := g.Call(slices.VList(count))[0]; !v.IsNil(); v = g.Call(slices.VList(count))[0] {
+																	f(count, v.Interface())
 																	count++
 																}
 																ok = true
@@ -186,91 +294,32 @@ func rangeGenerator(p reflect.Value, f interface{}) (ok bool) {
 	return
 }
 
-func each(container, f interface{}) {
-	switch c := reflect.ValueOf(container); c.Kind() {
-	case reflect.Slice:		if !rangeSlice(c, f) {
-								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-									end := c.Len()
-									switch f.Type().NumIn() {
-									case 1:				for i := 0; i < end; i++ {
-															f.Call([]reflect.Value{ c.Index(i) })
-														}
-
-									case 2:				for i := 0; i < end; i++ {
-															f.Call([]reflect.Value{ reflect.ValueOf(i), c.Index(i) })
-														}
-
-									default:			panic(f)
-									}
-								} else {
-									panic(f)
-								}
-							}
-							
-	case reflect.Map:		if !rangeMap(c, f) {
-								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-									switch f.Type().NumIn() {
-									case 1:				for _, key := range c.MapKeys() {
-															f.Call([]reflect.Value{ c.MapIndex(key) })
-														}
-
-									case 2:				for _, key := range c.MapKeys() {
-															f.Call([]reflect.Value{ key, c.MapIndex(key) })
-														}
-
-									default:			panic(f)
-									}
-								} else {
-									panic(f)
-								}
-							}
-
-	case reflect.Chan:		if !rangeChannel(c, f) {
-								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
-									switch f.Type().NumIn() {
-									case 1:				for {
-															if v, done := c.Recv(); !done {
-																f.Call([]reflect.Value{ v })
-															} else {
-																break
-															}
-														}
-
-									case 2:				for count := 0; ; count++ {
-															if v, done := c.Recv(); !done {
-																f.Call([]reflect.Value{ reflect.ValueOf(count), v })
-															} else {
-																break
-															}
-														}
-
-									default:
-									}
-								}
-							}
-
-	case reflect.Func:		if !rangeGenerator(c, f) {
-							}
-	}
-}
-
-func Each(container, f interface{}) {
+func Each(container, f interface{}) (ok bool) {
 	switch container := container.(type) {
-	case Iterable:			container.Each(f)
+	case Iterable:			ok = container.Each(f)
 
-	case IndexedReader:		rangeIndexedReader(container, f)
+	case IndexedReader:		ok = rangeIndexedReader(container, f)
 
-	case MappedReader:		rangeMappedReader(container, f)
+	case MappedReader:		ok = rangeMappedReader(container, f)
 
-	default:				each(container, f)
-							
+	default:				switch c := reflect.ValueOf(container); c.Kind() {
+							case reflect.Slice:		ok = rangeSlice(c, f)
+
+							case reflect.Map:		ok = rangeMap(c, f)
+
+							case reflect.Chan:		ok = rangeChannel(c, f)
+
+							case reflect.Func:		ok = rangeGenerator(c, f)
+							}
 	}
+	return
 }
 
-func Cycle(container interface{}, count int, f func(interface{})) (i int) {
+func Cycle(container interface{}, count int, f func(interface{})) (i int, ok bool) {
 	switch {
-	case count == 0:	for ; ; i++ { Each(container, f) }
-	default:			for ; i < count; i++ { Each(container, f) }
+	case count == 0:	for ok = true; ok; i++ { ok = Each(container, f) }
+
+	default:			for ok = true; i < count && ok; i++ { ok = Each(container, f) }
 	}
 	return
 }
