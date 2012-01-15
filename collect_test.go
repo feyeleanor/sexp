@@ -1,9 +1,23 @@
 package sexp
 
-import(
-	"github.com/feyeleanor/slices"
-	"testing"
-)
+import "testing"
+
+type collectable_slice []interface{}
+
+func (s collectable_slice) Collect(f interface{}) (r interface{}, ok bool) {
+	c := make(collectable_slice, len(s), len(s))
+	switch f := f.(type) {
+	case func(interface{}) interface{}:					for i, v := range s { c[i] = f(v) }
+														r, ok = c, true
+
+	case func(int, interface{}) interface{}:			for i, v := range s { c[i] = f(i, v) }
+														r, ok = c, true
+
+	case func(interface{}, interface{}) interface{}:	for i, v := range s { c[i] = f(i, v) }
+														r, ok = c, true
+	}
+	return
+}
 
 func TestCollectSlice(t *testing.T) {
 	ConfirmCollect := func(s, r, f interface{}) {
@@ -12,23 +26,23 @@ func TestCollectSlice(t *testing.T) {
 		}
 	}
 
-	S := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	R := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	S := collectable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	R := collectable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	ConfirmCollect(S, R, func(i interface{}) interface{} {
 		return i
 	})
 
-	R = slices.Slice{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	R = collectable_slice{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	ConfirmCollect(S, R, func(i int, v interface{}) interface{} {
 		return v.(int) + 1
 	})
 
-	R = slices.Slice{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
+	R = collectable_slice{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
 	ConfirmCollect(S, R, func(k, v interface{}) interface{} {
 		return v.(int) * 2
 	})
 
-	R = slices.Slice{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	R = collectable_slice{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	ConfirmCollect(S, R, func(k, v interface{}) interface{} {
 		return 0
 	})
@@ -41,7 +55,7 @@ func TestCollectSlice(t *testing.T) {
 		return x * x
 	})
 
-	ConfirmCollect(slices.Slice{0, 1.0, 2, 3, 4, 5, 6, 7, 8, 9}, slices.Slice{0, 1.0, 4, 9, 16, 25, 36, 49, 64, 81}, func(x interface{}) (r interface{}) {
+	ConfirmCollect(collectable_slice{0, 1.0, 2, 3, 4, 5, 6, 7, 8, 9}, collectable_slice{0, 1.0, 4, 9, 16, 25, 36, 49, 64, 81}, func(x interface{}) (r interface{}) {
 		switch x := x.(type) {
 		case int:			r = x * x
 		case float32:		r = x * x

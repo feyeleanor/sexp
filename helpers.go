@@ -2,6 +2,16 @@ package sexp
 
 import "reflect"
 
+
+func valueslice(n... interface{}) (s []reflect.Value) {
+	s = make([]reflect.Value, len(n), len(n))
+	for i, v := range n {
+		s[i] = reflect.ValueOf(v)
+	}
+	return
+}
+
+
 type indexableSlice	[]interface{}
 func (i indexableSlice) Len() int { return len(i) }
 func (i indexableSlice) At(x int) interface{} { return i[x] }

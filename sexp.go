@@ -31,7 +31,7 @@ func Cap(container interface{}) (l int) {
 
 //	While processes values from a container whilst a condition is true or until the end of the container is reached.
 //	Returns the count of items which pass the test.
-func While(container interface{}, f func(interface{}) bool) (i int) {
+/*func While(container interface{}, f func(interface{}) bool) (i int) {
 	raw.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
@@ -76,7 +76,7 @@ func All(container interface{}, f func(interface{}) bool) (b bool) {
 func None(container interface{}, f func(interface{}) bool) (b bool) {
 	return Until(container, f) == Len(container)
 }
-
+*/
 func One(container interface{}, f func(interface{}) bool) (b bool) {
 	raw.Catch(func() {
 		Each(container, func(x interface{}) {

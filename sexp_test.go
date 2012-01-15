@@ -45,7 +45,7 @@ func TestCap(t *testing.T) {
 	ConfirmCap([]int{0, 1, 2}, 3)
 	ConfirmCap(slices.Slice{0, 1, 2}, 3)
 }
-
+/*
 func TestWhile(t *testing.T) {
 	ConfirmWhile := func(o interface{}, r int, f func(i interface{}) bool) {
 		if x := While(o, f); x != r {
@@ -259,7 +259,7 @@ func TestOne(t *testing.T) {
 	RefuteOne([]interface{}{1, 1}, IsPositive)
 	RefuteOne([]interface{}{1, 1, 1}, IsPositive)
 }
-
+*/
 func TestCount(t *testing.T) {
 	ConfirmCount := func(o, r interface{}, f func(interface{}) bool) {
 		if x := Count(o, f); !Equal(r, x) {

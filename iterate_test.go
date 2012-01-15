@@ -1,23 +1,39 @@
 package sexp
 
 import(
-	"github.com/feyeleanor/slices"
 	"strconv"
 	"testing"
 )
 
+type iterable_slice []interface{}
+
+func (s iterable_slice) Each(f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(interface{}):						for _, v := range s { f(v) }
+												ok = true
+
+	case func(int, interface{}):				for i, v := range s { f(i, v) }
+												ok = true
+
+	case func(interface{}, interface{}):		for i, v := range s { f(i, v) }
+												ok = true
+	}
+	return
+}
+
+
 func TestEachSlice(t *testing.T) {
 	var count	int
 
-	ConfirmEach := func(s slices.Slice, f interface{}) {
+	ConfirmEach := func(s iterable_slice, f interface{}) {
 		count = 0
-		Each(s, f)
-		if count != len(s) {
-			t.Fatalf("total iterations should be %v but is %v", len(s), count)
+		switch {
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):	t.Fatalf("total iterations should be %v but are %v", len(s), count)
 		}
 	}
 
-	S := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	S := iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	ConfirmEach(S, func(i interface{}) {
 		if i != count {
 			t.Fatalf("element %v erroneously reported as %v", count, i)
@@ -70,9 +86,9 @@ func TestEachIntSlice(t *testing.T) {
 
 	ConfirmEach := func(s []int, f interface{}) {
 		count = 0
-		Each(s, f)
-		if count != len(s) {
-			t.Fatalf("total iterations should be %v but is %v", len(s), count)
+		switch {
+		case !Each(s, f):			t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):		t.Fatalf("total iterations should be %v but is %v", len(s), count)
 		}
 	}
 
@@ -292,17 +308,17 @@ func TestEachFunction(t *testing.T) {
 }
 
 func TestCycle(t *testing.T) {
-	ConfirmCycle := func(s slices.Slice, c int) {
+	ConfirmCycle := func(s iterable_slice, c int) {
 		iterations := 0
 		Cycle(s, c, func(i interface{}) {
 			iterations++
 		})
-		if expected := c * s.Len(); iterations != expected {
+		if expected := c * len(s); iterations != expected {
 			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
 		}
 	}
 
-	S := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	S := iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	ConfirmCycle(S, 1)
 	ConfirmCycle(S, 2)
 	ConfirmCycle(S, 3)

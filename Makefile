@@ -6,6 +6,7 @@ GOFILES=\
 	interfaces.go\
 	helpers.go\
 	iterate.go\
+	partial_iterate.go\
 	transform.go\
 	collect.go\
 	reduce.go\

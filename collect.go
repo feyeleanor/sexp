@@ -1,12 +1,9 @@
 package sexp
 
-import (
-	"github.com/feyeleanor/slices"
-	"reflect"
-)
+import "reflect"
 
 type Collectable interface {
-	Collect(c interface{}) (r interface{}, ok bool)
+	Collect(f interface{}) (r interface{}, ok bool)
 }
 
 func makeContainer(container interface{}) (r interface{}) {
@@ -42,12 +39,12 @@ func collectIndexable(container Indexable, t interface{}) (r interface{}, ok boo
 	default:												if t := reflect.ValueOf(t); t.Kind() == reflect.Func {
 																switch t.Type().NumIn() {
 																case 1:				for i := 0; i < end; i++ {
-																						c.Set(i, t.Call(slices.VList(container.At(i)))[0].Interface())
+																						c.Set(i, t.Call(valueslice(container.At(i)))[0].Interface())
 																					}
 																					ok = true
 
 																case 2:				for i := 0; i < end; i++ {
-																						c.Set(i, t.Call(slices.VList(i, container.At(i)))[0].Interface())
+																						c.Set(i, t.Call(valueslice(i, container.At(i)))[0].Interface())
 																					}
 																					ok = true
 																}
@@ -79,12 +76,12 @@ func collectMappable(container Mappable, f interface{}) (r interface{}, ok bool)
 															if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 																switch f.Type().NumIn() {
 																case 1:				for _, v := range container.Keys() {
-																						c.Set(v, f.Call(slices.VList(container.At(v))))
+																						c.Set(v, f.Call(valueslice(container.At(v))))
 																					}
 																					r, ok = c, true
 
 																case 2:				for _, v := range container.Keys() {
-																						c.Set(v, f.Call(slices.VList(v, container.At(v))))
+																						c.Set(v, f.Call(valueslice(v, container.At(v))))
 																					}
 																					r, ok = c, true
 																}

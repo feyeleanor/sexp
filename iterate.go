@@ -1,14 +1,10 @@
 package sexp
 
-import(
-	"github.com/feyeleanor/slices"
-	"reflect"
-)
+import "reflect"
 
 type Iterable interface {
 	Each(interface{}) bool
 }
-
 
 func rangeIndexedReader(container IndexedReader, f interface{}) (ok bool) {
 	end := container.Len()
@@ -31,12 +27,12 @@ func rangeIndexedReader(container IndexedReader, f interface{}) (ok bool) {
 	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 												switch f.Type().NumIn() {
 												case 1:				for i := 0; i < end; i++ {
-																		f.Call(slices.VList(container.At(i)))
+																		f.Call(valueslice(container.At(i)))
 																	}
 																	ok = true
 
 												case 2:				for i := 0; i < end; i++ {
-																		f.Call(slices.VList(i, container.At(i)))
+																		f.Call(valueslice(i, container.At(i)))
 																	}
 																	ok = true
 												}
@@ -60,12 +56,12 @@ func rangeMappedReader(container MappedReader, f interface{}) (ok bool) {
 	default:								if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 												switch f.Type().NumIn() {
 												case 1:				for _, v := range container.Keys() {
-																		f.Call(slices.VList(container.At(v)))
+																		f.Call(valueslice(container.At(v)))
 																	}
 																	ok = true
 
 												case 2:				for _, v := range container.Keys() {
-																		f.Call(slices.VList(v, container.At(v)))
+																		f.Call(valueslice(v, container.At(v)))
 																	}
 																	ok = true
 												}
@@ -271,19 +267,19 @@ func rangeGenerator(g reflect.Value, f interface{}) (ok bool) {
 
 		case 1:			count := 0
 						switch f := f.(type) {
-						case func(interface{}):					for v := g.Call(slices.VList(count)); !v[1].Bool(); v = g.Call(slices.VList(count)) {
+						case func(interface{}):					for v := g.Call(valueslice(count)); !v[1].Bool(); v = g.Call(valueslice(count)) {
 																	f(v[0].Interface())
 																	count++
 																}
 																ok = true
 
-						case func(int, interface{}):			for v := g.Call(slices.VList(count)); !v[1].Bool(); v = g.Call(slices.VList(count)) {
+						case func(int, interface{}):			for v := g.Call(valueslice(count)); !v[1].Bool(); v = g.Call(valueslice(count)) {
 																	f(count, v[0].Interface())
 																	count++
 																}
 																ok = true
 
-						case func(interface{}, interface{}):	for v := g.Call(slices.VList(count))[0]; !v.IsNil(); v = g.Call(slices.VList(count))[0] {
+						case func(interface{}, interface{}):	for v := g.Call(valueslice(count))[0]; !v.IsNil(); v = g.Call(valueslice(count))[0] {
 																	f(count, v.Interface())
 																	count++
 																}

@@ -1,9 +1,6 @@
 package sexp
 
-import(
-	"github.com/feyeleanor/slices"
-	"reflect"
-)
+import "reflect"
 
 type Reducible interface {
 	Reduce(seed, function interface{}) (r interface{}, ok bool)
@@ -20,7 +17,7 @@ func reduceIndexedReader(c IndexedReader, seed, f interface{}) (r interface{}, o
 	default:											if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 															switch f.Type().NumIn() {
 															case 2:				for i := 0; i < end; i++ {
-																					f.Call(slices.VList(i, c.At(i)))
+																					f.Call(valueslice(i, c.At(i)))
 																				}
 																				ok = true
 															}
@@ -151,7 +148,7 @@ func reduceGenerator(g reflect.Value, seed, f interface{}) (r interface{}, ok bo
 						switch f := f.(type) {
 						case func(interface{}) interface{}:		v := reflect.New(g.Type().Out(0)).Elem()
 																v.Set(reflect.ValueOf(seed))
-																for x := g.Call(slices.VList(count)); !x[1].Bool(); x = g.Call(slices.VList(count)) {
+																for x := g.Call(valueslice(count)); !x[1].Bool(); x = g.Call(valueslice(count)) {
 																	v = reflect.ValueOf(f(x[0].Interface()))
 																	count++
 																}

@@ -1,23 +1,36 @@
 package sexp
 
-import(
-	"github.com/feyeleanor/slices"
-	"testing"
-)
+import "testing"
+
+type transformable_slice []interface{}
+
+func (s transformable_slice) Transform(f interface{}) (ok bool) {
+	switch f := f.(type) {
+	case func(interface{}) interface{}:					for i, v := range s { s[i] = f(v) }
+														ok = true
+
+	case func(int, interface{}) interface{}:			for i, v := range s { s[i] = f(i, v) }
+														ok = true
+
+	case func(interface{}, interface{}) interface{}:	for i, v := range s { s[i] = f(i, v) }
+														ok = true
+	}
+	return
+}
 
 func TestTransformSlice(t *testing.T) {
 	var count	int
 
 	ConfirmTransform := func(s, r, f interface{}) {
 		count = 0
-		Transform(s, f)
-		if !Equal(s, r) {
-			t.Fatalf("transformed slice should be %v but is %v", r, s)
+		switch {
+		case !Transform(s, f):	t.Fatalf("failed to perform transformation %v over %v", f, s)
+		case !Equal(s, r):		t.Fatalf("transformed slice should be %v but is %v", r, s)
 		}
 	}
 
-	S := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
-	R := slices.Slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	S := transformable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	R := transformable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	ConfirmTransform(S, R, func(i interface{}) interface{} {
 		if i != count {
 			t.Fatalf("element %v erroneously reported as %v", count, i)
@@ -26,7 +39,7 @@ func TestTransformSlice(t *testing.T) {
 		return i
 	})
 
-	R = slices.Slice{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	R = transformable_slice{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	ConfirmTransform(S, R, func(i int, v interface{}) interface{} {
 		switch {
 		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
@@ -36,7 +49,7 @@ func TestTransformSlice(t *testing.T) {
 		return v.(int) + 1
 	})
 
-	R = slices.Slice{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}
+	R = transformable_slice{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}
 	ConfirmTransform(S, R, func(k, v interface{}) interface{} {
 		switch {
 		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
@@ -46,19 +59,19 @@ func TestTransformSlice(t *testing.T) {
 		return v.(int) * 2
 	})
 
-	R = slices.Slice{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
+	R = transformable_slice{0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
 	ConfirmTransform(S, R, func(i interface{}) interface{} {
 		count++
 		return i.(int) - 2
 	})
 
-	R = slices.Slice{0, 4, 12, 24, 40, 60, 84, 112, 144, 180}
+	R = transformable_slice{0, 4, 12, 24, 40, 60, 84, 112, 144, 180}
 	ConfirmTransform(S, R, func(i int, v interface{}) interface{} {
 		count++
 		return v.(int) * count
 	})
 
-	R = slices.Slice{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	R = transformable_slice{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	ConfirmTransform(S, R, func(k, v interface{}) interface{} {
 		count++
 		return 0
@@ -74,7 +87,7 @@ func TestTransformSlice(t *testing.T) {
 		return x * x
 	})
 
-	ConfirmTransform(slices.Slice{0, 1.0, 2, 3, 4, 5, 6, 7, 8, 9}, slices.Slice{0, 1.0, 4, 9, 16, 25, 36, 49, 64, 81}, func(x interface{}) (r interface{}) {
+	ConfirmTransform(transformable_slice{0, 1.0, 2, 3, 4, 5, 6, 7, 8, 9}, transformable_slice{0, 1.0, 4, 9, 16, 25, 36, 49, 64, 81}, func(x interface{}) (r interface{}) {
 		switch x := x.(type) {
 		case int:			r = x * x
 		case float32:		r = x * x
@@ -88,8 +101,9 @@ func TestTransformSlice(t *testing.T) {
 
 func TestTransformIntSlice(t *testing.T) {
 	ConfirmTransform := func(s, r []int, f interface{}) {
-		if Transform(s, f); !Equal(s, r) {
-			t.Fatalf("transformed slice should be %v but is %v", r, s)
+		switch {
+		case !Transform(s, f):	t.Fatalf("failed to perform transformation %v over %v", f, s)
+		case !Equal(s, r):		t.Fatalf("transformed slice should be %v but is %v", r, s)
 		}
 	}
 
@@ -117,8 +131,9 @@ func TestTransformIntSlice(t *testing.T) {
 
 func TestTransformMap(t *testing.T) {
 	ConfirmTransform := func(m, r, f interface{}) {
-		if Transform(m, f); !Equal(m, r) {
-			t.Fatalf("transformed map should be %v but is %v", r, m)
+		switch {
+		case !Transform(m, f):	t.Fatalf("failed to perform transformation %v over %v", f, m)
+		case !Equal(m, r):		t.Fatalf("transformed map should be %v but is %v", r, m)
 		}
 	}
 
