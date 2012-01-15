@@ -18,7 +18,7 @@ func BenchmarkReverseReversible(b *testing.B) {
 }
 
 func BenchmarkReverseIndexable(b *testing.B) {
-	s := indexableSlice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	s := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for i := 0; i < b.N; i++ {
 		Reverse(s)
 	}
@@ -59,7 +59,7 @@ func BenchmarkBlockCopyBlitter(b *testing.B) {
 }
 
 func BenchmarkBlockCopyIndexable(b *testing.B) {
-	s := indexableSlice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	s := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for i := 0; i < b.N; i++ {
 		BlockCopy(s, 0, 5, 5)
 	}

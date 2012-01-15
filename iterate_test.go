@@ -22,7 +22,7 @@ func (s iterable_slice) Each(f interface{}) (ok bool) {
 }
 
 
-func TestEachSlice(t *testing.T) {
+func TestEachIterable(t *testing.T) {
 	var count	int
 
 	ConfirmEach := func(s iterable_slice, f interface{}) {
@@ -81,7 +81,66 @@ func TestEachSlice(t *testing.T) {
 	})
 }
 
-func TestEachIntSlice(t *testing.T) {
+func TestEachIndexedReader(t *testing.T) {
+	var count	int
+
+	ConfirmEach := func(s indexable_slice, f interface{}) {
+		count = 0
+		switch {
+		case !Each(s, f):		t.Fatalf("failed to perform iteration %v over %v", f, s)
+		case count != len(s):	t.Fatalf("total iterations should be %v but are %v", len(s), count)
+		}
+	}
+
+	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmEach(S, func(i interface{}) {
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
+		count++
+	})
+
+	ConfirmEach(S, func(i int, v interface{}) {
+		switch {
+		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	ConfirmEach(S, func(k, v interface{}) {
+		switch {
+		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
+		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	ConfirmEach(S, func(i interface{}) {
+		if i != count {
+			t.Fatalf("element %v erroneously reported as %v", count, i)
+		}
+		count++
+	})
+
+	ConfirmEach(S, func(i int, v interface{}) {
+		switch {
+		case i != count:			t.Fatalf("index %v erroneously reported as %v", count, i)
+		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+
+	ConfirmEach(S, func(k, v interface{}) {
+		switch {
+		case k != count:			t.Fatalf("index %v erroneously reported as %v", count, k)
+		case v != count:			t.Fatalf("element %v erroneously reported as %v", count, v)
+		}
+		count++
+	})
+}
+
+func TestEachSlice(t *testing.T) {
 	var count	int
 
 	ConfirmEach := func(s []int, f interface{}) {
@@ -307,7 +366,7 @@ func TestEachFunction(t *testing.T) {
 	})
 }
 
-func TestCycle(t *testing.T) {
+func TestCycleIterable(t *testing.T) {
 	ConfirmCycle := func(s iterable_slice, c int) {
 		iterations := 0
 		Cycle(s, c, func(i interface{}) {
@@ -319,6 +378,40 @@ func TestCycle(t *testing.T) {
 	}
 
 	S := iterable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmCycle(S, 1)
+	ConfirmCycle(S, 2)
+	ConfirmCycle(S, 3)
+}
+
+func TestCycleIndexable(t *testing.T) {
+	ConfirmCycle := func(s indexable_slice, c int) {
+		iterations := 0
+		Cycle(s, c, func(i interface{}) {
+			iterations++
+		})
+		if expected := c * len(s); iterations != expected {
+			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
+		}
+	}
+
+	S := indexable_slice{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	ConfirmCycle(S, 1)
+	ConfirmCycle(S, 2)
+	ConfirmCycle(S, 3)
+}
+
+func TestCycleSlice(t *testing.T) {
+	ConfirmCycle := func(s []int, c int) {
+		iterations := 0
+		Cycle(s, c, func(i interface{}) {
+			iterations++
+		})
+		if expected := c * len(s); iterations != expected {
+			t.Fatalf("cycle(%v): iteration count should be %v but is %v", c, expected, iterations)
+		}
+	}
+
+	S := []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 	ConfirmCycle(S, 1)
 	ConfirmCycle(S, 2)
 	ConfirmCycle(S, 3)

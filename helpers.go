@@ -12,11 +12,11 @@ func valueslice(n... interface{}) (s []reflect.Value) {
 }
 
 
-type indexableSlice	[]interface{}
-func (i indexableSlice) Len() int { return len(i) }
-func (i indexableSlice) At(x int) interface{} { return i[x] }
-func (i indexableSlice) Set(x int, v interface{}) { i[x] = v }
-func (i indexableSlice) Clear(x int) { i[x] = nil }
+type indexable_slice	[]interface{}
+func (i indexable_slice) Len() int { return len(i) }
+func (i indexable_slice) At(x int) interface{} { return i[x] }
+func (i indexable_slice) Set(x int, v interface{}) { i[x] = v }
+func (i indexable_slice) Clear(x int) { i[x] = nil }
 
 
 func makeAddressable(value reflect.Value) reflect.Value {

@@ -6,7 +6,7 @@ type Iterable interface {
 	Each(interface{}) bool
 }
 
-func rangeIndexedReader(container IndexedReader, f interface{}) (ok bool) {
+func eachIndexedReader(container IndexedReader, f interface{}) (ok bool) {
 	end := container.Len()
 	switch f := f.(type) {
 	case func(interface{}):					for i := 0; i < end; i++ {
@@ -41,7 +41,7 @@ func rangeIndexedReader(container IndexedReader, f interface{}) (ok bool) {
 	return
 }
 
-func rangeMappedReader(container MappedReader, f interface{}) (ok bool) {
+func eachMappedReader(container MappedReader, f interface{}) (ok bool) {
 	switch f := f.(type) {
 	case func(interface{}):					for _, v := range container.Keys() {
 												f(container.At(v))
@@ -294,9 +294,9 @@ func Each(container, f interface{}) (ok bool) {
 	switch container := container.(type) {
 	case Iterable:			ok = container.Each(f)
 
-	case IndexedReader:		ok = rangeIndexedReader(container, f)
+	case IndexedReader:		ok = eachIndexedReader(container, f)
 
-	case MappedReader:		ok = rangeMappedReader(container, f)
+	case MappedReader:		ok = eachMappedReader(container, f)
 
 	default:				switch c := reflect.ValueOf(container); c.Kind() {
 							case reflect.Slice:		ok = rangeSlice(c, f)
