@@ -131,7 +131,7 @@ func reduceChan(c reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
 	return
 }
 
-func reduceGenerator(g reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
+func reduceFunction(g reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
 	if t := g.Type(); t.NumOut() == 2 {
 		switch t.NumIn() {
 		case 0:			switch f := f.(type) {
@@ -170,7 +170,7 @@ func reduce(container, seed, f interface{}) (r interface{}, ok bool) {
 
 	case reflect.Chan:		r, ok = reduceChan(c, seed, f)
 
-	case reflect.Func:		r, ok = reduceGenerator(c, seed, f)
+	case reflect.Func:		r, ok = reduceFunction(c, seed, f)
 	}
 	return
 }

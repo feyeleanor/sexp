@@ -3,7 +3,7 @@ package sexp
 import "reflect"
 
 type Iterable interface {
-	Each(interface{}) bool
+	Each(function interface{}) bool
 }
 
 func eachIndexedReader(container IndexedReader, f interface{}) (ok bool) {
@@ -189,7 +189,7 @@ func rangeChannel(c reflect.Value, f interface{}) (ok bool) {
 	return
 }
 
-func rangeGenericGenerator(g, f reflect.Value) (ok bool) {
+func rangeGenericFunction(g, f reflect.Value) (ok bool) {
 	switch tg := g.Type(); tg.NumIn() {
 	case 0:			if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 						switch tf := f.Type(); tf.NumIn() {
@@ -237,11 +237,7 @@ func rangeGenericGenerator(g, f reflect.Value) (ok bool) {
 	return
 }
 
-/*
-	A Generator is a function which when passed an index returns a resulting value generated from it, along with a boolean flag indicating
-	whether or not the generator has completed its work.
-*/
-func rangeGenerator(g reflect.Value, f interface{}) (ok bool) {
+func rangeFunction(g reflect.Value, f interface{}) (ok bool) {
 	if tg := g.Type(); tg.NumOut() == 2 {
 		switch tg.NumIn() {
 		case 0:			switch f := f.(type) {
@@ -262,7 +258,7 @@ func rangeGenerator(g reflect.Value, f interface{}) (ok bool) {
 																}
 																ok = true
 
-						default:								rangeGenericGenerator(g, reflect.ValueOf(f))
+						default:								rangeGenericFunction(g, reflect.ValueOf(f))
 						}
 
 		case 1:			count := 0
@@ -305,7 +301,7 @@ func Each(container, f interface{}) (ok bool) {
 
 							case reflect.Chan:		ok = rangeChannel(c, f)
 
-							case reflect.Func:		ok = rangeGenerator(c, f)
+							case reflect.Func:		ok = rangeFunction(c, f)
 							}
 	}
 	return
