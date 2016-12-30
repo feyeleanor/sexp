@@ -1,7 +1,7 @@
 package sexp
 
 import (
-	"github.com/feyeleanor/raw"
+	"github.com/feyeleanor/jittery"
 	"reflect"
 )
 
@@ -78,12 +78,12 @@ func None(container interface{}, f func(interface{}) bool) (b bool) {
 }
 */
 func One(container interface{}, f func(interface{}) bool) (b bool) {
-	raw.Catch(func() {
+	jittery.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
 				if b {
 					b = false
-					raw.Throw()
+					jittery.Throw()
 				} else {
 					b = true
 				}
