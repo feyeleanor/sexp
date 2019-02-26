@@ -73,8 +73,8 @@ func reduceMap(m reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
 	switch f := f.(type) {
 	case func(interface{}, interface{}) interface{}:	v := reflect.New(m.Type().Elem()).Elem()
 														v.Set(reflect.ValueOf(seed))
-														for _, key := range m.MapKeys() {
-															v = reflect.ValueOf(f(v.Interface(), m.MapIndex(key).Interface()))
+                            for iter := m.MapRange(); iter.Next(); {
+															v = reflect.ValueOf(f(v.Interface(), iter.Value().Interface()))
 														}
 														r = v.Interface()
 														ok = true
@@ -83,8 +83,8 @@ func reduceMap(m reflect.Value, seed, f interface{}) (r interface{}, ok bool) {
 															v := reflect.New(m.Type().Elem()).Elem()
 															v.Set(reflect.ValueOf(seed))
 															switch f.Type().NumIn() {
-															case 2:				for _, key := range m.MapKeys() {
-																					v = f.Call([]reflect.Value{ v, m.MapIndex(key) })[0]
+															case 2:   for iter := m.MapRange(); iter.Next(); {
+																					v = f.Call([]reflect.Value{ v, iter.Value() })[0]
 																				}
 																				ok = true
 															}
@@ -165,7 +165,7 @@ func reduce(container, seed, f interface{}) (r interface{}, ok bool) {
 	case reflect.Invalid:	r, ok = seed, true
 
 	case reflect.Slice:		r, ok = reduceSlice(c, seed, f)
-							
+
 	case reflect.Map:		r, ok = reduceMap(c, seed, f)
 
 	case reflect.Chan:		r, ok = reduceChan(c, seed, f)

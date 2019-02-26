@@ -257,41 +257,41 @@ func rangeSlice(s R.Value, f interface{}) (ok bool) {
 
 func rangeMap(m R.Value, f interface{}) (ok bool) {
 	switch f := f.(type) {
-	case func(interface{}):					for _, key := range m.MapKeys() {
-												f(m.MapIndex(key).Interface())
+	case func(interface{}): for iter := m.MapRange(); iter.Next(); {
+												f(iter.Value().Interface())
 											}
 											ok = true
 
-	case func(interface{}, interface{}):	for _, key := range m.MapKeys() {
-												f(key.Interface(), m.MapIndex(key).Interface())
+	case func(interface{}, interface{}):	for iter := m.MapRange(); iter.Next(); {
+												f(iter.Key().Interface(), iter.Value().Interface())
 											}
 											ok = true
 
 	case func(...interface{}):				p := make([]interface{}, m.Len(), m.Len())
-											for i, key := range m.MapKeys() {
-												p[i] = m.MapIndex(key).Interface()
+                      for i, iter := 0, m.MapRange(); iter.Next(); i++ {
+												p[i] = iter.Value().Interface()
 											}
 											f(p...)
 											ok = true
 
-	case func(R.Value):						for _, key := range m.MapKeys() {
-												f(m.MapIndex(key))
+	case func(R.Value):	for iter := m.MapRange(); iter.Next(); {
+												f(iter.Value())
 											}
 											ok = true
 
-	case func(interface{}, R.Value):		for _, key := range m.MapKeys() {
-												f(key.Interface(), m.MapIndex(key))
+	case func(interface{}, R.Value):  for iter := m.MapRange(); iter.Next(); {
+												f(iter.Key().Interface(), iter.Value())
 											}
 											ok = true
 
-	case func(R.Value, R.Value):			for _, key := range m.MapKeys() {
-												f(key, m.MapIndex(key))
+	case func(R.Value, R.Value): for iter := m.MapRange(); iter.Next(); {
+												f(iter.Key(), iter.Value())
 											}
 											ok = true
 
 	case func(...R.Value):					p := make([]R.Value, m.Len(), m.Len())
-											for i, key := range m.MapKeys() {
-												p[i] = m.MapIndex(key)
+                      for i, iter := 0, m.MapRange(); iter.Next(); i++ {
+												p[i] = iter.Value()
 											}
 											f(p...)
 											ok = true
@@ -300,8 +300,8 @@ func rangeMap(m R.Value, f interface{}) (ok bool) {
 												if t := f.Type(); t.IsVariadic() {
 													//	f(...v)
 													p := make([]R.Value, m.Len(), m.Len())
-													for i, key := range m.MapKeys() {
-														p[i] = m.MapIndex(key)
+                          for i, iter := 0, m.MapRange(); iter.Next(); i++ {
+														p[i] = iter.Value()
 													}
 													f.Call(p)
 													ok = true
@@ -309,16 +309,16 @@ func rangeMap(m R.Value, f interface{}) (ok bool) {
 													switch t.NumIn() {
 													case 1:			//	f(v)
 																	p := make([]R.Value, 1, 1)
-																	for _, key := range m.MapKeys() {
-																		p[0] = m.MapIndex(key)
+                                  for iter := m.MapRange(); iter.Next(); {
+																		p[0] = iter.Value()
 																		f.Call(p)
 																	}
 																	ok = true
 
 													case 2:			//	f(i, v)
 																	p := make([]R.Value, 2, 2)
-																	for _, key := range m.MapKeys() {
-																		p[0], p[1] = key, m.MapIndex(key)
+                                  for iter := m.MapRange(); iter.Next(); {
+																		p[0], p[1] = iter.Key(), iter.Value()
 																		f.Call(p)
 																	}
 																	ok = true
@@ -429,7 +429,7 @@ func rangeGenericFunction(g, f R.Value) (ok bool) {
 						if tf := f.Type(); tf.IsVariadic() {
 							//	f(...v)
 							i := 0
-							pg := []R.Value{}		
+							pg := []R.Value{}
 							pf := make([]R.Value, 0, 4)
 							for v := g.Call(pg); !v[1].Bool(); v = g.Call(pg) {
 								pf = append(pf, v[0])
@@ -501,7 +501,7 @@ func rangeGenericFunction(g, f R.Value) (ok bool) {
 										ok = true
 							}
 						}
-					}			
+					}
 	}
 	return
 }
@@ -520,7 +520,7 @@ func rangeFunction(g R.Value, f interface{}) (ok bool) {
 																for i, v := 0, g.Call(p); !v[1].Bool(); v = g.Call(p) {
 																	f(i, v[0].Interface())
 																	i++
-																} 
+																}
 																ok = true
 
 						case func(interface{}, interface{}):	p := []R.Value{}

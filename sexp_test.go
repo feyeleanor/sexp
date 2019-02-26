@@ -627,7 +627,7 @@ func TestBlockClear(t *testing.T) {
 	ConfirmBlockClear := func(i interface{}, d, n int, r interface{}) {
 		BlockClear(i, d, n)
 		if !Equal(i, r) {
-			t.Fatalf("BlockClear(i, %v, %v, %v) should be %v but is %v", d, n, r, i)
+			t.Fatalf("BlockClear(i, %v, %v) should be %v but is %v", d, n, r, i)
 		}
 	}
 

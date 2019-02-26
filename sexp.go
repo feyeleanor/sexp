@@ -32,12 +32,12 @@ func Cap(container interface{}) (l int) {
 //	While processes values from a container whilst a condition is true or until the end of the container is reached.
 //	Returns the count of items which pass the test.
 /*func While(container interface{}, f func(interface{}) bool) (i int) {
-	raw.Catch(func() {
+	jittery.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
 				i++
 			} else {
-				raw.Throw()
+				jittery.Throw()
 			}
 		})
 	})
@@ -47,10 +47,10 @@ func Cap(container interface{}) (l int) {
 //	Until processes values from a container until a condition is true or until the end of the container is reached.
 //	Returns the count of items which fail the test.
 func Until(container interface{}, f func(interface{}) bool) (i int) {
-	raw.Catch(func() {
+	jittery.Catch(func() {
 		Each(container, func(x interface{}) {
 			if f(x) {
-				raw.Throw()
+				jittery.Throw()
 			} else {
 				i++
 			}

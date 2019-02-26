@@ -97,13 +97,13 @@ func transformSlice(s reflect.Value, t interface{}) (ok bool) {
 
 func transformMap(m reflect.Value, t interface{}) (ok bool) {
 	switch t := t.(type) {
-	case func(interface{}) interface{}:					for _, key := range m.MapKeys() {
-															m.SetMapIndex(key, reflect.ValueOf(t(m.MapIndex(key).Interface())))
+	case func(interface{}) interface{}:	for iter := m.MapRange(); iter.Next(); {
+															m.SetMapIndex(iter.Key(), reflect.ValueOf(t(iter.Value().Interface())))
 														}
 														ok = true
 
-	case func(interface{}, interface{}) interface{}:	for _, key := range m.MapKeys() {
-															m.SetMapIndex(key, reflect.ValueOf(t(key.Interface(), m.MapIndex(key).Interface())))
+	case func(interface{}, interface{}) interface{}: for iter := m.MapRange(); iter.Next(); {
+															m.SetMapIndex(iter.Key(), reflect.ValueOf(t(iter.Key().Interface(), iter.Value().Interface())))
 														}
 														ok = true
 	}
@@ -132,17 +132,17 @@ func transform(container, t interface{}) (ok bool) {
 									}
 								}
 							}
-							
+
 	case reflect.Map:		if ok = transformMap(c, t); !ok {
 								if t := reflect.ValueOf(t); t.Kind() == reflect.Func {
 									switch t.Type().NumIn() {
-									case 1:				for _, key := range c.MapKeys() {
-															c.SetMapIndex(key, t.Call([]reflect.Value{ c.MapIndex(key) })[0])
+									case 1:   for iter := c.MapRange(); iter.Next(); {
+															c.SetMapIndex(iter.Key(), t.Call([]reflect.Value{ iter.Value() })[0])
 														}
 														ok = true
 
-									case 2:				for _, key := range c.MapKeys() {
-															c.SetMapIndex(key, t.Call([]reflect.Value{ key, c.MapIndex(key) })[0])
+									case 2:   for iter := c.MapRange(); iter.Next(); {
+															c.SetMapIndex(iter.Key(), t.Call([]reflect.Value{ iter.Key(), iter.Value() })[0])
 														}
 														ok = true
 									}

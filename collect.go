@@ -140,15 +140,15 @@ func collectSlice(s reflect.Value, f interface{}) (r interface{}, ok bool) {
 func collectMap(m reflect.Value, f interface{}) (r interface{}, ok bool) {
 	switch f := f.(type) {
 	case func(interface{}) interface{}:					c := reflect.MakeMap(m.Type())
-														for _, key := range m.MapKeys() {
-															c.SetMapIndex(key, reflect.ValueOf(f(m.MapIndex(key).Interface())))
+                            for iter := m.MapRange(); iter.Next(); {
+															c.SetMapIndex(iter.Key(), reflect.ValueOf(f(iter.Value().Interface())))
 														}
 														r = c.Interface()
 														ok = true
 
 	case func(interface{}, interface{}) interface{}:	c := reflect.MakeMap(m.Type())
-														for _, key := range m.MapKeys() {
-															c.SetMapIndex(key, reflect.ValueOf(f(key.Interface(), m.MapIndex(key).Interface())))
+                            for iter := m.MapRange(); iter.Next(); {
+															c.SetMapIndex(iter.Key(), reflect.ValueOf(f(iter.Key().Interface(), iter.Value().Interface())))
 														}
 														r = c.Interface()
 														ok = true
@@ -156,13 +156,13 @@ func collectMap(m reflect.Value, f interface{}) (r interface{}, ok bool) {
 	default:											if f := reflect.ValueOf(f); f.Kind() == reflect.Func {
 															c := reflect.MakeMap(m.Type())
 															switch f.Type().NumIn() {
-															case 1:				for _, key := range m.MapKeys() {
-																					c.SetMapIndex(key, f.Call([]reflect.Value{ m.MapIndex(key) })[0])
+															case 1:		for iter := m.MapRange(); iter.Next(); {
+																					c.SetMapIndex(iter.Key(), f.Call([]reflect.Value{ iter.Value() })[0])
 																				}
 																				ok = true
 
-															case 2:				for _, key := range m.MapKeys() {
-																					c.SetMapIndex(key, f.Call([]reflect.Value{ key, m.MapIndex(key) })[0])
+															case 2:		for iter := m.MapRange(); iter.Next(); {
+																					c.SetMapIndex(iter.Key(), f.Call([]reflect.Value{ iter.Key(), iter.Value() })[0])
 																				}
 																				ok = true
 															}
@@ -170,7 +170,7 @@ func collectMap(m reflect.Value, f interface{}) (r interface{}, ok bool) {
 																r = c.Interface()
 															}
 														}
-	
+
 	}
 	return
 }

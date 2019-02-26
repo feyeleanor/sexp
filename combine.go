@@ -135,10 +135,10 @@ func combineIndexable(left Indexable, right interface{}, f func(interface{}, int
 			for i := left.Len() - 1; i > 0; i-- {
 				CombineAndSet(i, left.At(i), right.MapIndex(reflect.ValueOf(i)))
 			}
-			for _, k := range right.MapKeys() {
-				i := int(k.Int())
+      for iter := right.MapRange(); iter.Next(); {
+				i := int(iter.Key().Int())
 				if left.At(i) == nil {
-					CombineAndSet(i, left.At(i), right.MapIndex(k))
+					CombineAndSet(i, left.At(i), iter.Value())
 				}
 			}
 			result = m.Interface()
@@ -159,7 +159,7 @@ func combineValue(Left, Right interface{}, f func(interface{}, interface{}) inte
 					Reallocate(left, length, length)
 					r = reflect.ValueOf(left)
 				})
-				return 
+				return
 			}
 
 			var s reflect.Value
@@ -279,7 +279,7 @@ func combineValue(Left, Right interface{}, f func(interface{}, interface{}) inte
 					var x interface{}
 					if lv.IsValid() {
 						if rv.IsValid() {
-							x = f(lv.Interface(), rv.Interface())																						
+							x = f(lv.Interface(), rv.Interface())
 						} else {
 							x = f(lv.Interface(), blank.Interface())
 						}
