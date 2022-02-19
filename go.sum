@@ -1,0 +1,10 @@
+github.com/feyeleanor/chain v0.0.0-20161231001018-ef8fa8a672db h1:lJdZACqFzolijTKDF4iDvwvpm8EpJPRoxQW0zGxxbT4=
+github.com/feyeleanor/chain v0.0.0-20161231001018-ef8fa8a672db/go.mod h1:JmOHkv3dWFxcL2FkYKAuKjgX8ZLHyrUvx1IF7NPMXSg=
+github.com/feyeleanor/jittery v0.0.0-20161230190557-3fb4c65493ea h1:bl7kntu95Xa/T9k5vmokkE3T/EIEEte8TgUKJmbm7MQ=
+github.com/feyeleanor/jittery v0.0.0-20161230190557-3fb4c65493ea/go.mod h1:i/nLnk+hJhjwgUcEA6XskX8flHsZ5aOfb+C5jZ0rc2Q=
+github.com/feyeleanor/lists v0.0.0-20161230191010-5b716bb252f6 h1:zEZRU9bwmdoSftWpQA0PcFExE9XIs/vxNJpm2Ve+INU=
+github.com/feyeleanor/lists v0.0.0-20161230191010-5b716bb252f6/go.mod h1:aUcjT+0UvCrJeHSzjty7443d2WH4y3oodpfOkFQc0zI=
+github.com/feyeleanor/raw v0.0.0-20220219200545-e060f05ad80b h1:NovlMY6hCUy8Z4v1YGNXWXogQ+dYNZzBY3yEu6p0DDc=
+github.com/feyeleanor/raw v0.0.0-20220219200545-e060f05ad80b/go.mod h1:rcc77vIkXep+EoU+Oebo8GaCy9BRwc0W862QL5dt7n4=
+github.com/feyeleanor/slices v0.0.0-20220219201152-27413d6f76f3 h1:Tp8KF9zL9wMBw1t0NYq9HxnquYX0vlgMRivsgfbrLKA=
+github.com/feyeleanor/slices v0.0.0-20220219201152-27413d6f76f3/go.mod h1:bgt0dkTIeOgY3WQKdgxRoPBgn4ORq14A+ne33PVRGzo=
